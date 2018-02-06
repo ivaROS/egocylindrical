@@ -17,11 +17,26 @@ CylindricalVisualization::CylindricalVisualization() :it_(nh_)
 void CylindricalVisualization::cameraCb(const sensor_msgs::ImageConstPtr &image,
                                         const sensor_msgs::CameraInfoConstPtr &cam_info)
 {
+    ROS_INFO("Received images and camera info");
     EgoCylindrical translated = EgoCylindrical(*image, *cam_info);
 
+//    ROS_INFO("publish egocylindrical image");
     std_msgs::Header header = std_msgs::Header();
     header.stamp = ros::Time(0);
-    msg = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_32FC1, translated.toImage()).toImageMsg();
-    pub.publish(msg);
+    translated.toImage();
+//    msg = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_32FC1, translated.toImage()).toImageMsg();
+//    pub.publish(msg);
+}
 
+
+
+
+
+
+
+int main(int argc, char** argv)
+{
+    ros::init(argc, argv, "egocylindrical_model");
+    CylindricalVisualization s;
+    ros::spin();
 }
