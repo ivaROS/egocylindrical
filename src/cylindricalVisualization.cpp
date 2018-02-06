@@ -23,9 +23,9 @@ void CylindricalVisualization::cameraCb(const sensor_msgs::ImageConstPtr &image,
 //    ROS_INFO("publish egocylindrical image");
     std_msgs::Header header = std_msgs::Header();
     header.stamp = ros::Time(0);
-    translated.toImage();
-//    msg = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_32FC1, translated.toImage()).toImageMsg();
-//    pub.publish(msg);
+//    translated.toImage();
+    msg = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_32FC1, translated.toImage()).toImageMsg();
+    pub.publish(msg);
 }
 
 

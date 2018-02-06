@@ -41,17 +41,17 @@ EgoCylindrical::EgoCylindrical(sensor_msgs::Image image, sensor_msgs::CameraInfo
         for(int j = 0; j < cols; j++)
         {
             cv::Point2d pt;
-            pt.x = i;
-            pt.y = j;
+            pt.x = j;
+            pt.y = i;
             cv::Point3d Pcyl = model_t.projectPixelTo3dRay(pt);
-            std::cout << Pcyl <<std::endl;
+//            std::cout << Pcyl <<std::endl;
 
-            temp_y = Pcyl.y;
-            temp_x = Pcyl.x;
-            Pcyl.y = Pcyl.z;
-            Pcyl.z = temp_x;
-            Pcyl.x = temp_y;
-
+//            temp_y = Pcyl.y;
+//            temp_x = Pcyl.x;
+//            Pcyl.y = Pcyl.z;
+//            Pcyl.z = temp_x;
+//            Pcyl.x = temp_y;
+            Pcyl *= originImage.at<float>(i, j);
 
             cv::Point3d Pcyl_t = Pcyl / cv::sqrt(cv::pow(Pcyl.x, 2) + cv::pow(Pcyl.z, 2));
 
@@ -60,7 +60,7 @@ EgoCylindrical::EgoCylindrical(sensor_msgs::Image image, sensor_msgs::CameraInfo
             coordinate.push_back(Pcyl_t);
             pt.x = atan(Pcyl_t.x / Pcyl_t.z) * fhp + hc;
             pt.y = Pcyl_t.y * fvp + vc;
-            std::cout<<pt.x << pt.y <<std::endl;
+//            std::cout<<pt.x << pt.y <<std::endl;
 //            std::exit(0);
 
 
@@ -68,7 +68,7 @@ EgoCylindrical::EgoCylindrical(sensor_msgs::Image image, sensor_msgs::CameraInfo
 
 
 
-
+/*
             //THIS SECTION IS FOR TEST PURPOSE
             cv::Point3d tempPcyl_t;
             tempPcyl_t.x = Pcyl_t.z;
@@ -77,7 +77,7 @@ EgoCylindrical::EgoCylindrical(sensor_msgs::Image image, sensor_msgs::CameraInfo
             cv::Point2d newCoord = model_t.project3dToPixel(tempPcyl_t);
 //            std::cout<<newCoord.x<<"    "<<newCoord.y<<std::endl;
             newImage.at<float>((int)newCoord.x, (int)newCoord.y) = originImage.at<float>(i, j);
-            testindex.push_back(newCoord);
+            testindex.push_back(newCoord);*/
 
 
 
@@ -101,9 +101,9 @@ cv::Mat EgoCylindrical::toImage(){
     {
         for(int j = 0; j < cols; j++)
         {
-            x = (int)index[cursor].x;
-            y = (int)index[cursor].y;
-            std::cout<<"x = "<< x <<"   y = " << y<<std::endl;
+            x = (int)index[cursor].y;
+            y = (int)index[cursor].x;
+//            std::cout<<"x = "<< x <<"   y = " << y<<std::endl;
             if(x >=0 && x < cols && y >=0 && y < rows)
             {
 //                std::cout<<originImage.at<float>(i, j)<<std::endl;
@@ -121,10 +121,10 @@ cv::Mat EgoCylindrical::toImage(){
 //
         }
     }
-    ROS_INFO("to image");
+/*    ROS_INFO("to image");
     cv::imshow("testImage", newImage);
     cv::waitKey(0);
-    std::exit(0);
+    std::exit(0);*/
     return newImage;
 }
 
@@ -137,8 +137,8 @@ cv::Mat EgoCylindrical::testToImage()
     {
         for(int j = 0; j < cols; j++)
         {
-            x = (int)testindex[cursor].x;
-            y = (int)testindex[cursor].y;
+            x = (int)testindex[cursor].y;
+            y = (int)testindex[cursor].x;
             std::cout<<"x = "<< x <<"   y = " << y<<std::endl;
             if(x >=0 && x < cols && y >=0 && y < rows)
             {
