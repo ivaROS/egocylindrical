@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(egocylindrical)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -20,10 +20,12 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_msgs
   tf2_ros
+  tf2_sensor_msgs
 )
 
 
 find_package(OpenCV REQUIRED)
+find_package(PCL    REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -131,6 +133,7 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -146,7 +149,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
- add_executable(${PROJECT_NAME}_node src/egocylindrical.cpp include src/cylindricalVisualization.cpp include/cylindricalVisualization.h)
+ add_executable(${PROJECT_NAME}_node src/egocylindrical.cpp include src/cylindricalVisualization.cpp include/cylindricalVisualization.h src/CylindricalPropagator.cpp include/CylindricalPropagator.h)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -162,7 +165,9 @@ include_directories(
  target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
+   ${PCL_LIBRARIES}
    )
+
 
 #############
 ## Install ##

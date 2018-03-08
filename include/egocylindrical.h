@@ -12,6 +12,8 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
+#include <pcl_ros/point_cloud.h>
+#include <pcl.h>
 
 
 class EgoCylindrical{
@@ -22,15 +24,19 @@ private:
     int rows;
     int height;
     int width;
+    double x, y;
     std::vector<cv::Point3d> coordinate;
-    std::vector<cv::Point2d> index;
-    std::vector<cv::Point2d> testindex;
+    pcl::PointCloud<pcl::PointXYZI> cylidnricalPointCloud;
+    pcl::PointCloud<pcl::PointXYZ> worldPointCloud;
     cv::Mat originImage;
 public:
     EgoCylindrical();
     EgoCylindrical(sensor_msgs::Image image, sensor_msgs::CameraInfo cam_info);
-    cv::Mat toImage();
-    cv::Mat testToImage();
+    pcl::PointCloud<pcl::PointXYZI> getCylindricalPointCloud(){return cylidnricalPointCloud;};
+    pcl::PointCloud<pcl::PointXYZ> getWorldPointCloud(){return worldPointCloud;};
+    std::string getFrame(){return cam_info.header.frame_id;};
+    double getX() {return x;};
+    double getY() {return y;};
 
 };
 
