@@ -5,6 +5,8 @@
 #ifndef EGOCYLINDRICAL_EGOCYLINDRICAL_H
 #define EGOCYLINDRICAL_EGOCYLINDRICAL_H
 
+#include <utils.h>
+
 #include <ros/ros.h>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -34,6 +36,8 @@ private:
     ros::NodeHandle nh_;
     tf2_ros::TransformListener tf_listener_;
     tf2_ros::Buffer buffer_;
+    
+    utils::CylindricalCoordsConverter ccc_;
 
     void propagateHistory(cv::Mat& old_pnts, cv::Mat& new_pnts, std_msgs::Header old_header, std_msgs::Header new_header);
     void addDepthImage(cv::Mat& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info);
