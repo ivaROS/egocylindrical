@@ -37,7 +37,14 @@ void CylindricalPropagator::propagate(pcl::PointCloud<pcl::PointXYZ> pointCloud,
     pcl::fromROSMsg(temp, propagatedPointCloud);
     for(pcl::PointXYZ p: propagatedPointCloud)
     {
-        if(cv::abs(p.x) > x || (p.y > y))
+        double t = cv::sqrt(cv::pow(p.x, 2) + cv::pow(p.z, 2));
+        double x_;
+        x_ = cv::abs(p.x / t);
+        double z_ = cv::sqrt(1 - x_);
+        double z = cv::sqrt(1 - x);
+        double theta_ = atan(x_ / z_);
+        double theta = atan(x / z);
+        if(theta_ > theta)
         {
             pointCloud.push_back(p);
         }

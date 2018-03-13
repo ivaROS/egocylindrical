@@ -12,6 +12,7 @@ CylindricalVisualization::CylindricalVisualization() :it_(nh_), propagator(nh_)
     timeSynchronizer.registerCallback(boost::bind(&CylindricalVisualization::cameraCb, this, _1, _2));
     pub = it_.advertise("projected_image", 20);
     ptPub = nh_.advertise<sensor_msgs::PointCloud2>("cylindrical", 100);
+    ptPub2 = nh_.advertise<sensor_msgs::PointCloud2>("cylindrical_original", 100);
     ros::spin();
 }
 
@@ -32,9 +33,12 @@ void CylindricalVisualization::cameraCb(const sensor_msgs::ImageConstPtr &image,
 
     ROS_DEBUG("publish egocylindrical image");
     sensor_msgs::PointCloud2 pcloud;
-    pcl::toROSMsg(translated.getCylindricalPointCloud(), pcloud);
+    pcl::toROSMsg(propagator.getCylindricalPointCloud(), pcloud);
     pcloud.header.frame_id = image->header.frame_id;
     ptPub.publish(pcloud);
+    pcl::toROSMsg(translated.getCylindricalPointCloud(), pcloud);
+    pcloud.header.frame_id = image->header.frame_id;
+    ptPub2.publish(pcloud);
 }
 
 int main(int argc, char** argv)

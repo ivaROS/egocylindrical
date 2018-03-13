@@ -24,7 +24,7 @@ private:
     image_transport::ImageTransport it_;
     image_transport::Publisher pub;
     sensor_msgs::ImagePtr msg;
-    ros::Publisher ptPub;
+    ros::Publisher ptPub, ptPub2;
     CylindricalPropagator propagator;
 public:
     CylindricalVisualization();
