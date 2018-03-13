@@ -3,7 +3,7 @@
 //
 
 #include "cylindricalVisualization.h"
-CylindricalVisualization::CylindricalVisualization() :it_(nh_), propagator(nh_)
+CylindricalVisualization::CylindricalVisualization() :it_(nh_), propagator_(nh_)
 {
     std::cout<<"Visualization Node Initialized"<<std::endl;
     message_filters::Subscriber<sensor_msgs::Image> depthSub(nh_, "/camera/depth/image_raw", 10);
@@ -20,18 +20,11 @@ void CylindricalVisualization::cameraCb(const sensor_msgs::ImageConstPtr &image,
                                         const sensor_msgs::CameraInfoConstPtr &cam_info)
 {
     ROS_DEBUG("Received images and camera info");
-    EgoCylindrical translated = EgoCylindrical(*image, *cam_info);
 
-    if(!propagator.getRegisterd()) {
-        propagator.registerOriginal(translated, translated.getFrame(), translated.getX(), translated.getY(), image->header.stamp);
-    } else {
-        propagator.propagate(translated, image->header.stamp);
-    }
-
-
-    ROS_INFO("%f, %f", translated.getX(), translated.getY());
+    propagator_.update(image, cam_info);
 
     ROS_DEBUG("publish egocylindrical image");
+    /*
     sensor_msgs::PointCloud2 pcloud;
     pcl::toROSMsg(propagator.getCylindricalPointCloud(), pcloud);
     pcloud.header.frame_id = image->header.frame_id;
@@ -39,6 +32,7 @@ void CylindricalVisualization::cameraCb(const sensor_msgs::ImageConstPtr &image,
     pcl::toROSMsg(translated.getCylindricalPointCloud(), pcloud);
     pcloud.header.frame_id = image->header.frame_id;
     ptPub2.publish(pcloud);
+    */
 }
 
 int main(int argc, char** argv)

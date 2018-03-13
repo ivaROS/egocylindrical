@@ -13,35 +13,47 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <pcl_ros/point_cloud.h>
+#include <tf2_ros/transform_listener.h>
 //#include <pcl.h>
 
+namespace egocylindrical
+{
 
-class EgoCylindrical{
+class EgoCylindricalPropagator{
 private:
-    sensor_msgs::Image image;
-    sensor_msgs::CameraInfo cam_info;
-    int cols;
-    int rows;
-    int height;
-    int width;
-    double x, y;
-    std::vector<cv::Point3d> coordinate;
-    pcl::PointCloud<pcl::PointXYZI> cylidnricalPointCloud;
-    pcl::PointCloud<pcl::PointXYZ> worldPointCloud;
-    cv::Mat originImage;
+    int cylinder_height_;
+    int cylinder_width_;
+    double hfov_, vfov_;
+    float dNan;
+    
+    cv::Mat new_pts_, old_pts_;
+    image_geometry::PinholeCameraModel model_t;
+    
+    std_msgs::Header old_header_;
+    
+    ros::NodeHandle nh_;
+    tf2_ros::TransformListener tf_listener_;
+    tf2_ros::Buffer buffer_;
+
+    void propagateHistory(cv::Mat& old_pnts, cv::Mat& new_pnts, std_msgs::Header old_header, std_msgs::Header new_header);
+    void addDepthImage(cv::Mat& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info);
+
+    
+    
 public:
-    EgoCylindrical();
-    EgoCylindrical(sensor_msgs::Image image, sensor_msgs::CameraInfo cam_info);
-    pcl::PointCloud<pcl::PointXYZI> getCylindricalPointCloud(){return cylidnricalPointCloud;};
-    pcl::PointCloud<pcl::PointXYZ> getWorldPointCloud(){return worldPointCloud;};
-    std::string getFrame(){return cam_info.header.frame_id;};
-    double getX() {return x;};
-    double getY() {return y;};
+    EgoCylindricalPropagator(ros::NodeHandle& nh);
+    void update(const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info);
+
+    void init();
+
+    //pcl::PointCloud<pcl::PointXYZI> getCylindricalPointCloud();
+    //pcl::PointCloud<pcl::PointXYZ> getWorldPointCloud();
+
 
 };
 
 
-
+}
 
 
 #endif //EGOCYLINDRICAL_EGOCYLINDRICAL_H
