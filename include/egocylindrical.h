@@ -13,7 +13,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <pcl_ros/point_cloud.h>
-#include <pcl.h>
+//#include <pcl.h>
 
 
 class EgoCylindrical{

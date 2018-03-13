@@ -14,7 +14,7 @@
 #include <message_filters/time_synchronizer.h>
 #include "egocylindrical.h"
 #include "CylindricalPropagator.h"
-#include <pcl.h>
+//#include <pcl.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
 

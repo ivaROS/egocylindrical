@@ -5,7 +5,7 @@
 #ifndef EGOCYLINDRICAL_CYLINDRICALPROPAGATOR_H
 #define EGOCYLINDRICAL_CYLINDRICALPROPAGATOR_H
 
-#include <pcl.h>
+//#include <pcl/point_types.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/impl/transforms.hpp>
 #include "egocylindrical.h"
