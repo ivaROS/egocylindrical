@@ -21,18 +21,18 @@ void CylindricalVisualization::cameraCb(const sensor_msgs::ImageConstPtr &image,
     ROS_DEBUG("Received images and camera info");
     EgoCylindrical translated = EgoCylindrical(*image, *cam_info);
 
-//    if(!propagator.getRegisterd()) {
-//        propagator.registerOriginal(translated, translated.getFrame(), translated.getX(), translated.getY(), image->header.stamp);
-//    } else {
-//        propagator.propagate(translated, image->header.stamp);
-//    }
+    if(!propagator.getRegisterd()) {
+        propagator.registerOriginal(translated, translated.getFrame(), translated.getX(), translated.getY(), image->header.stamp);
+    } else {
+        propagator.propagate(translated, image->header.stamp);
+    }
 
 
-    ROS_INFO("%d, %d", translated.getX(), translated.getY());
+    ROS_INFO("%f, %f", translated.getX(), translated.getY());
 
     ROS_DEBUG("publish egocylindrical image");
     sensor_msgs::PointCloud2 pcloud;
-    pcl::toROSMsg(propagator.getCylindricalPointCloud(), pcloud);
+    pcl::toROSMsg(translated.getCylindricalPointCloud(), pcloud);
     pcloud.header.frame_id = image->header.frame_id;
     ptPub.publish(pcloud);
 }

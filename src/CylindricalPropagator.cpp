@@ -8,9 +8,9 @@ void CylindricalPropagator::registerOriginal(EgoCylindrical t, std::string frame
 {
     cylindricalPointCloud = t.getCylindricalPointCloud();
     worldPointCloud = t.getWorldPointCloud();
-    frame_id = frame;
-    x = x_;
-    y = y_;
+    frame_id = t.getFrame();
+    x = t.getX();
+    y = t.getY();
     registered = true;
     last = time;
 }
@@ -37,7 +37,7 @@ void CylindricalPropagator::propagate(pcl::PointCloud<pcl::PointXYZ> pointCloud,
     pcl::fromROSMsg(temp, propagatedPointCloud);
     for(pcl::PointXYZ p: propagatedPointCloud)
     {
-        if((p.x > x || p.x < x) || (p.y > y))
+        if(cv::abs(p.x) > x || (p.y > y))
         {
             pointCloud.push_back(p);
         }

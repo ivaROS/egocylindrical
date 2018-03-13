@@ -26,6 +26,7 @@ EgoCylindrical::EgoCylindrical(sensor_msgs::Image image, sensor_msgs::CameraInfo
     width = image.width;
     rows = height;
     cols = width;
+    x = y = 0;
     image_geometry::PinholeCameraModel model_t;
     model_t.fromCameraInfo(cam_info);
     cv::Mat newImage = cv::Mat::zeros(rows, cols, CV_32FC1);
@@ -47,6 +48,7 @@ EgoCylindrical::EgoCylindrical(sensor_msgs::Image image, sensor_msgs::CameraInfo
             coordinate.push_back(Pcyl_t);
             pcl::PointXYZI pointXYZI;
             pointXYZI.x = (float)Pcyl_t.x;
+//            ROS_INFO_STREAM(Pcyl_t.x);
             pointXYZI.y = (float)Pcyl_t.y;
             pointXYZI.z = (float)Pcyl_t.z;
             pointXYZI.intensity = originImage.at<float>(i, j);
