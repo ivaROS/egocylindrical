@@ -22,7 +22,11 @@ namespace utils
     
     
 
-
+    inline
+    float worldToRange(cv::Point3f point)
+    {
+        return cv::sqrt(cv::pow(point.x, 2) + cv::pow(point.z, 2));
+    }
    /*
     
     cv::Point3f worldToCylindrical(cv::Point3f point, int cyl_width, int cyl_height, double hfov, double vfov)
@@ -54,6 +58,8 @@ namespace utils
         
         int y = cvRound(cyl_height/2 + cyl_height * phi / vfov);
         int x = (cvRound(cyl_width/2 + cyl_width * theta / hfov) % cyl_width);
+        
+        ROS_INFO_STREAM_THROTTLE(5, "POINT: " << point.x << "," << point.y << "," << point.z << "; width = " << cyl_width << ", height = " << cyl_height << ", hfov: " << hfov << ", vfov: " << vfov << ", theta = " << theta << ", phi = " << phi << ", result = " << x << "," << y);
         
         cv::Point im_pt(x,y);
         return im_pt;
@@ -166,7 +172,7 @@ namespace utils
             {
             
                 cv::Point3f world_pnt = new_points.at<cv::Point3f>(j,i);
-                float depth = world_pnt.z;
+                float depth = worldToRange(world_pnt);
                 
                 if(!cvIsNaN(depth))
                 {
@@ -179,8 +185,10 @@ namespace utils
                     //if (xIdx < img_width && yIdx < img_height && xIdx > 0 && yIdx > 0)
                     if(image_roi.contains(image_pnt))
                     {
+                        cv::Point3f cur_point = cylindrical_history.at<cv::Point3f>(yIdx, xIdx);
+                        
                         //ROS_DEBUG_STREAM("y,x: " << yIdx << "," << xIdx);
-                        float& cur_depth = cylindrical_history.at<cv::Point3f>(yIdx, xIdx).z;
+                        float cur_depth = worldToRange(cur_point);
                         
                         if(overwrite || !(cur_depth >= depth))
                         {
