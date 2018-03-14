@@ -5,7 +5,7 @@
 #ifndef EGOCYLINDRICAL_EGOCYLINDRICAL_H
 #define EGOCYLINDRICAL_EGOCYLINDRICAL_H
 
-#include <utils.h>
+#include <egocylindrical/utils.h>
 
 #include <ros/ros.h>
 #include <opencv2/core.hpp>
@@ -47,6 +47,7 @@ private:
 public:
     EgoCylindricalPropagator(ros::NodeHandle& nh);
     void update(const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info);
+    pcl::PointCloud<pcl::PointXYZ> getPropagatedPointCloud();
 
     void init();
 

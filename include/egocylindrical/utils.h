@@ -9,6 +9,9 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf/LinearMath/Matrix3x3.h>
+
 
 namespace egocylindrical
 {
@@ -20,6 +23,43 @@ namespace utils
     
 
 
+   /*
+    
+    cv::Point3f worldToCylindrical(cv::Point3f point, int cyl_width, int cyl_height, double hfov, double vfov)
+    {
+        cv::Point3f Pcyl_t = point / cv::sqrt(cv::pow(point.x, 2) + cv::pow(point.z, 2));   
+        
+        double theta = std::atan2(point.x,point.z);
+        double phi = std::atan2(point.y,point.z);
+        
+        cyl_width* theta /hfov
+        
+        
+    }
+    */
+    
+    
+    inline
+    cv::Point cylindricalToImage(cv::Point3f point)
+    {
+        
+    }
+    
+
+    inline
+    cv::Point worldToCylindricalImage(cv::Point3f point, int cyl_width, int cyl_height, double hfov, double vfov)
+    {
+        double theta = std::atan2(point.x,point.z);
+        double phi = std::atan2(point.y,point.z);
+        
+        int y = cvRound(cyl_height/2 + cyl_height * phi / vfov);
+        int x = (cvRound(cyl_width/2 + cyl_width * theta / hfov) % cyl_width);
+        
+        cv::Point im_pt(x,y);
+        return im_pt;
+    }
+
+    
     struct CylindricalCoordsConverter
     {
        double hfov, vfov;
@@ -44,35 +84,7 @@ namespace utils
         
     };
     
-    cv::Point3f worldToCylindrical(cv::Point3f point, int cyl_width, int cyl_height, double hfov, double vfov)
-    {
-        cv::Point3f Pcyl_t = point / cv::sqrt(cv::pow(point.x, 2) + cv::pow(point.z, 2));   
-        
-        double theta = std::atan2(point.x,point.z);
-        double phi = std::atan2(point.y,point.z);
-        
-        cyl_width_* theta /hfov
-        
-        
-    }
-
-    cv::Point cylindricalToImage(cv::Point3f point)
-    {
-        
-    }
-    
-
-
-    cv::Point worldToCylindricalImage(cv::Point3f point, int cyl_width, int cyl_height, double hfov, double vfov)
-    {
-        double theta = std::atan2(point.x,point.z);
-        double phi = std::atan2(point.y,point.z);
-        
-        int i = cv::Round(cyl_height/2 + cyl_height_* phi / vfov);
-        int j = (cv::Round(cyl_width/2 + cyl_width_* theta / hfov) % cyl_width);
-
-    }
-
+    inline
     void transformPoints(cv::Mat& points, geometry_msgs::TransformStamped& trans)
     {
         tf::Quaternion rotationQuaternion = tf::Quaternion(trans.transform.rotation.x,
@@ -120,6 +132,7 @@ namespace utils
         
     }
 
+    inline
     cv::Mat depthImageToWorld(const sensor_msgs::Image::ConstPtr& image, const image_geometry::PinholeCameraModel& cam_model)
     {
         cv::Mat world_pnts(image->height,image->width, CV_32FC3, utils::dNaN);
@@ -141,7 +154,7 @@ namespace utils
     }
     
     
-    
+    inline
     void fillImage(cv::Mat& cylindrical_history, cv::Mat new_points, const CylindricalCoordsConverter& ccc, bool overwrite)
     {
         cv::Rect image_roi(cv::Point(), cylindrical_history.size());

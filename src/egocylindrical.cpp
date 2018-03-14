@@ -2,7 +2,7 @@
 // Created by root on 2/5/18.
 //
 
-#include "egocylindrical.h"
+#include <egocylindrical/egocylindrical.h>
 #include <tf/LinearMath/Matrix3x3.h>
 #include <cv_bridge/cv_bridge.h>
 #include <ros/ros.h>
@@ -24,7 +24,7 @@ namespace egocylindrical
         ROS_DEBUG("Getting Transformation details");
                 geometry_msgs::TransformStamped trans = buffer_.lookupTransform(new_header.frame_id, new_header.stamp,
                                 old_header.frame_id, old_header.stamp,
-                                "odom", ros::Duration(1));
+                                "odom");
 
         utils::transformPoints(old_pnts, trans);
         utils::fillImage(new_pnts, old_pnts, ccc_, false);
@@ -48,12 +48,38 @@ namespace egocylindrical
     {
         new_pts_ = cv::Mat(cylinder_height_,cylinder_width_, CV_32FC3, utils::dNaN);
         
-        EgoCylindricalPropagator::propagateHistory(old_pts_, new_pts_, old_header_, image->header);
-        EgoCylindricalPropagator::addDepthImage(new_pts_, image, cam_info);
-        
-        cv::swap(new_pts_, old_pts_);
-        old_header_ = image->header;
+        try
+        {
+            if(!old_pts_.empty())
+            {
+                EgoCylindricalPropagator::propagateHistory(old_pts_, new_pts_, old_header_, image->header);
+            }
+            EgoCylindricalPropagator::addDepthImage(new_pts_, image, cam_info);
+            
+            cv::swap(new_pts_, old_pts_);
+            old_header_ = image->header;
+            
+        }
+        catch (tf2::TransformException &ex) 
+        {
+            ROS_WARN_STREAM("Problem finding transform:\n" <<ex.what());
+        } 
     }
+    
+    
+    pcl::PointCloud<pcl::PointXYZ> EgoCylindricalPropagator::getPropagatedPointCloud()
+    {
+        pcl::PointCloud<pcl::PointXYZ> pcloud;
+        
+        cv::MatIterator_<cv::Point3f> it, end;
+        for(it=old_pts_.begin<cv::Point3f>(), end=old_pts_.end<cv::Point3f>(); it != end; ++it)
+        {
+            pcl::PointXYZ point((*it).x, (*it).y, (*it).z);
+            pcloud.push_back(point);
+        }
+        return pcloud;
+    }
+    
 
     void EgoCylindricalPropagator::init()
     {
@@ -61,7 +87,7 @@ namespace egocylindrical
         double pi = std::acos(-1);
         hfov_ = 2*pi;
         vfov_ = pi/3;
-        cylinder_width_ = 1024;
+        cylinder_width_ = 2048;
         cylinder_height_ = 320;
         
         ccc_ = utils::CylindricalCoordsConverter(cylinder_width_, cylinder_height_, hfov_, vfov_);
