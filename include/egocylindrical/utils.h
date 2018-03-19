@@ -57,9 +57,9 @@ namespace utils
         double phi = std::atan2(point.y,point.z);
         
         int y = cvRound(cyl_height/2 + cyl_height * phi / vfov);
-        int x = (cvRound(cyl_width/2 + cyl_width * theta / hfov) % cyl_width);
+        int x = (cvRound(cyl_width * 16 + cyl_width/2 + cyl_width * 2* theta / hfov) % cyl_width);
         
-        ROS_INFO_STREAM_THROTTLE(5, "POINT: " << point.x << "," << point.y << "," << point.z << "; width = " << cyl_width << ", height = " << cyl_height << ", hfov: " << hfov << ", vfov: " << vfov << ", theta = " << theta << ", phi = " << phi << ", result = " << x << "," << y);
+       ROS_DEBUG_STREAM("POINT: " << point.x << "," << point.y << "," << point.z << "; width = " << cyl_width << ", height = " << cyl_height << ", hfov: " << hfov << ", vfov: " << vfov << ", theta = " << theta << ", phi = " << phi << ", result = " << x << "," << y);
         
         cv::Point im_pt(x,y);
         return im_pt;
@@ -164,6 +164,8 @@ namespace utils
     void fillImage(cv::Mat& cylindrical_history, cv::Mat new_points, const CylindricalCoordsConverter& ccc, bool overwrite)
     {
         cv::Rect image_roi(cv::Point(), cylindrical_history.size());
+        
+        //cv::Point maxPt,minPt;
 
         ROS_DEBUG("Relocated the propagated image");
         for (int j = 0; j < new_points.rows; j++)
@@ -195,10 +197,43 @@ namespace utils
                             cylindrical_history.at<cv::Point3f>(image_pnt) = world_pnt;
                         }
                     }
+                    else
+                    {
+                        //ROS_DEBUG_STREAM("Outside of image!: (" << world_pnt << " => " << image_pnt);
+                    }
                 }
             }
         
         }   
+        
+    }
+    
+    
+    inline
+    cv::Mat getRawRangeImage(const cv::Mat& cylindrical_history)
+    {
+        cv::Rect image_roi(cv::Point(), cylindrical_history.size());
+        
+        cv::Mat range_image(cylindrical_history.size().height, cylindrical_history.size().width, CV_32FC1);
+        
+        //cv::Point maxPt,minPt;
+
+        ROS_DEBUG("Relocated the propagated image");
+        for (int j = 0; j < cylindrical_history.rows; j++)
+        {
+            for(int i = 0; i < cylindrical_history.cols; ++i)
+            {
+            
+                cv::Point3f world_pnt = cylindrical_history.at<cv::Point3f>(j,i);
+                float depth = worldToRange(world_pnt);
+                
+                 range_image.at<float>(j,i) = depth;
+
+            }
+        
+        }
+        
+        return range_image;
         
     }
     

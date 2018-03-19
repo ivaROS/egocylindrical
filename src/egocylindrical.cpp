@@ -48,6 +48,7 @@ namespace egocylindrical
     {
         new_pts_ = cv::Mat(cylinder_height_,cylinder_width_, CV_32FC3, utils::dNaN);
         
+        
         try
         {
             if(!old_pts_.empty())
@@ -63,13 +64,14 @@ namespace egocylindrical
         catch (tf2::TransformException &ex) 
         {
             ROS_WARN_STREAM("Problem finding transform:\n" <<ex.what());
-        } 
+        }
     }
     
     
-    pcl::PointCloud<pcl::PointXYZ> EgoCylindricalPropagator::getPropagatedPointCloud()
+    sensor_msgs::PointCloud2 EgoCylindricalPropagator::getPropagatedPointCloud()
     {
         pcl::PointCloud<pcl::PointXYZ> pcloud;
+        
         
         cv::MatIterator_<cv::Point3f> it, end;
         for(it=old_pts_.begin<cv::Point3f>(), end=old_pts_.end<cv::Point3f>(); it != end; ++it)
@@ -77,7 +79,30 @@ namespace egocylindrical
             pcl::PointXYZ point((*it).x, (*it).y, (*it).z);
             pcloud.push_back(point);
         }
-        return pcloud;
+        
+        sensor_msgs::PointCloud2 msg;
+        pcl::toROSMsg(pcloud, msg);
+        msg.header = old_header_;
+        
+        return msg;
+    }
+    
+    sensor_msgs::Image::ConstPtr EgoCylindricalPropagator::getRawRangeImage()
+    {
+        cv::Mat range_im = utils::getRawRangeImage(old_pts_);
+        //sensor_msgs::ImageConstPtr msg = cv_bridge::CvImage(old_header_, sensor_msgs::image_encodings::TYPE_32FC1, range_im).toImageMsg();
+        
+        if(range_im.rows >0 && range_im.cols > 0)
+        {
+            cv::Mat scaled_range_im;
+            cv::normalize(range_im, scaled_range_im, 0, 1, cv::NORM_MINMAX);
+            cv::imshow("Raw range image", scaled_range_im);
+            cv::waitKey(1);
+        }
+        
+        sensor_msgs::Image::ConstPtr msg;
+        
+        return msg;
     }
     
 

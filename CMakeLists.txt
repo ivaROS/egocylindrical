@@ -168,7 +168,7 @@ include_directories(
    ${PCL_LIBRARIES}
    )
 
-   target_compile_options(${PROJECT_NAME}_node PRIVATE -g -std=c++11 
+   target_compile_options(${PROJECT_NAME}_node PRIVATE -g -std=c++11 -Wall
   #${OpenMP_CXX_FLAGS}
   )
 
