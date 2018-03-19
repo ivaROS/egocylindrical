@@ -49,6 +49,13 @@ namespace utils
         
     }
     
+    inline
+    cv::Point3f projectWorldToCylinder(cv::Point3f point)
+    {
+        cv::Point3f Pcyl_t = point / cv::sqrt(cv::pow(point.x, 2) + cv::pow(point.z, 2));
+        return Pcyl_t;
+    }
+    
 
     inline
     cv::Point worldToCylindricalImage(cv::Point3f point, int cyl_width, int cyl_height, double hfov, double vfov)
@@ -56,10 +63,22 @@ namespace utils
         double theta = std::atan2(point.x,point.z);
         double phi = std::atan2(point.y,point.z);
         
-        int y = cvRound(cyl_height/2 + cyl_height * phi / vfov);
-        int x = (cvRound(cyl_width * 16 + cyl_width/2 + cyl_width * 2* theta / hfov) % cyl_width);
+        double fvp, fhp;
+        fvp = fhp = 1 / (tan(2 * M_PI / cyl_width));
+        double hc = cyl_width / 2;
+        double vc = cyl_height / 2;
         
-       ROS_DEBUG_STREAM("POINT: " << point.x << "," << point.y << "," << point.z << "; width = " << cyl_width << ", height = " << cyl_height << ", hfov: " << hfov << ", vfov: " << vfov << ", theta = " << theta << ", phi = " << phi << ", result = " << x << "," << y);
+        cv::Point3f p_cyl = projectWorldToCylinder(point);
+        
+        
+        double x = std::atan2(p_cyl.x, p_cyl.z) * fhp + hc;
+        double y = p_cyl.y * fvp + vc;
+        
+        
+        //int y = cvRound(cyl_height/2 + cyl_height * phi / vfov);
+        //int x = (cvRound(cyl_width/2 + cyl_width * 2* theta / 2*hfov) % cyl_width);
+        
+        ROS_DEBUG_STREAM("POINT: " << point.x << "," << point.y << "," << point.z << "; width = " << cyl_width << ", height = " << cyl_height << ", hfov: " << hfov << ", vfov: " << vfov << ", theta = " << theta << ", phi = " << phi << ", result = " << x << "," << y);
         
         cv::Point im_pt(x,y);
         return im_pt;
@@ -91,7 +110,7 @@ namespace utils
     };
     
     inline
-    void transformPoints(cv::Mat& points, geometry_msgs::TransformStamped& trans)
+    void transformPoints(cv::Mat& points, const geometry_msgs::TransformStamped& trans)
     {
         tf::Quaternion rotationQuaternion = tf::Quaternion(trans.transform.rotation.x,
                             trans.transform.rotation.y,
@@ -183,16 +202,22 @@ namespace utils
                     int yIdx = image_pnt.y;
                     int xIdx = image_pnt.x;
                     
+                    if(xIdx == 0)
+                    {
+                      ROS_INFO_STREAM("world_pnt: ( " << world_pnt.x << "," << world_pnt.y << "," << world_pnt.z << ") => (" << xIdx << "," << yIdx <<")");
+                      
+                    }
+                    
 
                     //if (xIdx < img_width && yIdx < img_height && xIdx > 0 && yIdx > 0)
                     if(image_roi.contains(image_pnt))
                     {
-                        cv::Point3f cur_point = cylindrical_history.at<cv::Point3f>(yIdx, xIdx);
+                        cv::Point3f prev_point = cylindrical_history.at<cv::Point3f>(yIdx, xIdx);
                         
                         //ROS_DEBUG_STREAM("y,x: " << yIdx << "," << xIdx);
-                        float cur_depth = worldToRange(cur_point);
+                        float prev_depth = worldToRange(prev_point);
                         
-                        if(overwrite || !(cur_depth >= depth))
+                        if(overwrite || !(prev_depth >= depth))
                         {
                             cylindrical_history.at<cv::Point3f>(image_pnt) = world_pnt;
                         }
