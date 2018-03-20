@@ -159,31 +159,10 @@ namespace utils
             pt.y = i;
             cv::Point3f Pcyl = cam_model.projectPixelTo3dRay(pt);
             Pcyl *= depth_im.at<float>(i, j);
-            pixel = Pcyl;
-            
+            pixel = Pcyl;     
             
           }
-          
-          
-          
-          
         );
-        
-        /*
-        for(int i = 0; i < depth_im.rows; i++)
-        {
-            for(int j = 0; j < depth_im.cols; j++)
-            {
-                cv::Point2f pt;
-                pt.x = j;
-                pt.y = i;
-                cv::Point3f Pcyl = cam_model.projectPixelTo3dRay(pt);
-                Pcyl *= depth_im.at<float>(i, j);
-                world_pnts.at<cv::Point3f>(i, j) = Pcyl;
-            }
-        }
-        */
-        
         
         return world_pnts;
     }
@@ -252,23 +231,25 @@ namespace utils
         cv::Rect image_roi(cv::Point(), cylindrical_history.size());
         
         cv::Mat range_image(cylindrical_history.size().height, cylindrical_history.size().width, CV_32FC1);
-        
-        //cv::Point maxPt,minPt;
-
-        ROS_DEBUG("Relocated the propagated image");
-        for (int j = 0; j < cylindrical_history.rows; j++)
-        {
-            for(int i = 0; i < cylindrical_history.cols; ++i)
-            {
             
-                cv::Point3f world_pnt = cylindrical_history.at<cv::Point3f>(j,i);
-                float depth = worldToRange(world_pnt);
-                
-                 range_image.at<float>(j,i) = depth;
+        ROS_DEBUG("Generating image of cylindrical memory");
 
-            }
         
-        }
+        range_image.forEach<float>
+        (
+          [&cylindrical_history](float &pixel, const int* position) -> void
+          {
+            int i = position[0];
+            int j = position[1];
+            
+            cv::Point3f world_pnt = cylindrical_history.at<cv::Point3f>(i,j);
+            float depth = worldToRange(world_pnt);
+            
+            pixel = depth;
+
+          }
+  
+        );
         
         return range_image;
         
