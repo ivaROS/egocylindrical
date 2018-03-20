@@ -46,6 +46,8 @@ namespace egocylindrical
 
     void EgoCylindricalPropagator::update(const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
     {
+        ros::WallTime start = ros::WallTime::now();
+        
         new_pts_ = cv::Mat(cylinder_height_,cylinder_width_, CV_32FC3, utils::dNaN);
         
         
@@ -59,6 +61,8 @@ namespace egocylindrical
             
             cv::swap(new_pts_, old_pts_);
             old_header_ = image->header;
+            
+            ROS_INFO_STREAM("Propagation took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
             
         }
         catch (tf2::TransformException &ex) 
@@ -111,9 +115,14 @@ namespace egocylindrical
         
         double pi = std::acos(-1);
         hfov_ = 2*pi;
-        vfov_ = pi/3;
+        vfov_ = pi/3;        
+        
         cylinder_width_ = 2048;
         cylinder_height_ = 320;
+        
+        // TODO: change these variables to something more appropriately named, eg aspect_ratio
+        hfov_ = vfov_ = 1 / (tan(2 * M_PI / cylinder_width_));
+        
         
         ccc_ = utils::CylindricalCoordsConverter(cylinder_width_, cylinder_height_, hfov_, vfov_);
     }

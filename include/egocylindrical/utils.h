@@ -58,28 +58,15 @@ namespace utils
     
 
     inline
-    cv::Point worldToCylindricalImage(cv::Point3f point, int cyl_width, int cyl_height, double hfov, double vfov)
+    cv::Point worldToCylindricalImage(cv::Point3f point, int cyl_width, int cyl_height, double fvp, double fhp)
     {
-        double theta = std::atan2(point.x,point.z);
-        double phi = std::atan2(point.y,point.z);
-        
-        double fvp, fhp;
-        fvp = fhp = 1 / (tan(2 * M_PI / cyl_width));
-        double hc = cyl_width / 2;
-        double vc = cyl_height / 2;
         
         cv::Point3f p_cyl = projectWorldToCylinder(point);
         
         
-        double x = std::atan2(p_cyl.x, p_cyl.z) * fhp + hc;
-        double y = p_cyl.y * fvp + vc;
-        
-        
-        //int y = cvRound(cyl_height/2 + cyl_height * phi / vfov);
-        //int x = (cvRound(cyl_width/2 + cyl_width * 2* theta / 2*hfov) % cyl_width);
-        
-        ROS_DEBUG_STREAM("POINT: " << point.x << "," << point.y << "," << point.z << "; width = " << cyl_width << ", height = " << cyl_height << ", hfov: " << hfov << ", vfov: " << vfov << ", theta = " << theta << ", phi = " << phi << ", result = " << x << "," << y);
-        
+        double x = std::atan2(p_cyl.x, p_cyl.z) * fhp + cyl_width / 2;
+        double y = p_cyl.y * fvp + cyl_height / 2;
+                
         cv::Point im_pt(x,y);
         return im_pt;
     }
@@ -140,11 +127,6 @@ namespace utils
         points *= rotationMatrix.inv();
 
         ROS_DEBUG("Getting Translation Matrix");
-        float translationArray[3];
-        translationArray[0] = (float) trans.transform.translation.x;
-        translationArray[1] = (float) trans.transform.translation.y;
-        translationArray[2] = (float) trans.transform.translation.z;
-        
         cv::Vec3f translationVec(trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z);
 
         
@@ -162,7 +144,32 @@ namespace utils
     {
         cv::Mat world_pnts(image->height,image->width, CV_32FC3, utils::dNaN);
         
-        cv::Mat depth_im = cv_bridge::toCvShare(image)->image;
+        const cv::Mat depth_im = cv_bridge::toCvShare(image)->image;
+        
+        
+        world_pnts.forEach<cv::Point3f>
+        (
+          [&depth_im, &cam_model](cv::Point3f &pixel, const int* position) -> void
+          {
+            int i = position[0];
+            int j = position[1];
+            
+            cv::Point2f pt;
+            pt.x = j;
+            pt.y = i;
+            cv::Point3f Pcyl = cam_model.projectPixelTo3dRay(pt);
+            Pcyl *= depth_im.at<float>(i, j);
+            pixel = Pcyl;
+            
+            
+          }
+          
+          
+          
+          
+        );
+        
+        /*
         for(int i = 0; i < depth_im.rows; i++)
         {
             for(int j = 0; j < depth_im.cols; j++)
@@ -175,6 +182,9 @@ namespace utils
                 world_pnts.at<cv::Point3f>(i, j) = Pcyl;
             }
         }
+        */
+        
+        
         return world_pnts;
     }
     
@@ -202,11 +212,13 @@ namespace utils
                     int yIdx = image_pnt.y;
                     int xIdx = image_pnt.x;
                     
+                    /*
                     if(xIdx == 0)
                     {
                       ROS_INFO_STREAM("world_pnt: ( " << world_pnt.x << "," << world_pnt.y << "," << world_pnt.z << ") => (" << xIdx << "," << yIdx <<")");
                       
                     }
+                    */
                     
 
                     //if (xIdx < img_width && yIdx < img_height && xIdx > 0 && yIdx > 0)
