@@ -46,6 +46,8 @@ private:
     
 public:
     EgoCylindricalPropagator(ros::NodeHandle& nh);
+    ~EgoCylindricalPropagator();
+    
     void update(const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info);
     sensor_msgs::PointCloud2  getPropagatedPointCloud();
     sensor_msgs::Image::ConstPtr getRawRangeImage();

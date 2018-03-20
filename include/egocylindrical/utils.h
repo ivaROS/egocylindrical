@@ -58,14 +58,14 @@ namespace utils
     
 
     inline
-    cv::Point worldToCylindricalImage(cv::Point3f point, int cyl_width, int cyl_height, double fvp, double fhp)
+    cv::Point worldToCylindricalImage(const cv::Point3f& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
     {
         
         cv::Point3f p_cyl = projectWorldToCylinder(point);
         
         
-        double x = std::atan2(p_cyl.x, p_cyl.z) * fhp + cyl_width / 2;
-        double y = p_cyl.y * fvp + cyl_height / 2;
+        float x = std::atan2(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
+        float y = p_cyl.y * v_scale + cyl_height / 2;
                 
         cv::Point im_pt(x,y);
         return im_pt;
@@ -74,24 +74,29 @@ namespace utils
     
     struct CylindricalCoordsConverter
     {
-       double hfov, vfov;
+       float hfov, vfov;
+       float h_scale, v_scale;
+       float h_offset=0, v_offset=0;
        int width, height;
        
        CylindricalCoordsConverter()
        {
        }
        
-       CylindricalCoordsConverter(int width, int height, double hfov, double vfov):
+       CylindricalCoordsConverter(int width, int height, float hfov, float vfov):
             width(width),
             height(height),
             hfov(hfov),
             vfov(vfov)
         {
+            h_scale = width/hfov;
+            v_scale = h_scale;
         }
         
+        inline
         cv::Point worldToCylindricalImage(cv::Point3f point) const
         {
-            return utils::worldToCylindricalImage(point, width, height, hfov, vfov);
+            return utils::worldToCylindricalImage(point, width, height, h_scale, v_scale, h_offset, v_offset);
         }
         
     };
@@ -149,19 +154,19 @@ namespace utils
         
         world_pnts.forEach<cv::Point3f>
         (
-          [&depth_im, &cam_model](cv::Point3f &pixel, const int* position) -> void
-          {
-            int i = position[0];
-            int j = position[1];
-            
-            cv::Point2f pt;
-            pt.x = j;
-            pt.y = i;
-            cv::Point3f Pcyl = cam_model.projectPixelTo3dRay(pt);
-            Pcyl *= depth_im.at<float>(i, j);
-            pixel = Pcyl;     
-            
-          }
+            [&depth_im, &cam_model](cv::Point3f &pixel, const int* position) -> void
+            {
+                int i = position[0];
+                int j = position[1];
+                
+                cv::Point2f pt;
+                pt.x = j;
+                pt.y = i;
+                cv::Point3f Pcyl = cam_model.projectPixelTo3dRay(pt);
+                Pcyl *= depth_im.at<float>(i, j);
+                pixel = Pcyl;     
+                
+            }
         );
         
         return world_pnts;
@@ -173,7 +178,6 @@ namespace utils
     {
         cv::Rect image_roi(cv::Point(), cylindrical_history.size());
         
-        //cv::Point maxPt,minPt;
 
         ROS_DEBUG("Relocated the propagated image");
         for (int j = 0; j < new_points.rows; j++)
@@ -191,21 +195,11 @@ namespace utils
                     int yIdx = image_pnt.y;
                     int xIdx = image_pnt.x;
                     
-                    /*
-                    if(xIdx == 0)
-                    {
-                      ROS_INFO_STREAM("world_pnt: ( " << world_pnt.x << "," << world_pnt.y << "," << world_pnt.z << ") => (" << xIdx << "," << yIdx <<")");
-                      
-                    }
-                    */
-                    
 
-                    //if (xIdx < img_width && yIdx < img_height && xIdx > 0 && yIdx > 0)
                     if(image_roi.contains(image_pnt))
                     {
                         cv::Point3f prev_point = cylindrical_history.at<cv::Point3f>(yIdx, xIdx);
                         
-                        //ROS_DEBUG_STREAM("y,x: " << yIdx << "," << xIdx);
                         float prev_depth = worldToRange(prev_point);
                         
                         if(overwrite || !(prev_depth >= depth))
@@ -237,17 +231,17 @@ namespace utils
         
         range_image.forEach<float>
         (
-          [&cylindrical_history](float &pixel, const int* position) -> void
-          {
-            int i = position[0];
-            int j = position[1];
-            
-            cv::Point3f world_pnt = cylindrical_history.at<cv::Point3f>(i,j);
-            float depth = worldToRange(world_pnt);
-            
-            pixel = depth;
+            [&cylindrical_history](float &pixel, const int* position) -> void
+            {
+                int i = position[0];
+                int j = position[1];
+                
+                cv::Point3f world_pnt = cylindrical_history.at<cv::Point3f>(i,j);
+                float depth = worldToRange(world_pnt);
+                
+                pixel = depth;
 
-          }
+            }
   
         );
         
