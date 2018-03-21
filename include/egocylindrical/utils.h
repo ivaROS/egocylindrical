@@ -106,29 +106,57 @@ namespace utils
             
         }
         
-        /*
+        
         inline
         cv::Point3f getWorldPoint(const cv::Mat& image, const cv::Point& image_pnt) const
         {
             
         }
-        */
+        
         
         /* TODO: check ROI and perform worldToCylindricalImage call in here
          * Goal: abstract away the underlying data representation from the rest of my code
          */
-        /*
+        
         inline
-        bool insertWorldPoint(cv::Mat& image, const cv::Point3f& world_pnt, const cv::Point& image_pnt)
+        bool setWorldPoint(cv::Mat& image, const cv::Point3f& world_pnt, const cv::Point& image_pnt)
         {
             image.at<float>(0,image_pnt.y*width + image_pnt.x) = world_pnt.x;
             image.at<float>(1,image_pnt.y*width + image_pnt.x) = world_pnt.y;
             image.at<float>(2,image_pnt.y*width + image_pnt.x) = world_pnt.z;
         }
-        */
+        
         
         
     };
+    
+    
+    /* Inplace transform
+     * 
+     */
+    inline
+    void transform_impl(cv::Mat& points, float* R, float* T)
+    {
+        float* x = points.ptr<float>(0,0);
+        float* y = points.ptr<float>(1,0);
+        float* z = points.ptr<float>(2,0);
+        
+        float* point_ptr[] = {x,y,z};
+        
+        
+        for(size_t p = 0; p < points.cols; ++p)
+        {
+            for(int row=0; row < 3; ++row)
+            {
+                float temp = 0;
+                for(int col=0; col < 3; ++col)
+                {
+                    temp += R[row*3+col] * point_ptr[col][p]; // points.at<float>(col,p);
+                }
+                point_ptr[row][p] = temp + T[row];
+            }
+        }
+    }
     
     inline
     void transformPoints(cv::Mat& points, const geometry_msgs::TransformStamped& trans)
@@ -165,34 +193,17 @@ namespace utils
         }
         std::cout << "] temp.channels = " << points.channels() << std::endl;
         
- 
+        float translationArray[3];
+        translationArray[0] = trans.transform.translation.x;
+        translationArray[1] = trans.transform.translation.y;
+        translationArray[2] = trans.transform.translation.z;
+        
+        transform_impl(points, rotationArray, translationArray);
 
-        
-        points = rotationMatrix * points;
-        points.row(0) += trans.transform.translation.x;
-        points.row(1) += trans.transform.translation.y;
-        points.row(2) += trans.transform.translation.z;
-        
-        /*
-        int img_height = points.rows;
-        // maybe create new header cv::Mat points3xn?
-        points = points.reshape(1, points.rows*points.cols); //can the next line be combined with this one?
-        points *= rotationMatrix.inv();
-
-        ROS_DEBUG("Getting Translation Matrix");
-        cv::Vec3f translationVec(trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z);
-
-        
-        points = points.reshape(3,img_height); //can remove if create new ref above
-        points += translationVec;   
-            
-        */
-        
         ROS_DEBUG("Getting the final matrix");
-    
-        
-        
+
     }
+    
 
     inline
     cv::Mat depthImageToWorld(const sensor_msgs::Image::ConstPtr& image, const image_geometry::PinholeCameraModel& cam_model)
@@ -228,16 +239,20 @@ namespace utils
     {
         cv::Rect image_roi(cv::Point(), cylindrical_history.size());
         
-        const float* x = cylindrical_history.ptr<float>(0,0);
-        const float* y = cylindrical_history.ptr<float>(1,0);
-        const float* z = cylindrical_history.ptr<float>(2,0);
+        float* x = cylindrical_history.ptr<float>(0,0);
+        float* y = cylindrical_history.ptr<float>(1,0);
+        float* z = cylindrical_history.ptr<float>(2,0);
+        
+        const float* n_x = new_points.ptr<float>(0,0);
+        const float* n_y = new_points.ptr<float>(1,0);
+        const float* n_z = new_points.ptr<float>(2,0);
         
 
         ROS_DEBUG("Relocated the propagated image");
         for(int i = 0; i < new_points.cols; ++i)
         {
             
-            cv::Point3f world_pnt(x[i],y[i],z[i]);
+            cv::Point3f world_pnt(n_x[i],n_y[i],n_z[i]);
             
             float depth = worldToRange(world_pnt);
             
@@ -245,19 +260,20 @@ namespace utils
             {
                 cv::Point image_pnt = ccc.worldToCylindricalImage(world_pnt);
                 
-                int yIdx = image_pnt.y;
-                int xIdx = image_pnt.x;
+                int idx =  image_pnt.y * ccc.width +image_pnt.x;
                 
 
                 if(image_roi.contains(image_pnt))
                 {
-                    cv::Point3f prev_point = cylindrical_history.at<cv::Point3f>(yIdx, xIdx);
+                    cv::Point3f prev_point(x[idx], y[idx], z[idx]);
                     
                     float prev_depth = worldToRange(prev_point);
                     
                     if(overwrite || !(prev_depth >= depth))
                     {
-                        cylindrical_history.at<cv::Point3f>(image_pnt) = world_pnt;
+                        x[idx] = world_pnt.x;
+                        y[idx] = world_pnt.y;
+                        z[idx] = world_pnt.z;
                     }
                 }
                 else
@@ -348,6 +364,12 @@ namespace utils
         {
             cv::Point3f world_pnt(x[j],y[j],z[j]);
             float depth = worldToRange(world_pnt);
+            
+            bool a;
+            if(depth == depth)
+            {
+                a = true;
+            }
             
             r[j] = depth;
         }

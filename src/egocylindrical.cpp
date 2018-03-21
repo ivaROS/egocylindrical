@@ -88,9 +88,9 @@ namespace egocylindrical
         pcloud.height = 1; //cylinder_height_;
         
 
-        float* x = old_pts_.ptr<float>(0,0);
-        float* y = old_pts_.ptr<float>(1,0);
-        float* z = old_pts_.ptr<float>(2,0);
+        const float* x = old_pts_.ptr<float>(0,0);
+        const float* y = old_pts_.ptr<float>(1,0);
+        const float* z = old_pts_.ptr<float>(2,0);
 
         bool a;
         for(int j = 0; j < old_pts_.cols; ++j)
