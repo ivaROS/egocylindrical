@@ -104,6 +104,11 @@ namespace utils
     inline
     void transformPoints(cv::Mat& points, const geometry_msgs::TransformStamped& trans)
     {
+        
+        int img_height = points.size[1];
+        int img_width = points.size[2];
+        
+        
         tf::Quaternion rotationQuaternion = tf::Quaternion(trans.transform.rotation.x,
                             trans.transform.rotation.y,
                             trans.transform.rotation.z,
@@ -126,6 +131,32 @@ namespace utils
         rotationArray[8] = (float) tempRotationMatrix[2].getZ();
         cv::Mat rotationMatrix = cv::Mat(3, 3, CV_32FC1, &rotationArray[0]);
         
+        std::cout << "temp.dims = " << points.dims << "temp.size = [";
+        for(int i = 0; i < points.dims; ++i) {
+            if(i) std::cout << " X ";
+            std::cout << points.size[i];
+        }
+        std::cout << "] temp.channels = " << points.channels() << std::endl;
+        
+        
+        
+        points = points.reshape(img_width, 0); //can the next line be combined with this one?
+        
+        
+        std::cout << "temp.dims = " << points.dims << "temp.size = [";
+        for(int i = 0; i < points.dims; ++i) {
+            if(i) std::cout << " X ";
+            std::cout << points.size[i];
+        }
+        std::cout << "] temp.channels = " << points.channels() << std::endl;
+        
+        
+        points = rotationMatrix * points;
+        points.row(0) += trans.transform.translation.x;
+        points.row(1) += trans.transform.translation.y;
+        points.row(2) += trans.transform.translation.z;
+        
+        /*
         int img_height = points.rows;
         // maybe create new header cv::Mat points3xn?
         points = points.reshape(1, points.rows*points.cols); //can the next line be combined with this one?
@@ -137,7 +168,9 @@ namespace utils
         
         points = points.reshape(3,img_height); //can remove if create new ref above
         points += translationVec;   
-
+            
+        */
+        
         ROS_DEBUG("Getting the final matrix");
     
         
@@ -236,8 +269,8 @@ namespace utils
                 int j = position[1];
                 
                 cv::Point2d pt;
-                pt.x = j;
-                pt.y = i;
+                pt.x = i*depth_image.rows + j;
+                pt.y = 1;
                 
                 if(depth==depth)
                 {
