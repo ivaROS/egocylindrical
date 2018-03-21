@@ -144,7 +144,7 @@ namespace utils
         
         float* point_ptr[] = {x,y,z};
         
-        #pragma omp simd
+        #pragma GCC ivdep
         for(size_t p = 0; p < points.cols; ++p)
         {
             for(int row=0; row < 3; ++row)
@@ -176,7 +176,8 @@ namespace utils
         
         float* __restrict__ new_point_ptr[] = {n_x,n_y,n_z};
         
-        #pragma omp simd  //aligned(variable[:alignment] [,variable[:alignment]])
+        //#pragma omp simd  //aligned(variable[:alignment] [,variable[:alignment]])
+        #pragma GCC ivdep
         for(size_t p = 0; p < points.cols; ++p)
         {
             for(int row=0; row < 3; ++row)
