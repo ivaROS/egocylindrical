@@ -47,7 +47,7 @@ namespace egocylindrical
         
         const int matsizes[] = {3,cylinder_height_, cylinder_width_};
         
-        new_pts_ = cv::Mat(3, matsizes, CV_32FC1, utils::dNaN);
+        new_pts_ = cv::Mat(3, cylinder_height_ * cylinder_width_, CV_32FC1, utils::dNaN);
         
         
         try
@@ -83,23 +83,20 @@ namespace egocylindrical
         ros::WallTime start = ros::WallTime::now();
       
         pcl::PointCloud<pcl::PointXYZ> pcloud;
-        pcloud.points.resize(old_pts_.size[1] * old_pts_.size[2]);
-        pcloud.width = cylinder_width_;
-        pcloud.height = cylinder_height_;
+        pcloud.points.resize(old_pts_.cols);
+        pcloud.width = cylinder_width_*cylinder_height_;
+        pcloud.height = 1; //cylinder_height_;
         
 
-        
-        for(int i = 0; i < old_pts_.size[1]; ++i)
+        float* x = old_pts_.ptr<float>(0,0);
+        float* y = old_pts_.ptr<float>(1,0);
+        float* z = old_pts_.ptr<float>(2,0);
+
+        for(int j = 0; j < old_pts_.cols; ++j)
         {
-            float* x = old_pts_.ptr<float>(0,i);
-            float* y = old_pts_.ptr<float>(1,i);
-            float* z = old_pts_.ptr<float>(2,i);
-            
-            for(int j = 0; j < old_pts_.size[2]; ++j)
-            {
-                pcloud.at(j,i) = pcl::PointXYZ(x[j],y[j],z[j]);  
-            }
+            pcloud.at(j) = pcl::PointXYZ(x[j],y[j],z[j]);  
         }
+
         
         
         
@@ -119,6 +116,8 @@ namespace egocylindrical
         ros::WallTime start = ros::WallTime::now();
       
         cv::Mat range_im = utils::getRawRangeImage(old_pts_);
+        
+        range_im = range_im.reshape(1, cylinder_height_);
         
         if(range_im.rows >0 && range_im.cols > 0)
         {

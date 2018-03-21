@@ -105,8 +105,6 @@ namespace utils
     void transformPoints(cv::Mat& points, const geometry_msgs::TransformStamped& trans)
     {
         
-        int img_height = points.size[1];
-        int img_width = points.size[2];
         
         
         tf::Quaternion rotationQuaternion = tf::Quaternion(trans.transform.rotation.x,
@@ -138,18 +136,8 @@ namespace utils
         }
         std::cout << "] temp.channels = " << points.channels() << std::endl;
         
-        
-        
-        points = points.reshape(img_width, 0); //can the next line be combined with this one?
-        
-        
-        std::cout << "temp.dims = " << points.dims << "temp.size = [";
-        for(int i = 0; i < points.dims; ++i) {
-            if(i) std::cout << " X ";
-            std::cout << points.size[i];
-        }
-        std::cout << "] temp.channels = " << points.channels() << std::endl;
-        
+ 
+
         
         points = rotationMatrix * points;
         points.row(0) += trans.transform.translation.x;
@@ -302,26 +290,22 @@ namespace utils
     {
         cv::Rect image_roi(cv::Point(), cylindrical_history.size());
         
-        cv::Mat range_image(cylindrical_history.size().height, cylindrical_history.size().width, CV_32FC1);
+        cv::Mat range_image(1, cylindrical_history.size().height* cylindrical_history.size().width, CV_32FC1);
             
         ROS_DEBUG("Generating image of cylindrical memory");
-
         
-        range_image.forEach<float>
-        (
-            [&cylindrical_history](float &pixel, const int* position) -> void
-            {
-                int i = position[0];
-                int j = position[1];
-                
-                cv::Point3f world_pnt = cylindrical_history.at<cv::Point3f>(i,j);
-                float depth = worldToRange(world_pnt);
-                
-                pixel = depth;
-
-            }
-  
-        );
+        float* r = range_image.ptr<float>(0);
+        const float* x = cylindrical_history.ptr<float>(0,0);
+        const float* y = cylindrical_history.ptr<float>(1,0);
+        const float* z = cylindrical_history.ptr<float>(2,0);
+        
+        for(int j = 0; j < cylindrical_history.cols; ++j)
+        {
+            cv::Point3f world_pnt(x[j],y[j],z[j]);
+            float depth = worldToRange(world_pnt);
+            
+            r[j] = depth;
+        }
         
         return range_image;
         
