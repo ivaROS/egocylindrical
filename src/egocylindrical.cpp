@@ -27,8 +27,14 @@ namespace egocylindrical
                                 old_header.frame_id, old_header.stamp,
                                 "odom");
 
+        ros::WallTime start = ros::WallTime::now();
         utils::transformPoints(old_pnts, trans);
+        ROS_INFO_STREAM_NAMED("timing", "Transform points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        
+        start = ros::WallTime::now();
         utils::fillImage(new_pnts, old_pnts, ccc_, false);
+        ROS_INFO_STREAM_NAMED("timing", "Inserting transformed points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        
     }
 
 

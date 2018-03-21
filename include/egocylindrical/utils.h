@@ -158,6 +158,38 @@ namespace utils
         }
     }
     
+    
+    inline
+    void transform_impl2(const cv::Mat& points, cv::Mat& points_t, float* R, float* T)
+    {
+        const float* x = points.ptr<float>(0,0);
+        const float* y = points.ptr<float>(1,0);
+        const float* z = points.ptr<float>(2,0);
+        
+        const float* point_ptr[] = {x,y,z};
+        
+        
+        float* n_x = points_t.ptr<float>(0,0);
+        float* n_y = points_t.ptr<float>(1,0);
+        float* n_z = points_t.ptr<float>(2,0);
+        
+        float* new_point_ptr[] = {n_x,n_y,n_z};
+        
+        
+        for(size_t p = 0; p < points.cols; ++p)
+        {
+            for(int row=0; row < 3; ++row)
+            {
+                float temp = 0;
+                for(int col=0; col < 3; ++col)
+                {
+                    temp += R[row*3+col] * point_ptr[col][p]; // points.at<float>(col,p);
+                }
+                new_point_ptr[row][p] = temp + T[row];
+            }
+        }
+    }
+    
     inline
     void transformPoints(cv::Mat& points, const geometry_msgs::TransformStamped& trans)
     {
@@ -198,7 +230,19 @@ namespace utils
         translationArray[1] = trans.transform.translation.y;
         translationArray[2] = trans.transform.translation.z;
         
+        cv::Mat transformed_pts(points.rows, points.cols, points.type());
+        
+        ros::WallTime start = ros::WallTime::now();
+        transform_impl2(points, transformed_pts, rotationArray, translationArray);
+        ROS_INFO_STREAM("Transform2 function took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        
+        start = ros::WallTime::now();
         transform_impl(points, rotationArray, translationArray);
+        ROS_INFO_STREAM("Transform function took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        
+        
+        
+        cv::swap(transformed_pts,points);
 
         ROS_DEBUG("Getting the final matrix");
 
