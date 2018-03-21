@@ -22,52 +22,24 @@ namespace egocylindrical
 
     void EgoCylindricalPropagator::propagateHistory(cv::Mat& old_pnts, cv::Mat& new_pnts, std_msgs::Header old_header, std_msgs::Header new_header)
     {
+        ros::WallTime start = ros::WallTime::now();
+        
         ROS_DEBUG("Getting Transformation details");
                 geometry_msgs::TransformStamped trans = buffer_.lookupTransform(new_header.frame_id, new_header.stamp,
                                 old_header.frame_id, old_header.stamp,
                                 "odom");
-
-        cv::Mat range_im = utils::getRawRangeImage(old_pts_);
         
-        range_im = range_im.reshape(1, cylinder_height_);
+        ROS_INFO_STREAM_NAMED("timing", "Finding transform took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+                
         
-        if(range_im.rows >0 && range_im.cols > 0)
-        {
-            cv::Mat scaled_range_im;
-            cv::normalize(range_im, scaled_range_im, 0, 1, cv::NORM_MINMAX);
-            cv::imshow("Pre propagation", scaled_range_im);
-            cv::waitKey(1);
-        }
-                
-                
-        ros::WallTime start = ros::WallTime::now();
+        start = ros::WallTime::now();        
         utils::transformPoints(old_pnts, trans);
         ROS_INFO_STREAM_NAMED("timing", "Transform points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
-        
-        
-        
-        range_im = utils::getRawRangeImage(old_pts_);
-        
-        range_im = range_im.reshape(1, cylinder_height_);
-        
-  
-        
         
         start = ros::WallTime::now();
         utils::fillImage(new_pnts, old_pnts, ccc_, false);
         ROS_INFO_STREAM_NAMED("timing", "Inserting transformed points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
-        
-        
-        
-        if(range_im.rows >0 && range_im.cols > 0)
-        {
-            cv::Mat scaled_range_im;
-            cv::normalize(range_im, scaled_range_im, 0, 1, cv::NORM_MINMAX);
-            cv::imshow("Post propagation", scaled_range_im);
-            cv::waitKey(1);
-        }
-        
-        
+
     }
 
 
@@ -160,16 +132,23 @@ namespace egocylindrical
         ros::WallTime start = ros::WallTime::now();
       
         cv::Mat range_im = utils::getRawRangeImage(old_pts_);
-        
         range_im = range_im.reshape(1, cylinder_height_);
         
-        if(range_im.rows >0 && range_im.cols > 0)
+        ROS_INFO_STREAM("Raw image generation took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        
+        
+        #ifdef EGO_SHOW_IM
         {
-            cv::Mat scaled_range_im;
-            cv::normalize(range_im, scaled_range_im, 0, 1, cv::NORM_MINMAX);
-            cv::imshow("Post image insertion", scaled_range_im);
-            cv::waitKey(1);
+            
+            if(range_im.rows >0 && range_im.cols > 0)
+            {
+                cv::Mat scaled_range_im;
+                cv::normalize(range_im, scaled_range_im, 0, 1, cv::NORM_MINMAX);
+                cv::imshow("Post image insertion", scaled_range_im);
+                cv::waitKey(1);
+            }
         }
+        #endif
          
         sensor_msgs::Image::ConstPtr msg = cv_bridge::CvImage(old_header_, sensor_msgs::image_encodings::TYPE_32FC1, range_im).toImageMsg();
         

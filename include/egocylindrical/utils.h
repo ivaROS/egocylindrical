@@ -138,32 +138,39 @@ namespace utils
     inline
     void transform_impl(cv::Mat& points, const float*  const R, const float*  const T)
     {
+        float* point_ptrx = (float *)points.data;
+        
+        
         float*  x = points.ptr<float>(0,0);
         float*  y = points.ptr<float>(1,0);
         float*  z = points.ptr<float>(2,0);
         
-        float* point_ptr[] = {x,y,z};
+        float*  point_ptr[] = {x,y,z};
         
-        //plane_stride = points.size[0];
+        
+        const int num_cols = points.cols;
         
         #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-        for(size_t p = 0; p < points.cols; ++p)
+        for(size_t p = 0; p < num_cols; ++p)
         {
+            float temp[3];
             for(int row=0; row < 3; ++row)
             {
-                float temp = 0;
+                temp[row] = 0;
                 //#pragma GCC unroll 3
                 for(int col=0; col < 3; ++col)
                 {
-                    temp += R[row*3+col] * point_ptr[col][p]; // points.at<float>(col,p);
+                    temp[row] += R[row*3+col] * point_ptrx[num_cols * col + p]; // points.at<float>(col,p);
                 }
-                point_ptr[row][p] = temp + T[row];
-                //dest = p;// temp + T[row];
             }
+            
+            for(int row=0; row < 3; ++row)
+            {
+                point_ptrx[num_cols * row + p] = temp[row] + T[row];
+            }
+            
         }
-        
-        //float temp = points.at<float>(0,0);
-        
+                
     }
     
     
@@ -227,12 +234,14 @@ namespace utils
         rotationArray[8] = (float) tempRotationMatrix[2].getZ();
         cv::Mat rotationMatrix = cv::Mat(3, 3, CV_32FC1, &rotationArray[0]);
         
+        /*
         std::cout << "temp.dims = " << points.dims << "temp.size = [";
         for(int i = 0; i < points.dims; ++i) {
             if(i) std::cout << " X ";
             std::cout << points.size[i];
         }
         std::cout << "] temp.channels = " << points.channels() << std::endl;
+        */
         
         float translationArray[3];
         translationArray[0] = trans.transform.translation.x;
@@ -294,6 +303,7 @@ namespace utils
         
 
         ROS_DEBUG("Relocated the propagated image");
+        //#pragma omp parallel for
         for(int i = 0; i < new_points.cols; ++i)
         {
             
@@ -314,7 +324,7 @@ namespace utils
                     
                     float prev_depth = worldToRange(prev_point);
                     
-                    if(overwrite || !(prev_depth >= depth))
+                    if(!(prev_depth >= depth)) //overwrite || 
                     {
                         x[idx] = world_pnt.x;
                         y[idx] = world_pnt.y;
@@ -392,14 +402,6 @@ namespace utils
             
         ROS_DEBUG("Generating image of cylindrical memory");
         
-        std::cout << "temp.dims = " << cylindrical_history.dims << "temp.size = [";
-        for(int i = 0; i < cylindrical_history.dims; ++i) {
-            if(i) std::cout << " X ";
-            std::cout << cylindrical_history.size[i];
-        }
-        std::cout << "] temp.channels = " << cylindrical_history.channels() << std::endl;
-        
-        
         float* r = range_image.ptr<float>(0);
         const float* x = cylindrical_history.ptr<float>(0,0);
         const float* y = cylindrical_history.ptr<float>(1,0);
@@ -409,12 +411,6 @@ namespace utils
         {
             cv::Point3f world_pnt(x[j],y[j],z[j]);
             float depth = worldToRange(world_pnt);
-            
-            bool a;
-            if(depth == depth)
-            {
-                a = true;
-            }
             
             r[j] = depth;
         }
