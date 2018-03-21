@@ -130,32 +130,13 @@ namespace egocylindrical
     sensor_msgs::Image::ConstPtr EgoCylindricalPropagator::getRawRangeImage()
     {
         ros::WallTime start = ros::WallTime::now();
-      
-        cv::Mat range_im = utils::getRawRangeImage(old_pts_);
-        range_im = range_im.reshape(1, cylinder_height_);
-        
-        ROS_INFO_STREAM("Raw image generation took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
-        
-        
-        #ifdef EGO_SHOW_IM
-        {
-            
-            if(range_im.rows >0 && range_im.cols > 0)
-            {
-                cv::Mat scaled_range_im;
-                cv::normalize(range_im, scaled_range_im, 0, 1, cv::NORM_MINMAX);
-                cv::imshow("Post image insertion", scaled_range_im);
-                cv::waitKey(1);
-            }
-        }
-        #endif
-         
-        sensor_msgs::Image::ConstPtr msg = cv_bridge::CvImage(old_header_, sensor_msgs::image_encodings::TYPE_32FC1, range_im).toImageMsg();
-        
+              
+        sensor_msgs::Image::Ptr image_ptr = utils::getRawRangeImageMsg(old_pts_, ccc_);
+        image_ptr->header = old_header_;
+
         ROS_INFO_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
-        
-        return msg;
+        return image_ptr;
     }
     
 
