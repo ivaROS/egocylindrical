@@ -92,9 +92,14 @@ namespace egocylindrical
         float* y = old_pts_.ptr<float>(1,0);
         float* z = old_pts_.ptr<float>(2,0);
 
+        bool a;
         for(int j = 0; j < old_pts_.cols; ++j)
-        {
-            pcloud.at(j) = pcl::PointXYZ(x[j],y[j],z[j]);  
+        {   pcl::PointXYZ point(x[j],y[j],z[j]);
+            if(point.x == point.x)
+            {
+                    a = true;
+            }
+            pcloud.at(j) = point;
         }
 
         

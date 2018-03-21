@@ -99,6 +99,35 @@ namespace utils
             return utils::worldToCylindricalImage(point, width, height, h_scale, v_scale, h_offset, v_offset);
         }
         
+        inline
+        cv::Rect getImageROI() const
+        {
+            return cv::Rect(cv::Point(), cv::Size(width,height));
+            
+        }
+        
+        /*
+        inline
+        cv::Point3f getWorldPoint(const cv::Mat& image, const cv::Point& image_pnt) const
+        {
+            
+        }
+        */
+        
+        /* TODO: check ROI and perform worldToCylindricalImage call in here
+         * Goal: abstract away the underlying data representation from the rest of my code
+         */
+        /*
+        inline
+        bool insertWorldPoint(cv::Mat& image, const cv::Point3f& world_pnt, const cv::Point& image_pnt)
+        {
+            image.at<float>(0,image_pnt.y*width + image_pnt.x) = world_pnt.x;
+            image.at<float>(1,image_pnt.y*width + image_pnt.x) = world_pnt.y;
+            image.at<float>(2,image_pnt.y*width + image_pnt.x) = world_pnt.z;
+        }
+        */
+        
+        
     };
     
     inline
@@ -199,43 +228,46 @@ namespace utils
     {
         cv::Rect image_roi(cv::Point(), cylindrical_history.size());
         
+        const float* x = cylindrical_history.ptr<float>(0,0);
+        const float* y = cylindrical_history.ptr<float>(1,0);
+        const float* z = cylindrical_history.ptr<float>(2,0);
+        
 
         ROS_DEBUG("Relocated the propagated image");
-        for (int j = 0; j < new_points.rows; j++)
+        for(int i = 0; i < new_points.cols; ++i)
         {
-            for(int i = 0; i < new_points.cols; ++i)
-            {
             
-                cv::Point3f world_pnt = new_points.at<cv::Point3f>(j,i);
-                float depth = worldToRange(world_pnt);
+            cv::Point3f world_pnt(x[i],y[i],z[i]);
+            
+            float depth = worldToRange(world_pnt);
+            
+            if(depth==depth)
+            {
+                cv::Point image_pnt = ccc.worldToCylindricalImage(world_pnt);
                 
-                if(!cvIsNaN(depth))
-                {
-                    cv::Point image_pnt = ccc.worldToCylindricalImage(world_pnt);
-                    
-                    int yIdx = image_pnt.y;
-                    int xIdx = image_pnt.x;
-                    
+                int yIdx = image_pnt.y;
+                int xIdx = image_pnt.x;
+                
 
-                    if(image_roi.contains(image_pnt))
+                if(image_roi.contains(image_pnt))
+                {
+                    cv::Point3f prev_point = cylindrical_history.at<cv::Point3f>(yIdx, xIdx);
+                    
+                    float prev_depth = worldToRange(prev_point);
+                    
+                    if(overwrite || !(prev_depth >= depth))
                     {
-                        cv::Point3f prev_point = cylindrical_history.at<cv::Point3f>(yIdx, xIdx);
-                        
-                        float prev_depth = worldToRange(prev_point);
-                        
-                        if(overwrite || !(prev_depth >= depth))
-                        {
-                            cylindrical_history.at<cv::Point3f>(image_pnt) = world_pnt;
-                        }
-                    }
-                    else
-                    {
-                        //ROS_DEBUG_STREAM("Outside of image!: (" << world_pnt << " => " << image_pnt);
+                        cylindrical_history.at<cv::Point3f>(image_pnt) = world_pnt;
                     }
                 }
+                else
+                {
+                    //ROS_DEBUG_STREAM("Outside of image!: (" << world_pnt << " => " << image_pnt);
+                }
             }
+        }
+    
         
-        }   
         
     }
     
@@ -247,7 +279,9 @@ namespace utils
     {
         ROS_DEBUG("Generating depth to cylindrical image mapping");
         
-        cv::Rect image_roi(cv::Point(), cylindrical_history.size());
+        const cv::Rect image_roi = ccc.getImageROI();
+        const int width = ccc.width;
+        const int height = ccc.height;
                 
         depth_image.forEach<float>
         (
@@ -257,8 +291,8 @@ namespace utils
                 int j = position[1];
                 
                 cv::Point2d pt;
-                pt.x = i*depth_image.rows + j;
-                pt.y = 1;
+                pt.x = j;
+                pt.y = i;
                 
                 if(depth==depth)
                 {
@@ -267,7 +301,10 @@ namespace utils
                     
                     if(image_roi.contains(image_pnt))
                     {
-                        cylindrical_history.at<cv::Point3f>(image_pnt) = world_pnt;
+                        cylindrical_history.at<float>(0,image_pnt.y*width + image_pnt.x) = world_pnt.x;
+                        cylindrical_history.at<float>(1,image_pnt.y*width + image_pnt.x) = world_pnt.y;
+                        cylindrical_history.at<float>(2,image_pnt.y*width + image_pnt.x) = world_pnt.z;
+                        
                     }
                 }
                 
@@ -290,9 +327,17 @@ namespace utils
     {
         cv::Rect image_roi(cv::Point(), cylindrical_history.size());
         
-        cv::Mat range_image(1, cylindrical_history.size().height* cylindrical_history.size().width, CV_32FC1);
+        cv::Mat range_image(1, cylindrical_history.size().width, CV_32FC1);
             
         ROS_DEBUG("Generating image of cylindrical memory");
+        
+        std::cout << "temp.dims = " << cylindrical_history.dims << "temp.size = [";
+        for(int i = 0; i < cylindrical_history.dims; ++i) {
+            if(i) std::cout << " X ";
+            std::cout << cylindrical_history.size[i];
+        }
+        std::cout << "] temp.channels = " << cylindrical_history.channels() << std::endl;
+        
         
         float* r = range_image.ptr<float>(0);
         const float* x = cylindrical_history.ptr<float>(0,0);
