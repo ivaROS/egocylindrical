@@ -35,12 +35,7 @@ void CylindricalVisualization::cameraCb(const sensor_msgs::ImageConstPtr &image,
     
     ptPub.publish(propagator_.getPropagatedPointCloud());
     
-    propagator_.getRawRangeImage();
-    /*
-    pcl::toROSMsg(translated.getCylindricalPointCloud(), pcloud);
-    pcloud.header.frame_id = image->header.frame_id;
-    ptPub2.publish(pcloud);
-    */
+    pub.publish(propagator_.getRawRangeImage());
     
 }
 

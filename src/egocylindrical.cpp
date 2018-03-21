@@ -13,7 +13,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
 
-#include <valgrind/callgrind.h>
+//#include <valgrind/callgrind.h>
 
 namespace egocylindrical
 {
@@ -32,22 +32,11 @@ namespace egocylindrical
     }
 
 
-
-
     void EgoCylindricalPropagator::addDepthImage(cv::Mat& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
     {
         model_t.fromCameraInfo(cam_info);
         
-        cv::Mat new_pnts = utils::depthImageToWorld(image,model_t);
-        utils::fillImage(cylindrical_points, new_pnts, ccc_, true); 
-    }
-    
-    
-    void EgoCylindricalPropagator::addDepthImage2(cv::Mat& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
-    {
-        model_t.fromCameraInfo(cam_info);
-        
-        utils::remapDepthImage2(image, ccc_, model_t, cylindrical_points);
+        utils::remapDepthImage(image, ccc_, model_t, cylindrical_points);
         
     }
 
@@ -56,7 +45,6 @@ namespace egocylindrical
     {
         ros::WallTime start = ros::WallTime::now();
         
-        //CALLGRIND_TOGGLE_COLLECT;
         new_pts_ = cv::Mat(cylinder_height_,cylinder_width_, CV_32FC3, utils::dNaN);
         
         try
@@ -77,30 +65,18 @@ namespace egocylindrical
         
         start = ros::WallTime::now();
         
-        EgoCylindricalPropagator::addDepthImage2(new_pts_, image, cam_info);
-        ROS_INFO_STREAM("Adding depth image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
-        
-        /*
-        start = ros::WallTime::now();
-        
         EgoCylindricalPropagator::addDepthImage(new_pts_, image, cam_info);
         ROS_INFO_STREAM("Adding depth image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
-        
-        */
-        
         
         cv::swap(new_pts_, old_pts_);
         old_header_ = image->header;
         
         
-        
-        //CALLGRIND_TOGGLE_COLLECT;
     }
     
     
     sensor_msgs::PointCloud2 EgoCylindricalPropagator::getPropagatedPointCloud()
     {
-        //CALLGRIND_TOGGLE_COLLECT;
         ros::WallTime start = ros::WallTime::now();
       
         pcl::PointCloud<pcl::PointXYZ> pcloud;
@@ -108,45 +84,7 @@ namespace egocylindrical
         pcloud.width = cylinder_width_;
         pcloud.height = cylinder_height_;
         
-        /*
-        //19.9525ms
-        //cv::MatIterator_<cv::Point3f> end;
-        int i = 0;
-        for(cv::MatIterator_<cv::Point3f> it=old_pts_.begin<cv::Point3f>(), end=old_pts_.end<cv::Point3f>(); it != end; ++it, ++i)
-        {
-            pcl::PointXYZ point((*it).x, (*it).y, (*it).z);
-            pcloud.at(i) = point;
-        }
-        
-        
-        
-        // 15.3213ms
-        int nRows = old_pts_.rows;
-        int nCols = old_pts_.cols;
-        
-        if(old_pts_.isContinuous())
-        {
-        }
-        
-        int ind = 0;
-        for( int i = 0; i < nRows; ++i)
-        {
-            const cv::Point3f* p = old_pts_.ptr<cv::Point3f>(i);
-            for(int j=0; j < nCols; ++j)
-            {
-                const cv::Point3f& point = p[j];
-                pcloud.points[ind++] =  pcl::PointXYZ(point.x, point.y, point.z); 
 
-            }
-          
-
-              
-        }
-        
-        */
-            
-        
-        //10.4864ms
         old_pts_.forEach<cv::Point3f>
         (
           [&pcloud](cv::Point3f &point, const int* position) -> void
@@ -165,19 +103,15 @@ namespace egocylindrical
         
         ROS_INFO_STREAM("Generating point cloud took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
-        
-        //CALLGRIND_TOGGLE_COLLECT;
-        
+                
         return msg;
     }
     
     sensor_msgs::Image::ConstPtr EgoCylindricalPropagator::getRawRangeImage()
     {
-        //CALLGRIND_TOGGLE_COLLECT;
         ros::WallTime start = ros::WallTime::now();
       
         cv::Mat range_im = utils::getRawRangeImage(old_pts_);
-        //sensor_msgs::ImageConstPtr msg = cv_bridge::CvImage(old_header_, sensor_msgs::image_encodings::TYPE_32FC1, range_im).toImageMsg();
         
         if(range_im.rows >0 && range_im.cols > 0)
         {
@@ -191,7 +125,6 @@ namespace egocylindrical
         
         ROS_INFO_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
-        //CALLGRIND_TOGGLE_COLLECT;
         
         return msg;
     }
@@ -221,7 +154,6 @@ namespace egocylindrical
     
     EgoCylindricalPropagator::~EgoCylindricalPropagator()
     {
-      //CALLGRIND_DUMP_STATS;
       
     }
       

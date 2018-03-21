@@ -222,88 +222,7 @@ namespace utils
 
     
     inline
-    void generateImageMap(const cv::Mat& depth_image, const cv::Mat& cylindrical_history, const CylindricalCoordsConverter& ccc, const image_geometry::PinholeCameraModel& cam_model, cv::Mat& mapping)
-    {
-        ROS_DEBUG("Generating depth to cylindrical image mapping");
-        
-        cv::Rect image_roi(cv::Point(), cylindrical_history.size());
-        
-        mapping = cv::Mat(depth_image.rows, depth_image.cols, CV_32FC2, dNaN);
-        
-        mapping.forEach<cv::Point2d>
-        (
-            [&](cv::Point2d &pixel, const int* position) -> void
-            {
-                int i = position[0];
-                int j = position[1];
-                
-                cv::Point2d pt;
-                pt.x = j;
-                pt.y = i;
-                cv::Point3f world_pnt = cam_model.projectPixelTo3dRay(pt);
-                cv::Point image_pnt = ccc.worldToCylindricalImage(world_pnt);
-                
-                if(image_roi.contains(image_pnt))
-                {
-                    pixel = image_pnt;
-                }
-                
-            }
-        );
-
-    }
-  
-    inline
-    void generateImageMap(const sensor_msgs::Image::ConstPtr& image_msg, const cv::Mat& cylindrical_history, const CylindricalCoordsConverter& ccc, const image_geometry::PinholeCameraModel& cam_model, cv::Mat& mapping)
-    {
-        const cv::Mat image = cv_bridge::toCvShare(image_msg)->image;
-        generateImageMap(image, cylindrical_history, ccc, cam_model, mapping);
-    }
-    
-    
-    /*
-    inline
-    void remapDepthImage(const cv::Mat& depth_image, const cv::Mat& mapping, cv::Mat& cylindrical_history)
-    {
-        ROS_DEBUG("Generating depth to cylindrical image mapping");
-        
-        cv::Rect image_roi(cv::Point(), cylindrical_history.size());
-        
-        mapping = cv::Mat(depth_image.rows, depth_image.cols, CV_32FC2, dNaN);
-        
-        mapping.forEach<cv::Point>
-        (
-            [&](cv::Point2d &pixel, const int* position) -> void
-            {
-                int i = position[0];
-                int j = position[1];
-                
-                cv::Point image_pnt;
-                image_pnt.x = j;
-                image_pnt.y = i;
-                
-                float depth = depth_image.at<float>(image_pnt);
-                
-                cv::Point3f something; //This would have to be precalculated as well...
-                cylindrical_history.at<cv::Point3f>(pixel) = something * depth;
-            }
-        );
-        
-    }
-    
-    
-    inline
-    void remapDepthImage(const sensor_msgs::Image::ConstPtr& image_msg, const cv::Mat& mapping, cv::Mat& cylindrical_history)
-    {
-        const cv::Mat image = cv_bridge::toCvShare(image_msg)->image;
-        remapDepthImage(image, mapping, cylindrical_history);
-    }
-    
-    */
-    
-    
-    inline
-    void remapDepthImage2(const cv::Mat& depth_image, const CylindricalCoordsConverter& ccc, const image_geometry::PinholeCameraModel& cam_model, cv::Mat& cylindrical_history)
+    void remapDepthImage(const cv::Mat& depth_image, const CylindricalCoordsConverter& ccc, const image_geometry::PinholeCameraModel& cam_model, cv::Mat& cylindrical_history)
     {
         ROS_DEBUG("Generating depth to cylindrical image mapping");
         
@@ -338,10 +257,10 @@ namespace utils
     
     
     inline
-    void remapDepthImage2(const sensor_msgs::Image::ConstPtr& image_msg, const CylindricalCoordsConverter& ccc, const image_geometry::PinholeCameraModel& cam_model, cv::Mat& cylindrical_history)
+    void remapDepthImage(const sensor_msgs::Image::ConstPtr& image_msg, const CylindricalCoordsConverter& ccc, const image_geometry::PinholeCameraModel& cam_model, cv::Mat& cylindrical_history)
     {
         const cv::Mat image = cv_bridge::toCvShare(image_msg)->image;
-        remapDepthImage2(image,ccc, cam_model, cylindrical_history);
+        remapDepthImage(image,ccc, cam_model, cylindrical_history);
     }
     
     
