@@ -39,8 +39,15 @@ namespace egocylindrical
         model_t.fromCameraInfo(cam_info);
         
         cv::Mat new_pnts = utils::depthImageToWorld(image,model_t);
+        utils::fillImage(cylindrical_points, new_pnts, ccc_, true); 
+    }
+    
+    
+    void EgoCylindricalPropagator::addDepthImage2(cv::Mat& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
+    {
+        model_t.fromCameraInfo(cam_info);
         
-        utils::fillImage(cylindrical_points, new_pnts, ccc_, true);
+        utils::remapDepthImage2(image, ccc_, model_t, cylindrical_points);
         
     }
 
@@ -51,7 +58,6 @@ namespace egocylindrical
         
         //CALLGRIND_TOGGLE_COLLECT;
         new_pts_ = cv::Mat(cylinder_height_,cylinder_width_, CV_32FC3, utils::dNaN);
-        
         
         try
         {
@@ -67,14 +73,26 @@ namespace egocylindrical
             ROS_WARN_STREAM("Problem finding transform:\n" <<ex.what());
         }
         
+        
+        
+        start = ros::WallTime::now();
+        
+        EgoCylindricalPropagator::addDepthImage2(new_pts_, image, cam_info);
+        ROS_INFO_STREAM("Adding depth image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        
+        /*
         start = ros::WallTime::now();
         
         EgoCylindricalPropagator::addDepthImage(new_pts_, image, cam_info);
+        ROS_INFO_STREAM("Adding depth image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        
+        */
+        
+        
         cv::swap(new_pts_, old_pts_);
         old_header_ = image->header;
         
         
-        ROS_INFO_STREAM("Adding depth image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
         //CALLGRIND_TOGGLE_COLLECT;
     }
@@ -99,9 +117,9 @@ namespace egocylindrical
             pcl::PointXYZ point((*it).x, (*it).y, (*it).z);
             pcloud.at(i) = point;
         }
-        */
         
-        /*
+        
+        
         // 15.3213ms
         int nRows = old_pts_.rows;
         int nCols = old_pts_.cols;
@@ -168,7 +186,7 @@ namespace egocylindrical
             cv::imshow("Raw range image", scaled_range_im);
             cv::waitKey(1);
         }
-        
+         
         sensor_msgs::Image::ConstPtr msg = cv_bridge::CvImage(old_header_, sensor_msgs::image_encodings::TYPE_32FC1, range_im).toImageMsg();
         
         ROS_INFO_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
@@ -184,11 +202,10 @@ namespace egocylindrical
         
         double pi = std::acos(-1);
         hfov_ = 2*pi;
-        vfov_ = pi/3;        
+        vfov_ = pi/2;        
         
         cylinder_width_ = 2048;
         cylinder_height_ = 320;
-  
         
         ccc_ = utils::CylindricalCoordsConverter(cylinder_width_, cylinder_height_, hfov_, vfov_);
     }
