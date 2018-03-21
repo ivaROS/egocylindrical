@@ -136,27 +136,34 @@ namespace utils
      * 
      */
     inline
-    void transform_impl(cv::Mat& points, const float* __restrict__ const R, const float* __restrict__ const T)
+    void transform_impl(cv::Mat& points, const float*  const R, const float*  const T)
     {
-        float* __restrict__ x = points.ptr<float>(0,0);
-        float* __restrict__ y = points.ptr<float>(1,0);
-        float* __restrict__ z = points.ptr<float>(2,0);
+        float*  x = points.ptr<float>(0,0);
+        float*  y = points.ptr<float>(1,0);
+        float*  z = points.ptr<float>(2,0);
         
         float* point_ptr[] = {x,y,z};
         
-        #pragma GCC ivdep
+        //plane_stride = points.size[0];
+        
+        #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
         for(size_t p = 0; p < points.cols; ++p)
         {
             for(int row=0; row < 3; ++row)
             {
                 float temp = 0;
+                //#pragma GCC unroll 3
                 for(int col=0; col < 3; ++col)
                 {
                     temp += R[row*3+col] * point_ptr[col][p]; // points.at<float>(col,p);
                 }
                 point_ptr[row][p] = temp + T[row];
+                //dest = p;// temp + T[row];
             }
         }
+        
+        //float temp = points.at<float>(0,0);
+        
     }
     
     
@@ -232,19 +239,11 @@ namespace utils
         translationArray[1] = trans.transform.translation.y;
         translationArray[2] = trans.transform.translation.z;
         
-        cv::Mat transformed_pts(points.rows, points.cols, points.type());
         
         ros::WallTime start = ros::WallTime::now();
         transform_impl(points, rotationArray, translationArray);
-        ROS_INFO_STREAM("Transform function took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
-        
-        start = ros::WallTime::now();
-        transform_impl2(points, transformed_pts, rotationArray, translationArray);
-        ROS_INFO_STREAM("Transform2 function took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
-        
-        
-        
-        cv::swap(transformed_pts,points);
+        //ROS_INFO_STREAM("Transform function took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+
 
         ROS_DEBUG("Getting the final matrix");
 
@@ -283,7 +282,7 @@ namespace utils
     inline
     void fillImage(cv::Mat& cylindrical_history, cv::Mat new_points, const CylindricalCoordsConverter& ccc, bool overwrite)
     {
-        cv::Rect image_roi(cv::Point(), cylindrical_history.size());
+        cv::Rect image_roi = ccc.getImageROI();
         
         float* x = cylindrical_history.ptr<float>(0,0);
         float* y = cylindrical_history.ptr<float>(1,0);
