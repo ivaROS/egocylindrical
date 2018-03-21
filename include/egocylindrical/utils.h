@@ -233,12 +233,12 @@ namespace utils
         cv::Mat transformed_pts(points.rows, points.cols, points.type());
         
         ros::WallTime start = ros::WallTime::now();
-        transform_impl2(points, transformed_pts, rotationArray, translationArray);
-        ROS_INFO_STREAM("Transform2 function took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
-        
-        start = ros::WallTime::now();
         transform_impl(points, rotationArray, translationArray);
         ROS_INFO_STREAM("Transform function took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        
+        start = ros::WallTime::now();
+        transform_impl2(points, transformed_pts, rotationArray, translationArray);
+        ROS_INFO_STREAM("Transform2 function took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
         
         
