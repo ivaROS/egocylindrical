@@ -166,9 +166,10 @@ include_directories(
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    ${PCL_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
    )
 
-   target_compile_options(${PROJECT_NAME}_node PRIVATE -g -std=c++11 -Wall  -ftree-vectorize -fopt-info-vec-all
+   target_compile_options(${PROJECT_NAME}_node PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -fopt-info-vec-all
   #${OpenMP_CXX_FLAGS}
   )
 

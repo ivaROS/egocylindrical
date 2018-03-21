@@ -11,6 +11,7 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf/LinearMath/Matrix3x3.h>
+#include <omp.h>
 
 
 namespace egocylindrical
@@ -135,15 +136,15 @@ namespace utils
      * 
      */
     inline
-    void transform_impl(cv::Mat& points, float* R, float* T)
+    void transform_impl(cv::Mat& points, const float* __restrict__ const R, const float* __restrict__ const T)
     {
-        float* x = points.ptr<float>(0,0);
-        float* y = points.ptr<float>(1,0);
-        float* z = points.ptr<float>(2,0);
+        float* __restrict__ x = points.ptr<float>(0,0);
+        float* __restrict__ y = points.ptr<float>(1,0);
+        float* __restrict__ z = points.ptr<float>(2,0);
         
         float* point_ptr[] = {x,y,z};
         
-        
+        #pragma omp simd
         for(size_t p = 0; p < points.cols; ++p)
         {
             for(int row=0; row < 3; ++row)
@@ -160,22 +161,22 @@ namespace utils
     
     
     inline
-    void transform_impl2(const cv::Mat& points, cv::Mat& points_t, float* R, float* T)
+    void transform_impl2(const cv::Mat& points, cv::Mat& points_t, float* __restrict__ R, float* __restrict__ T)
     {
-        const float* x = points.ptr<float>(0,0);
-        const float* y = points.ptr<float>(1,0);
-        const float* z = points.ptr<float>(2,0);
+        const float* __restrict__ x = points.ptr<float>(0,0);
+        const float* __restrict__ y = points.ptr<float>(1,0);
+        const float* __restrict__ z = points.ptr<float>(2,0);
         
-        const float* point_ptr[] = {x,y,z};
-        
-        
-        float* n_x = points_t.ptr<float>(0,0);
-        float* n_y = points_t.ptr<float>(1,0);
-        float* n_z = points_t.ptr<float>(2,0);
-        
-        float* new_point_ptr[] = {n_x,n_y,n_z};
+        const float* __restrict__ point_ptr[] = {x,y,z};
         
         
+        float* __restrict__ n_x = points_t.ptr<float>(0,0);
+        float* __restrict__ n_y = points_t.ptr<float>(1,0);
+        float* __restrict__ n_z = points_t.ptr<float>(2,0);
+        
+        float* __restrict__ new_point_ptr[] = {n_x,n_y,n_z};
+        
+        #pragma omp simd  //aligned(variable[:alignment] [,variable[:alignment]])
         for(size_t p = 0; p < points.cols; ++p)
         {
             for(int row=0; row < 3; ++row)
