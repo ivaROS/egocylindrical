@@ -222,7 +222,7 @@ namespace utils
 
 
         ROS_DEBUG("Getting Rotation Matrix");
-        float rotationArray[9];
+        float rotationArray[9]  __attribute__ ((aligned (__BIGGEST_ALIGNMENT__)));
         rotationArray[0] = (float) tempRotationMatrix[0].getX();
         rotationArray[1] = (float) tempRotationMatrix[0].getY();
         rotationArray[2] = (float) tempRotationMatrix[0].getZ();
@@ -243,7 +243,7 @@ namespace utils
         std::cout << "] temp.channels = " << points.channels() << std::endl;
         */
         
-        float translationArray[3];
+        float translationArray[3] __attribute__ ((aligned (__BIGGEST_ALIGNMENT__)));
         translationArray[0] = trans.transform.translation.x;
         translationArray[1] = trans.transform.translation.y;
         translationArray[2] = trans.transform.translation.z;
@@ -392,108 +392,9 @@ namespace utils
         remapDepthImage(image,ccc, cam_model, cylindrical_history);
     }
     
+    sensor_msgs::ImagePtr getRawRangeImageMsg(const cv::Mat& cylindrical_history, const CylindricalCoordsConverter& ccc);
     
-    inline
-    void generateRawRangeImage(const cv::Mat& cylindrical_history, cv::Mat& range_image)
-    {
-        cv::Rect image_roi(cv::Point(), cylindrical_history.size());
-        
-
-            
-        ROS_DEBUG("Generating image of cylindrical memory");
-        
-        //float* r = range_image.ptr<float>(0);
-        float* r = (float *)range_image.data;
-        
-        float* cyl_ptr = (float *)cylindrical_history.data;
-        int num_cols = cylindrical_history.cols;
-        
-        const float* x = cylindrical_history.ptr<float>(0,0);
-        const float* z = cylindrical_history.ptr<float>(2,0);
-        
-        
-        //float xx[num_cols];
-        //float yy[num_cols];
-        
-        
-        #pragma GCC ivdep
-        for(int j = 0; j < num_cols; ++j)
-        {
-            /*
-            float xx = cyl_ptr[j]*cyl_ptr[j];
-            float zz = cyl_ptr[num_cols*2 + j]*cyl_ptr[num_cols*2 + j];
-            float 
-            */
-            
-            
-            r[j] = std::sqrt(cyl_ptr[j]*cyl_ptr[j] + cyl_ptr[num_cols*2 + j]*cyl_ptr[num_cols*2 + j]);
-            
-            
-            float temp = std::sqrt(x[j]*x[j] + z[j]*z[j]);
-            if(temp == temp && r[j] != temp)
-            {
-                ROS_INFO_STREAM_THROTTLE(1,"Error=" << (r[j] - temp));
-            }
-            
-        }
-                
-    }
-    
-    
-    
-    inline
-    cv::Mat getRawRangeImage(const cv::Mat& cylindrical_history)
-    {
-        cv::Mat range_image(1, cylindrical_history.size().width, CV_32FC1);   
-        generateRawRangeImage(cylindrical_history, range_image);
-        return range_image;
-    }
-
-
-    inline
-    cv::Mat getImageMat(const sensor_msgs::Image& image)
-    {
-        cv::Mat im = cv::Mat(image.height, image.width, CV_32FC1, const_cast<uchar*>(&image.data[0]), image.step);
-        return im;
-    }
-    
-    inline
-    cv::Mat getImageMat(const sensor_msgs::ImagePtr& image)
-    {
-        if(image != nullptr)
-        {
-            return getImageMat(*image);
-        }
-        else
-        {
-            ROS_ERROR("ImagePtr is null!");
-        }
-        
-    }
-    
-    inline
-    sensor_msgs::ImagePtr getRawRangeImageMsg(const cv::Mat& cylindrical_history, const CylindricalCoordsConverter& ccc)
-    {
-        sensor_msgs::ImagePtr new_msg_ptr = boost::make_shared<sensor_msgs::Image>();
-        
-        sensor_msgs::Image &new_msg = *new_msg_ptr;
-        new_msg.height = ccc.height;
-        new_msg.width = ccc.width;
-        new_msg.encoding = sensor_msgs::image_encodings::TYPE_32FC1;
-        new_msg.is_bigendian = false; //image->is_bigendian;
-        new_msg.step = ccc.width * cylindrical_history.elemSize(); // Ideally, replace this with some other way of getting size
-        size_t size = new_msg.step * ccc.height;
-        new_msg.data.resize(size);
-        //cv_bridge::CvImage(image->header, sensor_msgs::image_encodings::TYPE_32FC1, new_im_).toImageMsg();
-        
-        cv::Mat range_image = getImageMat(new_msg);
-        
-        generateRawRangeImage(cylindrical_history, range_image);
-        range_image = range_image.reshape(1, ccc.height);
-        
-        return new_msg_ptr;
-    }
-    
+   
 }
 
 }

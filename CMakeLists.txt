@@ -146,10 +146,27 @@ include_directories(
 ## either from message generation or dynamic reconfigure
 # add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+# This is a separate library partly to reduce compile times, but mostly because it needs to be compiled with certain 'fast-math' optimization options
+add_library(generate_range_image src/generate_range_image.cpp)
+target_link_libraries(generate_range_image
+   ${catkin_LIBRARIES}
+   ${OpenCV_LIBRARIES}
+   ${PCL_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
+
+target_compile_options(generate_range_image PRIVATE -g -std=c++11 -Wall -ftree-vectorize -fopt-info-vec-all -funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
+  #${OpenMP_CXX_FLAGS}
+  )
+
+
+
+
+
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
- add_executable(${PROJECT_NAME}_node src/egocylindrical.cpp src/cylindricalVisualization.cpp )
+add_executable(${PROJECT_NAME}_node src/egocylindrical.cpp src/cylindricalVisualization.cpp )
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -159,19 +176,33 @@ include_directories(
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-## Specify libraries to link a library or executable target against
- target_link_libraries(${PROJECT_NAME}_node
+# Specify libraries to link a library or executable target against
+target_link_libraries(${PROJECT_NAME}_node
+   generate_range_image
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    ${PCL_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )
 
-   target_compile_options(${PROJECT_NAME}_node PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -fopt-info-vec-all -funsafe-math-optimizations
+target_compile_options(${PROJECT_NAME}_node PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -fopt-info-vec-all -funsafe-math-optimizations 
   #${OpenMP_CXX_FLAGS}
   )
+  
+  
+# add_executable(function_tester src/function_tester.cpp)
+# target_link_libraries(function_tester
+#    ${catkin_LIBRARIES}
+#    ${OpenCV_LIBRARIES}
+#    ${PCL_LIBRARIES}
+#    ${OpenMP_CXX_FLAGS}
+#    )
+# 
+#    target_compile_options(function_tester PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -fopt-info-vec-all -funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
+#   #${OpenMP_CXX_FLAGS}
+#   )
 
 #############
 ## Install ##
