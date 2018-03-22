@@ -411,6 +411,11 @@ namespace utils
         const float* x = cylindrical_history.ptr<float>(0,0);
         const float* z = cylindrical_history.ptr<float>(2,0);
         
+        
+        //float xx[num_cols];
+        //float yy[num_cols];
+        
+        
         #pragma GCC ivdep
         for(int j = 0; j < num_cols; ++j)
         {
@@ -420,7 +425,16 @@ namespace utils
             float 
             */
             
-            r[j] = std::sqrt(x[j]*x[j] + z[j]*z[j]);
+            
+            r[j] = std::sqrt(cyl_ptr[j]*cyl_ptr[j] + cyl_ptr[num_cols*2 + j]*cyl_ptr[num_cols*2 + j]);
+            
+            
+            float temp = std::sqrt(x[j]*x[j] + z[j]*z[j]);
+            if(temp == temp && r[j] != temp)
+            {
+                ROS_INFO_STREAM_THROTTLE(1,"Error=" << (r[j] - temp));
+            }
+            
         }
                 
     }
