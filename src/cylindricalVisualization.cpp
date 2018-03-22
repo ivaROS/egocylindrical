@@ -9,14 +9,14 @@
 CylindricalVisualization::CylindricalVisualization() :it_(nh_), propagator_(nh_)
 {
     std::cout<<"Visualization Node Initialized"<<std::endl;
-    message_filters::Subscriber<sensor_msgs::Image> depthSub(nh_, "/camera/depth/image_raw", 10);
-    message_filters::Subscriber<sensor_msgs::CameraInfo> depthInfoSub(nh_, "/camera/depth/camera_info", 10);
+    message_filters::Subscriber<sensor_msgs::Image> depthSub(nh_, "/camera/depth/image_raw", 2);
+    message_filters::Subscriber<sensor_msgs::CameraInfo> depthInfoSub(nh_, "/camera/depth/camera_info", 2);
     
     tf2_ros::Buffer buffer_;
     tf2_ros::TransformListener tf_listener_(buffer_);
     
-    tf2_ros::MessageFilter<sensor_msgs::CameraInfo> tf_filter(depthInfoSub, buffer_, "odom", 10,nh_);
-    message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::CameraInfo> timeSynchronizer(depthSub, depthInfoSub, 10);
+    tf2_ros::MessageFilter<sensor_msgs::CameraInfo> info_tf_filter(depthInfoSub, buffer_, "odom", 2,nh_);
+    message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::CameraInfo> timeSynchronizer(depthSub, info_tf_filter, 2);
     timeSynchronizer.registerCallback(boost::bind(&CylindricalVisualization::cameraCb, this, _1, _2));
     pub = it_.advertise("projected_image", 20);
     ptPub = nh_.advertise<sensor_msgs::PointCloud2>("cylindrical", 100);
