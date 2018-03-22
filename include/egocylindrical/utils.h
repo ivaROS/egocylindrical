@@ -26,7 +26,7 @@ namespace utils
     inline
     float worldToRange(cv::Point3f point)
     {
-        return cv::sqrt(cv::pow(point.x, 2) + cv::pow(point.z, 2));
+        return std::sqrt(point.x*point.x + point.z*point.z);
     }
    /*
     
@@ -405,16 +405,22 @@ namespace utils
         //float* r = range_image.ptr<float>(0);
         float* r = (float *)range_image.data;
         
+        float* cyl_ptr = (float *)cylindrical_history.data;
+        int num_cols = cylindrical_history.cols;
+        
         const float* x = cylindrical_history.ptr<float>(0,0);
-        const float* y = cylindrical_history.ptr<float>(1,0);
         const float* z = cylindrical_history.ptr<float>(2,0);
         
-        for(int j = 0; j < cylindrical_history.cols; ++j)
+        #pragma GCC ivdep
+        for(int j = 0; j < num_cols; ++j)
         {
-            cv::Point3f world_pnt(x[j],y[j],z[j]);
-            float depth = worldToRange(world_pnt);
+            /*
+            float xx = cyl_ptr[j]*cyl_ptr[j];
+            float zz = cyl_ptr[num_cols*2 + j]*cyl_ptr[num_cols*2 + j];
+            float 
+            */
             
-            r[j] = depth;
+            r[j] = std::sqrt(x[j]*x[j] + z[j]*z[j]);
         }
                 
     }

@@ -169,7 +169,7 @@ include_directories(
    ${OpenMP_CXX_FLAGS}
    )
 
-   target_compile_options(${PROJECT_NAME}_node PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize #-fopt-info-vec-all
+   target_compile_options(${PROJECT_NAME}_node PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -fopt-info-vec-all -ffast-math
   #${OpenMP_CXX_FLAGS}
   )
 
