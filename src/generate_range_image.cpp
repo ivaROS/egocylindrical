@@ -24,10 +24,9 @@ namespace egocylindrical
                 
             ROS_DEBUG("Generating image of cylindrical memory");
             
-            //float* r = range_image.ptr<float>(0);
-            float* const r = (float *)range_image.data;
+            float* const r = (float *)__builtin_assume_aligned(range_image.data, 16);
             
-            const float* const cyl_ptr = (float *)cylindrical_history.data;
+            const float* const cyl_ptr = (float *)__builtin_assume_aligned(cylindrical_history.data, 16);
             int num_cols = cylindrical_history.cols;
 
             #pragma GCC ivdep

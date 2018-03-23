@@ -93,32 +93,8 @@ namespace egocylindrical
     {
         ros::WallTime start = ros::WallTime::now();
       
-        pcl::PointCloud<pcl::PointXYZ> pcloud;
-        pcloud.points.resize(old_pts_.cols);
-        pcloud.width = cylinder_width_*cylinder_height_;
-        pcloud.height = 1; //cylinder_height_;
+        sensor_msgs::PointCloud2 msg = utils::generate_point_cloud(old_pts_);
         
-
-        const float* x = old_pts_.ptr<float>(0,0);
-        const float* y = old_pts_.ptr<float>(1,0);
-        const float* z = old_pts_.ptr<float>(2,0);
-
-        bool a;
-        for(int j = 0; j < old_pts_.cols; ++j)
-        {   pcl::PointXYZ point(x[j],y[j],z[j]);
-            if(point.x == point.x)
-            {
-                    a = true;
-            }
-            pcloud.at(j) = point;
-        }
-
-        
-        
-        
-        
-        sensor_msgs::PointCloud2 msg;
-        pcl::toROSMsg(pcloud, msg);
         msg.header = old_header_;
         
         ROS_INFO_STREAM("Generating point cloud took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");

@@ -195,7 +195,23 @@ cost model: epilogue peel iters set to vf/2 because peeling for alignment is unk
 /home/justin/catkin_ws/src/egocylindrical/src/transform_points.cpp:30:29: note:   Runtime profitability threshold = 8
 /home/justin/catkin_ws/src/egocylindrical/src/transform_points.cpp:30:29: note:   Static estimate profitability threshold = 8
 
+
+
 #After ensuring alignment:
+
+/home/justin/catkin_ws/src/egocylindrical/src/generate_range_image.cpp:33:26: note: Cost model analysis: 
+  Vector inside of loop cost: 8
+  Vector prologue cost: 6
+  Vector epilogue cost: 28
+  Scalar iteration cost: 7
+  Scalar outside cost: 6
+  Vector outside cost: 34
+  prologue iterations: 0
+  epilogue iterations: 4
+  Calculated minimum iters for profitability: 5
+/home/justin/catkin_ws/src/egocylindrical/src/generate_range_image.cpp:33:26: note:   Runtime profitability threshold = 7
+/home/justin/catkin_ws/src/egocylindrical/src/generate_range_image.cpp:33:26: note:   Static estimate profitability threshold = 7
+
 /home/justin/catkin_ws/src/egocylindrical/src/transform_points.cpp:35:29: note: cost model: epilogue peel iters set to vf/2 because loop iterations are unknown .
 /home/justin/catkin_ws/src/egocylindrical/src/transform_points.cpp:35:29: note: Cost model analysis: 
   Vector inside of loop cost: 28

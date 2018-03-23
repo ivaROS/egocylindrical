@@ -12,6 +12,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf/LinearMath/Matrix3x3.h>
 #include <omp.h>
+#include <sensor_msgs/PointCloud2.h>
 
 
 namespace egocylindrical
@@ -268,12 +269,15 @@ namespace utils
         remapDepthImage(image,ccc, cam_model, cylindrical_history);
     }
     
-    sensor_msgs::ImagePtr getRawRangeImageMsg(const cv::Mat& cylindrical_history, const CylindricalCoordsConverter& ccc);
     
+    
+    // Functions defined in separate compilation units:
+    sensor_msgs::ImagePtr getRawRangeImageMsg(const cv::Mat& cylindrical_history, const CylindricalCoordsConverter& ccc);
     
     void transformPoints(cv::Mat& points, const geometry_msgs::TransformStamped& trans);
     
-   
+    sensor_msgs::PointCloud2 generate_point_cloud(const cv::Mat& points);
+    
 }
 
 }

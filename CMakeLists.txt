@@ -172,6 +172,17 @@ target_compile_options(transform_points PRIVATE -g -std=c++11 -Wall -ftree-vecto
   #${OpenMP_CXX_FLAGS}
   )
 
+add_library(generate_point_cloud src/generate_point_cloud.cpp)
+target_link_libraries(generate_point_cloud
+   ${catkin_LIBRARIES}
+   ${OpenCV_LIBRARIES}
+   ${PCL_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
+
+target_compile_options(generate_point_cloud PRIVATE -g -std=c++11 -Wall -ftree-vectorize -fopt-info-vec-all #-funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
+  #${OpenMP_CXX_FLAGS}
+  )
 
 
 
@@ -194,6 +205,7 @@ add_executable(${PROJECT_NAME}_node src/egocylindrical.cpp src/cylindricalVisual
 target_link_libraries(${PROJECT_NAME}_node
    generate_range_image
    transform_points
+   generate_point_cloud
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    ${PCL_LIBRARIES}
