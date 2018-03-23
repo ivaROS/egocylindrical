@@ -159,6 +159,18 @@ target_compile_options(generate_range_image PRIVATE -g -std=c++11 -Wall -ftree-v
   #${OpenMP_CXX_FLAGS}
   )
 
+  
+add_library(transform_points src/transform_points.cpp)
+target_link_libraries(transform_points
+   ${catkin_LIBRARIES}
+   ${OpenCV_LIBRARIES}
+   ${PCL_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
+
+target_compile_options(transform_points PRIVATE -g -std=c++11 -Wall -ftree-vectorize -fopt-info-vec-all -funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
+  #${OpenMP_CXX_FLAGS}
+  )
 
 
 
@@ -181,6 +193,7 @@ add_executable(${PROJECT_NAME}_node src/egocylindrical.cpp src/cylindricalVisual
 # Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
    generate_range_image
+   transform_points
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    ${PCL_LIBRARIES}

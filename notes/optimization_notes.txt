@@ -163,3 +163,49 @@ It was totally worth it:
 [ INFO] [1521758095.218924505, 30598.552000000]: Generating point cloud took 15.9708ms
 [ INFO] [1521758095.226998667, 30598.553000000]: Generating egocylindrical image took 1.56043ms
 
+
+
+cost model: prologue peel iters set to vf/2.
+cost model: epilogue peel iters set to vf/2 because peeling for alignment is unknown.
+/home/justin/catkin_ws/src/egocylindrical/src/generate_range_image.cpp:34:26: note: Cost model analysis: 
+  Vector inside of loop cost: 9
+  Vector prologue cost: 32
+  Vector epilogue cost: 32
+  Scalar iteration cost: 7
+  Scalar outside cost: 7
+  Vector outside cost: 64
+  prologue iterations: 4
+  epilogue iterations: 4
+  Calculated minimum iters for profitability: 9
+/home/justin/catkin_ws/src/egocylindrical/src/generate_range_image.cpp:34:26: note:   Runtime profitability threshold = 8
+/home/justin/catkin_ws/src/egocylindrical/src/generate_range_image.cpp:34:26: note:   Static estimate profitability threshold = 8
+
+cost model: prologue peel iters set to vf/2.
+cost model: epilogue peel iters set to vf/2 because peeling for alignment is unknown.
+/home/justin/catkin_ws/src/egocylindrical/src/transform_points.cpp:30:29: note: Cost model analysis: 
+  Vector inside of loop cost: 28
+  Vector prologue cost: 112
+  Vector epilogue cost: 100
+  Scalar iteration cost: 24
+  Scalar outside cost: 7
+  Vector outside cost: 212
+  prologue iterations: 4
+  epilogue iterations: 4
+  Calculated minimum iters for profitability: 9
+/home/justin/catkin_ws/src/egocylindrical/src/transform_points.cpp:30:29: note:   Runtime profitability threshold = 8
+/home/justin/catkin_ws/src/egocylindrical/src/transform_points.cpp:30:29: note:   Static estimate profitability threshold = 8
+
+#After ensuring alignment:
+/home/justin/catkin_ws/src/egocylindrical/src/transform_points.cpp:35:29: note: cost model: epilogue peel iters set to vf/2 because loop iterations are unknown .
+/home/justin/catkin_ws/src/egocylindrical/src/transform_points.cpp:35:29: note: Cost model analysis: 
+  Vector inside of loop cost: 28
+  Vector prologue cost: 18
+  Vector epilogue cost: 96
+  Scalar iteration cost: 24
+  Scalar outside cost: 6
+  Vector outside cost: 114
+  prologue iterations: 0
+  epilogue iterations: 4
+  Calculated minimum iters for profitability: 5
+/home/justin/catkin_ws/src/egocylindrical/src/transform_points.cpp:35:29: note:   Runtime profitability threshold = 7
+/home/justin/catkin_ws/src/egocylindrical/src/transform_points.cpp:35:29: note:   Static estimate profitability threshold = 7

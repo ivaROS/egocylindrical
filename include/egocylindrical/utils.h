@@ -132,131 +132,7 @@ namespace utils
     };
     
     
-    /* Inplace transform
-     * 
-     */
-    inline
-    void transform_impl(cv::Mat& points, const float*  const R, const float*  const T)
-    {
-        float* point_ptrx = (float *)points.data;
-        
-        
-        float*  x = points.ptr<float>(0,0);
-        float*  y = points.ptr<float>(1,0);
-        float*  z = points.ptr<float>(2,0);
-        
-        float*  point_ptr[] = {x,y,z};
-        
-        
-        const int num_cols = points.cols;
-        
-        #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-        for(size_t p = 0; p < num_cols; ++p)
-        {
-            float temp[3];
-            for(int row=0; row < 3; ++row)
-            {
-                temp[row] = 0;
-                //#pragma GCC unroll 3
-                for(int col=0; col < 3; ++col)
-                {
-                    temp[row] += R[row*3+col] * point_ptrx[num_cols * col + p]; // points.at<float>(col,p);
-                }
-            }
-            
-            for(int row=0; row < 3; ++row)
-            {
-                point_ptrx[num_cols * row + p] = temp[row] + T[row];
-            }
-            
-        }
-                
-    }
-    
-    
-    inline
-    void transform_impl2(const cv::Mat& points, cv::Mat& points_t, float* __restrict__ R, float* __restrict__ T)
-    {
-        const float* __restrict__ x = points.ptr<float>(0,0);
-        const float* __restrict__ y = points.ptr<float>(1,0);
-        const float* __restrict__ z = points.ptr<float>(2,0);
-        
-        const float* __restrict__ point_ptr[] = {x,y,z};
-        
-        
-        float* __restrict__ n_x = points_t.ptr<float>(0,0);
-        float* __restrict__ n_y = points_t.ptr<float>(1,0);
-        float* __restrict__ n_z = points_t.ptr<float>(2,0);
-        
-        float* __restrict__ new_point_ptr[] = {n_x,n_y,n_z};
-        
-        //#pragma omp simd  //aligned(variable[:alignment] [,variable[:alignment]])
-        #pragma GCC ivdep
-        for(size_t p = 0; p < points.cols; ++p)
-        {
-            for(int row=0; row < 3; ++row)
-            {
-                float temp = 0;
-                for(int col=0; col < 3; ++col)
-                {
-                    temp += R[row*3+col] * point_ptr[col][p]; // points.at<float>(col,p);
-                }
-                new_point_ptr[row][p] = temp + T[row];
-            }
-        }
-    }
-    
-    inline
-    void transformPoints(cv::Mat& points, const geometry_msgs::TransformStamped& trans)
-    {
-        
-        
-        
-        tf::Quaternion rotationQuaternion = tf::Quaternion(trans.transform.rotation.x,
-                            trans.transform.rotation.y,
-                            trans.transform.rotation.z,
-                            trans.transform.rotation.w);
 
-
-        tf::Matrix3x3 tempRotationMatrix = tf::Matrix3x3(rotationQuaternion);
-
-
-        ROS_DEBUG("Getting Rotation Matrix");
-        float rotationArray[9]  __attribute__ ((aligned (__BIGGEST_ALIGNMENT__)));
-        rotationArray[0] = (float) tempRotationMatrix[0].getX();
-        rotationArray[1] = (float) tempRotationMatrix[0].getY();
-        rotationArray[2] = (float) tempRotationMatrix[0].getZ();
-        rotationArray[3] = (float) tempRotationMatrix[1].getX();
-        rotationArray[4] = (float) tempRotationMatrix[1].getY();
-        rotationArray[5] = (float) tempRotationMatrix[1].getZ();
-        rotationArray[6] = (float) tempRotationMatrix[2].getX();
-        rotationArray[7] = (float) tempRotationMatrix[2].getY();
-        rotationArray[8] = (float) tempRotationMatrix[2].getZ();
-        cv::Mat rotationMatrix = cv::Mat(3, 3, CV_32FC1, &rotationArray[0]);
-        
-        /*
-        std::cout << "temp.dims = " << points.dims << "temp.size = [";
-        for(int i = 0; i < points.dims; ++i) {
-            if(i) std::cout << " X ";
-            std::cout << points.size[i];
-        }
-        std::cout << "] temp.channels = " << points.channels() << std::endl;
-        */
-        
-        float translationArray[3] __attribute__ ((aligned (__BIGGEST_ALIGNMENT__)));
-        translationArray[0] = trans.transform.translation.x;
-        translationArray[1] = trans.transform.translation.y;
-        translationArray[2] = trans.transform.translation.z;
-        
-        
-        ros::WallTime start = ros::WallTime::now();
-        transform_impl(points, rotationArray, translationArray);
-        //ROS_INFO_STREAM("Transform function took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
-
-
-        ROS_DEBUG("Getting the final matrix");
-
-    }
     
 
     inline
@@ -393,6 +269,9 @@ namespace utils
     }
     
     sensor_msgs::ImagePtr getRawRangeImageMsg(const cv::Mat& cylindrical_history, const CylindricalCoordsConverter& ccc);
+    
+    
+    void transformPoints(cv::Mat& points, const geometry_msgs::TransformStamped& trans);
     
    
 }
