@@ -47,8 +47,7 @@ namespace egocylindrical
             // For now, just get things working using this.
             // Note: It may be preferable to allocate x,y,z separately to ensure they are aligned (unless the width is chosen such that they will be anyway...)
             // Another idea: possibly template this class by height/width, potentially enabling compile time optimizations
-            
-            
+           
         public:
             
             ECWrapper(int height, int width, float vfov):
@@ -59,55 +58,19 @@ namespace egocylindrical
                 points_ = cv::Mat(3, height * width, CV_32FC1, utils::dNaN);    //TODO: Allocate space in the msg_ to avoid later copy
             }
             
-            inline
-            float* getPoints()
-            {
-                float* point_ptr = (float*)__builtin_assume_aligned(points_.data, 16);   //This can be updated for improved alignments, etc
-                return point_ptr;
-            }
+            inline float* getPoints()                   { return (float*)__builtin_assume_aligned(points_.data, 16); }
+            inline const float* getPoints()     const   { return (const float*)__builtin_assume_aligned(points_.data, 16); }
             
-            inline
-            const float* getPoints() const
-            {
-                return getPoints();
-            }
+            inline float* getX()                        { return getPoints(); }
+            inline const float* getX()          const   { return (const float*) getPoints(); }
             
-            inline
-            float* getX()
-            {
-                return getPoints();
-            }
+            inline float* getY()                        { return getPoints() + (height_ * width_); }
+            inline const float* getY()          const   { return (const float*) getPoints() + (height_ * width_); }
             
-            inline
-            const float* getX() const
-            {
-                return getX();
-            }
+            inline float* getZ()                        { return getPoints() + 2*(height_ * width_); }
+            inline const float* getZ()          const   { return (const float*) getPoints() + 2*(height_ * width_); }
             
-            inline
-            float* getY()
-            {
-                return getPoints() + (height_ * width_);
-            }
-            
-            inline
-            const float* getY() const
-            {
-                return getY();
-            }
-            
-            inline
-            float* getZ()
-            {
-                return getPoints() + 2*(height_ * width_);
-            }
-            
-            inline
-            const float* getZ() const
-            {
-                return getZ();
-            }
-            
+
             inline
             void setHeader(std_msgs::Header header)
             {
