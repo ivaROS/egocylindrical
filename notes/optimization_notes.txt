@@ -225,3 +225,5 @@ cost model: epilogue peel iters set to vf/2 because peeling for alignment is unk
   Calculated minimum iters for profitability: 5
 /home/justin/catkin_ws/src/egocylindrical/src/transform_points.cpp:35:29: note:   Runtime profitability threshold = 7
 /home/justin/catkin_ws/src/egocylindrical/src/transform_points.cpp:35:29: note:   Static estimate profitability threshold = 7
+
+#Unfortunately, I don't think opencv guarantees data alignment is __BIGGEST_ALIGNMENT__; I got segfaults from generateRawRangeImage when I set it there. For now, reverting to 16 alignment (default), but will try to enforce this in the future

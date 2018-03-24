@@ -1,3 +1,5 @@
+#include <egocylindrical/ecwrapper.h>
+
 #include <ros/ros.h>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -18,9 +20,9 @@ namespace egocylindrical
     namespace utils
     {
         
-        sensor_msgs::PointCloud2 generate_point_cloud(const cv::Mat& points)
+        sensor_msgs::PointCloud2 generate_point_cloud(const utils::ECWrapper& points)
         {
-            const int num_cols = points.cols;
+            const int num_cols = points.getCols();
             
             pcl::PointCloud<pcl::PointXYZ> pcloud;
             pcloud.points.resize(num_cols);
@@ -28,9 +30,9 @@ namespace egocylindrical
             pcloud.height = 1;
             
 
-            const float* x = points.ptr<float>(0,0);
-            const float* y = points.ptr<float>(1,0);
-            const float* z = points.ptr<float>(2,0);
+            const float* x = points.getX();
+            const float* y = points.getY();
+            const float* z = points.getZ();
 
             for(int j = 0; j < num_cols; ++j)
             {   pcl::PointXYZ point(x[j],y[j],z[j]);
@@ -39,6 +41,8 @@ namespace egocylindrical
 
             sensor_msgs::PointCloud2 msg;
             pcl::toROSMsg(pcloud, msg);
+            
+            msg.header = points.getHeader();
             
             return msg;
         

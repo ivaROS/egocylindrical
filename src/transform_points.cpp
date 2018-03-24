@@ -1,3 +1,5 @@
+#include <egocylindrical/ecwrapper.h>
+
 #include <ros/ros.h>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -20,16 +22,16 @@ namespace egocylindrical
         * 
         */
         inline
-        void transform_impl(cv::Mat& points, const float*  const _R, const float*  const _T)
+        void transform_impl(utils::ECWrapper points, const float*  const _R, const float*  const _T)
         {
 
-            float* point_ptr = (float*)__builtin_assume_aligned(points.data, 16);            
+            float* point_ptr = (float*)__builtin_assume_aligned(points.getPoints(), 16);            
             
             const float* const R = (float*)__builtin_assume_aligned(_R, __BIGGEST_ALIGNMENT__);
             const float* const T = (float*)__builtin_assume_aligned(_T, __BIGGEST_ALIGNMENT__);
             
 
-            const int num_cols = points.cols;
+            const int num_cols = points.getCols();
             
             #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
             for(size_t p = 0; p < num_cols; ++p)
@@ -81,7 +83,7 @@ namespace egocylindrical
         }
         */
         
-        void transformPoints(cv::Mat& points, const geometry_msgs::TransformStamped& trans)
+        void transformPoints(utils::ECWrapper& points, const geometry_msgs::TransformStamped& trans)
         {
             
   

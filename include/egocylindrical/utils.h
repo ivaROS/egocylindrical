@@ -1,6 +1,7 @@
 #ifndef EGOCYLINDRICAL_UTILS_H
 #define EGOCYLINDRICAL_UTILS_H
 
+#include <egocylindrical/ecwrapper.h>
 
 #include <ros/ros.h>
 #include <opencv2/core.hpp>
@@ -14,13 +15,13 @@
 #include <omp.h>
 #include <sensor_msgs/PointCloud2.h>
 
+#include <egocylindrical/EgoCylinderPoints.h>
 
 namespace egocylindrical
 {
 
 namespace utils
 {
-    constexpr float dNaN=(std::numeric_limits<float>::has_quiet_NaN) ? std::numeric_limits<float>::quiet_NaN() : 0;
     
     
 
@@ -44,12 +45,13 @@ namespace utils
     }
     */
     
-    
+    /*
     inline
     cv::Point cylindricalToImage(cv::Point3f point)
     {
         
     }
+    */
     
     inline
     cv::Point3f projectWorldToCylinder(const cv::Point3f& point)
@@ -76,10 +78,10 @@ namespace utils
     
     struct CylindricalCoordsConverter
     {
+       int width, height;
        float hfov, vfov;
        float h_scale, v_scale;
        float h_offset=0, v_offset=0;
-       int width, height;
        
        CylindricalCoordsConverter()
        {
@@ -108,13 +110,13 @@ namespace utils
             
         }
         
-        
+        /*
         inline
         cv::Point3f getWorldPoint(const cv::Mat& image, const cv::Point& image_pnt) const
         {
             
         }
-        
+        */
         
         /* TODO: check ROI and perform worldToCylindricalImage call in here
          * Goal: abstract away the underlying data representation from the rest of my code
@@ -126,6 +128,8 @@ namespace utils
             image.at<float>(0,image_pnt.y*width + image_pnt.x) = world_pnt.x;
             image.at<float>(1,image_pnt.y*width + image_pnt.x) = world_pnt.y;
             image.at<float>(2,image_pnt.y*width + image_pnt.x) = world_pnt.z;
+            
+            return true;
         }
         
         
@@ -133,55 +137,23 @@ namespace utils
     };
     
     
-
-    
-
     inline
-    cv::Mat depthImageToWorld(const sensor_msgs::Image::ConstPtr& image, const image_geometry::PinholeCameraModel& cam_model)
-    {
-        cv::Mat world_pnts(image->height,image->width, CV_32FC3, utils::dNaN);
-        
-        const cv::Mat depth_im = cv_bridge::toCvShare(image)->image;
-        
-        
-        world_pnts.forEach<cv::Point3f>
-        (
-            [&depth_im, &cam_model](cv::Point3f &pixel, const int* position) -> void
-            {
-                int i = position[0];
-                int j = position[1];
-                
-                cv::Point2f pt;
-                pt.x = j;
-                pt.y = i;
-                cv::Point3f Pcyl = cam_model.projectPixelTo3dRay(pt);
-                Pcyl *= depth_im.at<float>(i, j);
-                pixel = Pcyl;     
-                
-            }
-        );
-        
-        return world_pnts;
-    }
-    
-    
-    inline
-    void fillImage(cv::Mat& cylindrical_history, cv::Mat new_points, const CylindricalCoordsConverter& ccc, bool overwrite)
+    void addPoints(utils::ECWrapper& cylindrical_history, utils::ECWrapper& new_points, const CylindricalCoordsConverter& ccc, bool overwrite)
     {
         cv::Rect image_roi = ccc.getImageROI();
         
-        float* x = cylindrical_history.ptr<float>(0,0);
-        float* y = cylindrical_history.ptr<float>(1,0);
-        float* z = cylindrical_history.ptr<float>(2,0);
+        float* x = cylindrical_history.getX();
+        float* y = cylindrical_history.getY();
+        float* z = cylindrical_history.getZ();
         
-        const float* n_x = new_points.ptr<float>(0,0);
-        const float* n_y = new_points.ptr<float>(1,0);
-        const float* n_z = new_points.ptr<float>(2,0);
+        const float* n_x = new_points.getX();
+        const float* n_y = new_points.getY();
+        const float* n_z = new_points.getZ();
         
 
         ROS_DEBUG("Relocated the propagated image");
         //#pragma omp parallel for
-        for(int i = 0; i < new_points.cols; ++i)
+        for(int i = 0; i < new_points.getCols(); ++i)
         {
             
             cv::Point3f world_pnt(n_x[i],n_y[i],n_z[i]);
@@ -190,6 +162,8 @@ namespace utils
             
             if(depth==depth)
             {
+                // The following 3 steps could probably be moved to the point propagation step and performed in parallel
+                // It will depend on whether the extra memory access for the steps cost more or less than the calculations
                 cv::Point image_pnt = ccc.worldToCylindricalImage(world_pnt);
                 
                 int idx =  image_pnt.y * ccc.width +image_pnt.x;
@@ -223,13 +197,17 @@ namespace utils
 
     
     inline
-    void remapDepthImage(const cv::Mat& depth_image, const CylindricalCoordsConverter& ccc, const image_geometry::PinholeCameraModel& cam_model, cv::Mat& cylindrical_history)
+    void addDepthImage(utils::ECWrapper& cylindrical_history, const cv::Mat& depth_image, const CylindricalCoordsConverter& ccc, const image_geometry::PinholeCameraModel& cam_model)
     {
         ROS_DEBUG("Generating depth to cylindrical image mapping");
         
         const cv::Rect image_roi = ccc.getImageROI();
         const int width = ccc.width;
-        const int height = ccc.height;
+        //const int height = ccc.height;
+        
+        float* x = cylindrical_history.getX();
+        float* y = cylindrical_history.getY();
+        float* z = cylindrical_history.getZ();
                 
         depth_image.forEach<float>
         (
@@ -249,9 +227,9 @@ namespace utils
                     
                     if(image_roi.contains(image_pnt))
                     {
-                        cylindrical_history.at<float>(0,image_pnt.y*width + image_pnt.x) = world_pnt.x;
-                        cylindrical_history.at<float>(1,image_pnt.y*width + image_pnt.x) = world_pnt.y;
-                        cylindrical_history.at<float>(2,image_pnt.y*width + image_pnt.x) = world_pnt.z;
+                        x[image_pnt.y*width + image_pnt.x] = world_pnt.x;
+                        y[image_pnt.y*width + image_pnt.x] = world_pnt.y;
+                        z[image_pnt.y*width + image_pnt.x] = world_pnt.z;
                         
                     }
                 }
@@ -263,20 +241,20 @@ namespace utils
     
     
     inline
-    void remapDepthImage(const sensor_msgs::Image::ConstPtr& image_msg, const CylindricalCoordsConverter& ccc, const image_geometry::PinholeCameraModel& cam_model, cv::Mat& cylindrical_history)
+    void addDepthImage(utils::ECWrapper& cylindrical_history, const sensor_msgs::Image::ConstPtr& image_msg, const CylindricalCoordsConverter& ccc, const image_geometry::PinholeCameraModel& cam_model)
     {
         const cv::Mat image = cv_bridge::toCvShare(image_msg)->image;
-        remapDepthImage(image,ccc, cam_model, cylindrical_history);
+        addDepthImage(cylindrical_history, image, ccc, cam_model);
     }
     
     
     
     // Functions defined in separate compilation units:
-    sensor_msgs::ImagePtr getRawRangeImageMsg(const cv::Mat& cylindrical_history, const CylindricalCoordsConverter& ccc);
+    sensor_msgs::ImagePtr getRawRangeImageMsg(const utils::ECWrapper& cylindrical_history, const CylindricalCoordsConverter& ccc);
     
-    void transformPoints(cv::Mat& points, const geometry_msgs::TransformStamped& trans);
+    void transformPoints(utils::ECWrapper& points, const geometry_msgs::TransformStamped& trans);
     
-    sensor_msgs::PointCloud2 generate_point_cloud(const cv::Mat& points);
+    sensor_msgs::PointCloud2 generate_point_cloud(const utils::ECWrapper& points);
     
 }
 

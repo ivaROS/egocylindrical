@@ -26,13 +26,12 @@ private:
     int cylinder_height_;
     int cylinder_width_;
     double hfov_, vfov_;
-    float dNan;
-    
-    cv::Mat new_pts_, old_pts_;
+        
+
+    utils::ECWrapperPtr new_pts_, old_pts_;
     cv::Mat image_mapping_;
     image_geometry::PinholeCameraModel model_t;
     
-    std_msgs::Header old_header_;
     
     ros::NodeHandle nh_;
     tf2_ros::TransformListener tf_listener_;
@@ -40,9 +39,8 @@ private:
     
     utils::CylindricalCoordsConverter ccc_;
 
-    void propagateHistory(cv::Mat& old_pnts, cv::Mat& new_pnts, std_msgs::Header old_header, std_msgs::Header new_header);
-    void addDepthImage(cv::Mat& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info);
-    void addDepthImage2(cv::Mat& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info);
+    void propagateHistory(utils::ECWrapper& old_pnts, utils::ECWrapper& new_pnts, std_msgs::Header new_header);
+    void addDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info);
     
     
     

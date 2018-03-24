@@ -21,11 +21,18 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_msgs
   tf2_ros
   tf2_sensor_msgs
+  message_generation
 )
 
 
 find_package(OpenCV REQUIRED)
 find_package(PCL    REQUIRED)
+
+if(VECT_DETAILS)
+    set(SHOW_VECTORIZE_INFO "-fopt-info-vec-all")
+else()
+     set(SHOW_VECTORIZE_INFO "")
+endif()
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -60,12 +67,11 @@ find_package(PCL    REQUIRED)
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
-## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+# Generate messages in the 'msg' folder
+add_message_files(
+  FILES
+  EgoCylinderPoints.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -81,11 +87,11 @@ find_package(PCL    REQUIRED)
 #   Action2.action
 # )
 
-## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   geometry_msgs#   sensor_msgs#   std_msgs#   tf_msgs
-# )
+# Generate added messages and services with any dependencies listed here
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -155,7 +161,7 @@ target_link_libraries(generate_range_image
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(generate_range_image PRIVATE -g -std=c++11 -Wall -ftree-vectorize -fopt-info-vec-all -funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
+target_compile_options(generate_range_image PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
   #${OpenMP_CXX_FLAGS}
   )
 
@@ -168,7 +174,7 @@ target_link_libraries(transform_points
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(transform_points PRIVATE -g -std=c++11 -Wall -ftree-vectorize -fopt-info-vec-all -funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
+target_compile_options(transform_points PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
   #${OpenMP_CXX_FLAGS}
   )
 
@@ -180,7 +186,7 @@ target_link_libraries(generate_point_cloud
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(generate_point_cloud PRIVATE -g -std=c++11 -Wall -ftree-vectorize -fopt-info-vec-all #-funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
+target_compile_options(generate_point_cloud PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} #-funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
   #${OpenMP_CXX_FLAGS}
   )
 
@@ -212,7 +218,7 @@ target_link_libraries(${PROJECT_NAME}_node
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(${PROJECT_NAME}_node PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -fopt-info-vec-all -funsafe-math-optimizations 
+target_compile_options(${PROJECT_NAME}_node PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
   #${OpenMP_CXX_FLAGS}
   )
   

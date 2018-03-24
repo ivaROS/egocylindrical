@@ -20,9 +20,13 @@ namespace egocylindrical
 
 
 
-    void EgoCylindricalPropagator::propagateHistory(cv::Mat& old_pnts, cv::Mat& new_pnts, std_msgs::Header old_header, std_msgs::Header new_header)
+    void EgoCylindricalPropagator::propagateHistory(utils::ECWrapper& old_pnts, utils::ECWrapper& new_pnts, std_msgs::Header new_header)
     {
         ros::WallTime start = ros::WallTime::now();
+        
+        std_msgs::Header old_header = old_pnts.getHeader();
+        
+        new_pnts.setHeader(new_header);
         
         ROS_DEBUG("Getting Transformation details");
                 geometry_msgs::TransformStamped trans = buffer_.lookupTransform(new_header.frame_id, new_header.stamp,
@@ -37,17 +41,17 @@ namespace egocylindrical
         ROS_INFO_STREAM_NAMED("timing", "Transform points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
         start = ros::WallTime::now();
-        utils::fillImage(new_pnts, old_pnts, ccc_, false);
+        utils::addPoints(new_pnts, old_pnts, ccc_, false);
         ROS_INFO_STREAM_NAMED("timing", "Inserting transformed points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
 
     }
 
 
-    void EgoCylindricalPropagator::addDepthImage(cv::Mat& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
+    void EgoCylindricalPropagator::addDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
     {
         model_t.fromCameraInfo(cam_info);
         
-        utils::remapDepthImage(image, ccc_, model_t, cylindrical_points);
+        utils::addDepthImage(cylindrical_points, image, ccc_, model_t);
         
     }
 
@@ -55,17 +59,14 @@ namespace egocylindrical
     void EgoCylindricalPropagator::update(const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
     {
         ros::WallTime start = ros::WallTime::now();
-        
-        const int matsizes[] = {3,cylinder_height_, cylinder_width_};
-        
-        new_pts_ = cv::Mat(3, cylinder_height_ * cylinder_width_, CV_32FC1, utils::dNaN);
-        
-        
+
+        new_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
+
         try
         {
-            if(!old_pts_.empty())
+            if(old_pts_)
             {
-                EgoCylindricalPropagator::propagateHistory(old_pts_, new_pts_, old_header_, image->header);
+                EgoCylindricalPropagator::propagateHistory(*old_pts_, *new_pts_, image->header);
                 ROS_INFO_STREAM("Propagation took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
             }
    
@@ -79,12 +80,10 @@ namespace egocylindrical
         
         start = ros::WallTime::now();
         
-        EgoCylindricalPropagator::addDepthImage(new_pts_, image, cam_info);
+        EgoCylindricalPropagator::addDepthImage(*new_pts_, image, cam_info);
         ROS_INFO_STREAM("Adding depth image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
-        cv::swap(new_pts_, old_pts_);
-        old_header_ = image->header;
-        
+        std::swap(new_pts_, old_pts_);        
         
     }
     
@@ -93,10 +92,8 @@ namespace egocylindrical
     {
         ros::WallTime start = ros::WallTime::now();
       
-        sensor_msgs::PointCloud2 msg = utils::generate_point_cloud(old_pts_);
-        
-        msg.header = old_header_;
-        
+        sensor_msgs::PointCloud2 msg = utils::generate_point_cloud(*old_pts_);
+                
         ROS_INFO_STREAM("Generating point cloud took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
                 
@@ -107,8 +104,7 @@ namespace egocylindrical
     {
         ros::WallTime start = ros::WallTime::now();
               
-        sensor_msgs::Image::Ptr image_ptr = utils::getRawRangeImageMsg(old_pts_, ccc_);
-        image_ptr->header = old_header_;
+        sensor_msgs::Image::Ptr image_ptr = utils::getRawRangeImageMsg(*old_pts_, ccc_);
 
         ROS_INFO_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
