@@ -55,7 +55,41 @@ namespace egocylindrical
             width_(width),
             vfov_(vfov)
             {
-                points_ = cv::Mat(3, height * width, CV_32FC1, utils::dNaN);    //TODO: Allocate space in the msg_ to avoid later copy
+                msg_ = boost::make_shared<EgoCylinderPoints>();
+                msg_->points.data.resize(3*height_*width_);
+                
+                msg_->fov_v = vfov_;
+                
+                std::vector<std_msgs::MultiArrayDimension>& dims = msg_->points.layout.dim;
+                dims.resize(2);
+                
+                std_msgs::MultiArrayDimension dim0;
+                dim0.label = "dimension";
+                dim0.size = 3;
+                dim0.stride = 3*height_*width_;
+
+                dims[0] = dim0;
+                
+                std_msgs::MultiArrayDimension dim1;
+                dim1.label = "point";
+                dim1.size = height_*width_;
+                dim1.stride = height_*width_;
+                
+                
+                dims[1] = dim1;
+                
+                
+                
+                
+                
+                int step = height_ * width_ * sizeof(float);
+                
+                points_ = cv::Mat(3, height * width, CV_32FC1, const_cast<float*>(&msg_->points.data[0]), step);
+                points_.setTo(utils::dNaN);
+                
+                
+                
+                //points_ = cv::Mat(3, height * width, CV_32FC1, utils::dNaN);    //TODO: Allocate space in the msg_ to avoid later copy
             }
             
             inline float* getPoints()                   { return (float*)__builtin_assume_aligned(points_.data, 16); }
