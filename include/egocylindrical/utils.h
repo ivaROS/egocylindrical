@@ -250,7 +250,7 @@ namespace utils
     
     
     // Functions defined in separate compilation units:
-    sensor_msgs::ImagePtr getRawRangeImageMsg(const utils::ECWrapper& cylindrical_history, const CylindricalCoordsConverter& ccc);
+    sensor_msgs::ImagePtr getRawRangeImageMsg(const utils::ECWrapper& cylindrical_history);
     
     void transformPoints(utils::ECWrapper& points, const geometry_msgs::TransformStamped& trans);
     

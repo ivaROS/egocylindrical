@@ -227,3 +227,19 @@ cost model: epilogue peel iters set to vf/2 because peeling for alignment is unk
 /home/justin/catkin_ws/src/egocylindrical/src/transform_points.cpp:35:29: note:   Static estimate profitability threshold = 7
 
 #Unfortunately, I don't think opencv guarantees data alignment is __BIGGEST_ALIGNMENT__; I got segfaults from generateRawRangeImage when I set it there. For now, reverting to 16 alignment (default), but will try to enforce this in the future
+
+
+
+#New plan is to separate the propagation from the visualization steps.
+#First step: introduce a wrapper class that all calls to data go through. Succeeded with commit [c1fb9032ac170d2615c372f6ea38d59be83b87ef]. Result:
+[ INFO] [1521854636.164934191, 8496.031000000]: Finding transform took 0.037253ms
+[ INFO] [1521854636.166385381, 8496.033000000]: Transform points took 1.3703ms
+[ INFO] [1521854636.181491916, 8496.048000000]: Inserting transformed points took 15.0014ms
+[ INFO] [1521854636.181584775, 8496.048000000]: Propagation took 18.6628ms
+[ INFO] [1521854636.183968940, 8496.049000000]: Adding depth image took 2.35346ms
+[ INFO] [1521854636.195860794, 8496.062000000]: Generating point cloud took 11.8084ms
+[ INFO] [1521854636.205352241, 8496.070000000]: Generating egocylindrical image took 1.0615ms
+
+
+
+

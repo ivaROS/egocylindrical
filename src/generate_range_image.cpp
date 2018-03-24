@@ -75,24 +75,23 @@ namespace egocylindrical
             
         }
         
-        sensor_msgs::ImagePtr getRawRangeImageMsg(const utils::ECWrapper& cylindrical_history, const CylindricalCoordsConverter& ccc)
+        sensor_msgs::ImagePtr getRawRangeImageMsg(const utils::ECWrapper& cylindrical_history)
         {
             sensor_msgs::ImagePtr new_msg_ptr = boost::make_shared<sensor_msgs::Image>();
             
             sensor_msgs::Image &new_msg = *new_msg_ptr;
-            new_msg.height = ccc.height;
-            new_msg.width = ccc.width;
+            new_msg.height = cylindrical_history.getHeight();
+            new_msg.width = cylindrical_history.getWidth();
             new_msg.encoding = sensor_msgs::image_encodings::TYPE_32FC1;
             new_msg.is_bigendian = false; //image->is_bigendian;
-            new_msg.step = ccc.width * sizeof(float); // cylindrical_history.elemSize(); // Ideally, replace this with some other way of getting size
-            size_t size = new_msg.step * ccc.height;
+            new_msg.step = cylindrical_history.getWidth() * sizeof(float); // cylindrical_history.elemSize(); // Ideally, replace this with some other way of getting size
+            size_t size = new_msg.step * cylindrical_history.getHeight();
             new_msg.data.resize(size);
             //cv_bridge::CvImage(image->header, sensor_msgs::image_encodings::TYPE_32FC1, new_im_).toImageMsg();
             
             cv::Mat range_image = getImageMat(new_msg);
             
             generateRawRangeImage(cylindrical_history, range_image);
-            range_image = range_image.reshape(1, ccc.height);
             
             return new_msg_ptr;
         }

@@ -104,7 +104,7 @@ namespace egocylindrical
     {
         ros::WallTime start = ros::WallTime::now();
               
-        sensor_msgs::Image::Ptr image_ptr = utils::getRawRangeImageMsg(*old_pts_, ccc_);
+        sensor_msgs::Image::Ptr image_ptr = utils::getRawRangeImageMsg(*old_pts_);
 
         ROS_INFO_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
