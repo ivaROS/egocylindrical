@@ -254,7 +254,7 @@ namespace utils
     
     void transformPoints(utils::ECWrapper& points, const geometry_msgs::TransformStamped& trans);
     
-    sensor_msgs::PointCloud2 generate_point_cloud(const utils::ECWrapper& points);
+    //sensor_msgs::PointCloud2 generate_point_cloud(const utils::ECWrapper& points);
     
 }
 

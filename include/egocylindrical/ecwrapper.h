@@ -44,9 +44,20 @@ namespace egocylindrical
             std_msgs::Header header_;
             EgoCylinderPoints::Ptr msg_; // The idea would be to store everything in the message's allocated storage to prevent copies
             
+            EgoCylinderPoints::ConstPtr const_msg_;
+            
             // For now, just get things working using this.
             // Note: It may be preferable to allocate x,y,z separately to ensure they are aligned (unless the width is chosen such that they will be anyway...)
             // Another idea: possibly template this class by height/width, potentially enabling compile time optimizations
+           
+           
+        private:
+            void mapMemory()
+            {
+                int step = height_ * width_ * sizeof(float);
+                
+                points_ = cv::Mat(3, height_ * width_, CV_32FC1, const_cast<float*>(&msg_->points.data[0]), step);
+            }
            
         public:
             
@@ -79,18 +90,32 @@ namespace egocylindrical
                 dims[1] = dim1;
                 
                 
+                int step = height_ * width_ * sizeof(float);
                 
+                points_ = cv::Mat(3, height_ * width_, CV_32FC1, const_cast<float*>(&msg_->points.data[0]), step);
                 
+
+                points_.setTo(utils::dNaN);
+            }
+            
+            ECWrapper(const egocylindrical::EgoCylinderPointsConstPtr& ec_points) 
+            {
+                const_msg_ = ec_points;
+                header_ = const_msg_->header;
+                vfov_ = const_msg_->fov_v;
+                
+                const std::vector<std_msgs::MultiArrayDimension>& dims = const_msg_->points.layout.dim;
+                height_ = dims[0].size;
+                width_ = dims[1].size;
                 
                 int step = height_ * width_ * sizeof(float);
                 
-                points_ = cv::Mat(3, height * width, CV_32FC1, const_cast<float*>(&msg_->points.data[0]), step);
-                points_.setTo(utils::dNaN);
-                
-                
-                
-                //points_ = cv::Mat(3, height * width, CV_32FC1, utils::dNaN);    //TODO: Allocate space in the msg_ to avoid later copy
+                points_ = cv::Mat(3, height_ * width_, CV_32FC1, const_cast<float*>(&const_msg_->points.data[0]), step);
             }
+            
+            
+            
+            
             
             inline float* getPoints()                   { return (float*)__builtin_assume_aligned(points_.data, 16); }
             inline const float* getPoints()     const   { return (const float*)__builtin_assume_aligned(points_.data, 16); }
@@ -98,23 +123,24 @@ namespace egocylindrical
             inline float* getX()                        { return getPoints(); }
             inline const float* getX()          const   { return (const float*) getPoints(); }
             
-            inline float* getY()                        { return getPoints() + (height_ * width_); }
-            inline const float* getY()          const   { return (const float*) getPoints() + (height_ * width_); }
+            inline float* getY()                        { return &getPoints()[(height_ * width_)]; }
+            inline const float* getY()          const   { return (const float*) &getPoints()[(height_ * width_)]; }
             
-            inline float* getZ()                        { return getPoints() + 2*(height_ * width_); }
-            inline const float* getZ()          const   { return (const float*) getPoints() + 2*(height_ * width_); }
+            inline float* getZ()                        { return &getPoints()[2*(height_ * width_)]; }
+            inline const float* getZ()          const   { return (const float*) &getPoints()[2*(height_ * width_)]; }
             
 
             inline
             void setHeader(std_msgs::Header header)
             {
                 header_ = header;
+                msg_->header = header;
             }
             
             inline
             int getCols() const
             {
-                return points_.cols;
+                return height_*width_;
             }
             
             inline

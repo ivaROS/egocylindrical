@@ -211,6 +211,27 @@ add_executable(${PROJECT_NAME}_node src/egocylindrical.cpp src/cylindricalVisual
 target_link_libraries(${PROJECT_NAME}_node
    generate_range_image
    transform_points
+   #generate_point_cloud
+   ${catkin_LIBRARIES}
+   ${OpenCV_LIBRARIES}
+   ${PCL_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
+add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_compile_options(${PROJECT_NAME}_node PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+  #${OpenMP_CXX_FLAGS}
+  )
+
+  
+
+  
+add_executable(pointcloud_publisher src/ec_point_cloud_node.cpp)
+
+#TODO: Add dependencies as needed
+add_dependencies(pointcloud_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(pointcloud_publisher
    generate_point_cloud
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
@@ -218,10 +239,11 @@ target_link_libraries(${PROJECT_NAME}_node
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(${PROJECT_NAME}_node PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+target_compile_options(pointcloud_publisher PRIVATE -g -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
   #${OpenMP_CXX_FLAGS}
   )
   
+
   
 # add_executable(function_tester src/function_tester.cpp)
 # target_link_libraries(function_tester

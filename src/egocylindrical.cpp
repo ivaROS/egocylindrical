@@ -95,6 +95,7 @@ namespace egocylindrical
         
     }
     
+    /*
     
     sensor_msgs::PointCloud2 EgoCylindricalPropagator::getPropagatedPointCloud()
     {
@@ -107,6 +108,8 @@ namespace egocylindrical
                 
         return msg;
     }
+    
+    */
     
     sensor_msgs::Image::ConstPtr EgoCylindricalPropagator::getRawRangeImage()
     {

@@ -19,8 +19,8 @@ CylindricalVisualization::CylindricalVisualization() :it_(nh_), propagator_(nh_)
     message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::CameraInfo> timeSynchronizer(depthSub, info_tf_filter, 2);
     timeSynchronizer.registerCallback(boost::bind(&CylindricalVisualization::cameraCb, this, _1, _2));
     pub = it_.advertise("projected_image", 20);
-    ptPub = nh_.advertise<sensor_msgs::PointCloud2>("cylindrical", 100);
-    ptPub2 = nh_.advertise<sensor_msgs::PointCloud2>("cylindrical_original", 100);
+    //ptPub = nh_.advertise<sensor_msgs::PointCloud2>("cylindrical", 100);
+    //ptPub2 = nh_.advertise<sensor_msgs::PointCloud2>("cylindrical_original", 100);
     ros::spin();
 }
 
@@ -33,7 +33,7 @@ void CylindricalVisualization::cameraCb(const sensor_msgs::ImageConstPtr &image,
 
     ROS_DEBUG("publish egocylindrical image");
     
-    ptPub.publish(propagator_.getPropagatedPointCloud());
+    //ptPub.publish(propagator_.getPropagatedPointCloud());
     
     pub.publish(propagator_.getRawRangeImage());
     
