@@ -31,7 +31,7 @@ private:
     utils::ECWrapperPtr new_pts_, old_pts_;
     cv::Mat image_mapping_;
     image_geometry::PinholeCameraModel model_t;
-    
+    ros::Publisher ec_pub_;
     
     ros::NodeHandle nh_;
     tf2_ros::TransformListener tf_listener_;

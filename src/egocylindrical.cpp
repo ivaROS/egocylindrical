@@ -83,6 +83,14 @@ namespace egocylindrical
         EgoCylindricalPropagator::addDepthImage(*new_pts_, image, cam_info);
         ROS_INFO_STREAM("Adding depth image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
+        
+        if(ec_pub_.getNumSubscribers() > 0)
+        {
+            egocylindrical::EgoCylinderPoints::ConstPtr msg = new_pts_->getEgoCylinderPointsMsg();
+            ec_pub_.publish(msg);
+        }
+        
+        
         std::swap(new_pts_, old_pts_);        
         
     }
@@ -123,6 +131,10 @@ namespace egocylindrical
         cylinder_height_ = 320;
         
         ccc_ = utils::CylindricalCoordsConverter(cylinder_width_, cylinder_height_, hfov_, vfov_);
+        
+        ec_pub_ = nh_.advertise<egocylindrical::EgoCylinderPoints>("egocylindrical", 5);
+        
+        
     }
 
     EgoCylindricalPropagator::EgoCylindricalPropagator(ros::NodeHandle& nh):
