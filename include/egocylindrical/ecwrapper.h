@@ -17,6 +17,7 @@
 
 #include <egocylindrical/EgoCylinderPoints.h>
 
+#include <iomanip> // for debug printing
 
 
 namespace egocylindrical
@@ -38,6 +39,9 @@ namespace egocylindrical
         class ECWrapper
         {
             cv::Mat points_;
+            
+            float* pointsx_;
+            
             int height_, width_;
             float vfov_;
             
@@ -67,32 +71,41 @@ namespace egocylindrical
             vfov_(vfov)
             {
                 msg_ = boost::make_shared<EgoCylinderPoints>();
-                msg_->points.data.resize(3*height_*width_);
+                msg_->points.data.resize(3*height_*width_);  //Note: can pass 'utils::dNaN as 2nd argument to set all values
                 
                 msg_->fov_v = vfov_;
                 
                 std::vector<std_msgs::MultiArrayDimension>& dims = msg_->points.layout.dim;
-                dims.resize(2);
+                dims.resize(3);
+                
                 
                 std_msgs::MultiArrayDimension dim0;
-                dim0.label = "dimension";
+                dim0.label = "components";
                 dim0.size = 3;
                 dim0.stride = 3*height_*width_;
-
                 dims[0] = dim0;
                 
+                
                 std_msgs::MultiArrayDimension dim1;
-                dim1.label = "point";
-                dim1.size = height_*width_;
+                dim1.label = "rows";
+                dim1.size = height_;
                 dim1.stride = height_*width_;
-                
-                
                 dims[1] = dim1;
+
+                
+                std_msgs::MultiArrayDimension dim2;
+                dim2.label = "point";
+                dim2.size = width_;
+                dim2.stride = width_;             
+                dims[2] = dim2;
                 
                 
-                int step = height_ * width_ * sizeof(float);
+                int step = dim1.stride * sizeof(float);
                 
-                points_ = cv::Mat(3, height_ * width_, CV_32FC1, const_cast<float*>(&msg_->points.data[0]), step);
+                points_ = cv::Mat(3, height_ * width_, CV_32FC1, const_cast<float*>(msg_->points.data.data()), step);
+                
+                
+                std::cout << "Address: " << std::hex  << msg_->points.data.data() << std::dec << ", height=" << height_ << ", width=" << width_ << ", step=" << step << std::endl; //std::setfill('0') << std::setw(2) << ar[i] << " ";
                 
 
                 points_.setTo(utils::dNaN);
@@ -105,12 +118,16 @@ namespace egocylindrical
                 vfov_ = const_msg_->fov_v;
                 
                 const std::vector<std_msgs::MultiArrayDimension>& dims = const_msg_->points.layout.dim;
-                height_ = dims[0].size;
-                width_ = dims[1].size;
+                int components = dims[0].size;
+                height_ = dims[1].size;
+                width_ = dims[2].size;
                 
-                int step = height_ * width_ * sizeof(float);
+                int step = dims[1].stride * sizeof(float);
                 
-                points_ = cv::Mat(3, height_ * width_, CV_32FC1, const_cast<float*>(&const_msg_->points.data[0]), step);
+                points_ = cv::Mat(components, height_ * width_, CV_32FC1, const_cast<float*>(const_msg_->points.data.data()), step);
+                
+                std::cout << "Address: " << std::hex  << const_msg_->points.data.data() << std::dec << ", height=" << height_ << ", width=" << width_ << ", step=" << step << std::endl;
+                
             }
             
             
@@ -123,11 +140,11 @@ namespace egocylindrical
             inline float* getX()                        { return getPoints(); }
             inline const float* getX()          const   { return (const float*) getPoints(); }
             
-            inline float* getY()                        { return &getPoints()[(height_ * width_)]; }
-            inline const float* getY()          const   { return (const float*) &getPoints()[(height_ * width_)]; }
+            inline float* getY()                        { return getPoints() + (height_ * width_); }
+            inline const float* getY()          const   { return (const float*) getPoints() + (height_ * width_); }
             
-            inline float* getZ()                        { return &getPoints()[2*(height_ * width_)]; }
-            inline const float* getZ()          const   { return (const float*) &getPoints()[2*(height_ * width_)]; }
+            inline float* getZ()                        { return getPoints() + 2*(height_ * width_); }
+            inline const float* getZ()          const   { return (const float*) getPoints() + 2*(height_ * width_); }
             
 
             inline
