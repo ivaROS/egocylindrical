@@ -85,6 +85,7 @@ namespace egocylindrical
         }
         */
         
+        // TODO: This functionality could be moved into a tf2_ros implementation
         void transformPoints(utils::ECWrapper& points, const geometry_msgs::TransformStamped& trans)
         {
             

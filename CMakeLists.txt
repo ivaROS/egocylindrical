@@ -28,8 +28,8 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(OpenCV REQUIRED)
 find_package(PCL    REQUIRED)
 
-if(VECT_DETAILS)
-    set(SHOW_VECTORIZE_INFO "-fopt-info-vec-all")
+if(1)
+    set(SHOW_VECTORIZE_INFO "-fopt-info-vec-optimized")
 else()
      set(SHOW_VECTORIZE_INFO "")
 endif()
@@ -154,14 +154,14 @@ include_directories(
 
 # This is a separate library partly to reduce compile times, but mostly because it needs to be compiled with certain 'fast-math' optimization options
 add_library(range_image_generator src/range_image_generator.cpp)
-target_link_libraries(generate_range_image
+target_link_libraries(range_image_generator
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    #${PCL_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(generate_range_image PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
+target_compile_options(range_image_generator PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
   #${OpenMP_CXX_FLAGS}
   )
 
@@ -195,7 +195,10 @@ target_compile_options(point_cloud_generator PRIVATE -g -std=c++11 -Wall -ftree-
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/egocylindrical_propagator.cpp src/cylindricalVisualization.cpp )
+#${PROJECT_NAME}_
+
+add_library(egocylindrical_propagator src/egocylindrical_propagator.cpp)
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -208,25 +211,32 @@ add_executable(${PROJECT_NAME}_node src/egocylindrical_propagator.cpp src/cylind
 #add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 # Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_node
+target_link_libraries(egocylindrical_propagator
    point_transformer
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    #${PCL_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )
-add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(egocylindrical_propagator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_compile_options(${PROJECT_NAME}_node PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+target_compile_options(egocylindrical_propagator PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
   #${OpenMP_CXX_FLAGS}
   )
 
-  
 
   
-add_executable(pointcloud_generator_node src/ec_point_cloud_node.cpp)
+add_executable(egocylindrical_propagator_node src/egocylindrical_propagator_node.cpp)
 
-#TODO: Add dependencies as needed
+target_link_libraries(egocylindrical_propagator_node
+   egocylindrical_propagator
+   ${catkin_LIBRARIES}
+   )
+
+  
+add_executable(pointcloud_generator_node src/point_cloud_node.cpp)
+
+#TODO: Add only necessary dependencies
 add_dependencies(pointcloud_generator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(pointcloud_generator_node
@@ -250,7 +260,7 @@ add_executable(range_image_publisher src/range_image_node.cpp)
 add_dependencies(range_image_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(range_image_publisher
-   generate_range_image
+   range_image_generator
    ${catkin_LIBRARIES}
    #${OpenCV_LIBRARIES}
    #${PCL_LIBRARIES}

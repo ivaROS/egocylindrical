@@ -9,7 +9,7 @@
 
 namespace egocylindrical
 {
-    //Forward functions from other compilation units
+    //Forward declare functions from other compilation units
     namespace utils
     {
         sensor_msgs::ImagePtr getRawRangeImageMsg(const utils::ECWrapper& cylindrical_history);
@@ -37,9 +37,9 @@ public:
     
     void init()
     {
-        ec_sub_ = nh_.subscribe("egocylindrical", 10, &EgoCylinderRangeImageGenerator::ecPointsCB, this);
+        ec_sub_ = nh_.subscribe("egocylindrical_points", 2, &EgoCylinderRangeImageGenerator::ecPointsCB, this);
         
-        im_pub_ = it_.advertise("range_image", 20);
+        im_pub_ = it_.advertise("range_image", 2);
     }
 
 
@@ -74,7 +74,7 @@ private:
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "egocylindrical_pointcloud_publisher");
+    ros::init(argc, argv, "egocylindrical_range_image_publisher");
     egocylindrical::EgoCylinderRangeImageGenerator s;
     s.init();
     ros::spin();

@@ -4,13 +4,13 @@
 
 #include <egocylindrical/egocylindrical.h>
 //#include <tf/LinearMath/Matrix3x3.h>
-#include <cv_bridge/cv_bridge.h>
+//#include <cv_bridge/cv_bridge.h>
 #include <ros/ros.h>
-#include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
+//#include <opencv2/core.hpp>
+//#include <opencv2/highgui.hpp>
+//#include <opencv2/imgproc.hpp>
 #include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
+//#include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
 
 //#include <valgrind/callgrind.h>
@@ -86,7 +86,11 @@ namespace egocylindrical
         
         if(ec_pub_.getNumSubscribers() > 0)
         {
+            start = ros::WallTime::now();
+            
             egocylindrical::EgoCylinderPoints::ConstPtr msg = new_pts_->getEgoCylinderPointsMsg();
+            ROS_INFO_STREAM("Copying EgoCylinderPoints took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+            
             ec_pub_.publish(msg);
         }
         
@@ -95,38 +99,16 @@ namespace egocylindrical
         
     }
     
-    /*
-    
-    sensor_msgs::PointCloud2 EgoCylindricalPropagator::getPropagatedPointCloud()
+    void EgoCylindricalPropagator::connectCB()
     {
-        ros::WallTime start = ros::WallTime::now();
-      
-        sensor_msgs::PointCloud2 msg = utils::generate_point_cloud(*old_pts_);
-                
-        ROS_INFO_STREAM("Generating point cloud took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
-        
-                
-        return msg;
+        // If no one is listening, we can propagate points in place
+        if (ec_pub_.getNumSubscribers() == 0)
+        {
+            
+        }
     }
     
-    */
-    
-    /*
-    
-    sensor_msgs::Image::ConstPtr EgoCylindricalPropagator::getRawRangeImage()
-    {
-        ros::WallTime start = ros::WallTime::now();
-              
-        sensor_msgs::Image::Ptr image_ptr = utils::getRawRangeImageMsg(*old_pts_);
-
-        ROS_INFO_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
-        
-        return image_ptr;
-    }
-    
-    */
-    
-
+    // TODO: add dynamic reconfigure for cylinder height/width, vfov, etc
     void EgoCylindricalPropagator::init()
     {
         
@@ -139,16 +121,38 @@ namespace egocylindrical
         
         ccc_ = utils::CylindricalCoordsConverter(cylinder_width_, cylinder_height_, hfov_, vfov_);
         
-        ec_pub_ = nh_.advertise<egocylindrical::EgoCylinderPoints>("egocylindrical", 5);
+        
+        // Get topic names
+        std::string depth_topic="/camera/depth/image_raw", info_topic= "/camera/depth/camera_info", pub_topic="egocylindrical_points";
+        
+        pnh_.getParam("image_in", depth_topic );
+        pnh_.getParam("info_in", info_topic );
+        pnh_.getParam("points_out", pub_topic );
+        
+        // Setup publishers
+        ros::SubscriberStatusCallback image_cb = boost::bind(&EgoCylindricalPropagator::connectCB, this);        
+        ec_pub_ = nh_.advertise<egocylindrical::EgoCylinderPoints>(pub_topic, 1, image_cb, image_cb);
         
         
+        // Setup subscribers
+        depthSub.subscribe(it_, depth_topic, 3);
+        depthInfoSub.subscribe(nh_, info_topic, 3);
+        
+        // Ensure that CameraInfo is transformable
+        info_tf_filter = boost::make_shared<tf_filter>(depthInfoSub, buffer_, "odom", 2,nh_);
+        
+        // Synchronize Image and CameraInfo callbacks
+        timeSynchronizer = boost::make_shared<synchronizer>(depthSub, *info_tf_filter, 2);
+        timeSynchronizer->registerCallback(boost::bind(&EgoCylindricalPropagator::update, this, _1, _2));
+ 
     }
 
-    EgoCylindricalPropagator::EgoCylindricalPropagator(ros::NodeHandle& nh):
+    EgoCylindricalPropagator::EgoCylindricalPropagator(ros::NodeHandle& nh, ros::NodeHandle& pnh):
         nh_(nh),
-        tf_listener_(buffer_)
+        pnh_(pnh),
+        tf_listener_(buffer_),
+        it_(nh)
     {
-        init();
         
         
     }

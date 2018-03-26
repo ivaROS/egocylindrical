@@ -36,9 +36,9 @@ public:
     
     void init()
     {
-        ec_sub_ = nh_.subscribe("egocylindrical", 10, &EgoCylinderPointCloudGenerator::ecPointsCB, this);
+        ec_sub_ = nh_.subscribe("egocylindrical_points", 2, &EgoCylinderPointCloudGenerator::ecPointsCB, this);
         
-        pc_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("cylindrical", 5);
+        pc_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("cylindrical", 2);
     }
 
 
