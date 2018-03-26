@@ -58,7 +58,7 @@ private:
         ROS_INFO_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
 
-        ROS_INFO("publish egocylindrical pointcloud");
+        ROS_INFO("publish egocylindrical image");
         
         im_pub_.publish(image_ptr);
         
