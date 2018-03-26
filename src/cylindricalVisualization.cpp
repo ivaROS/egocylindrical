@@ -35,7 +35,7 @@ void CylindricalVisualization::cameraCb(const sensor_msgs::ImageConstPtr &image,
     
     //ptPub.publish(propagator_.getPropagatedPointCloud());
     
-    pub.publish(propagator_.getRawRangeImage());
+    //pub.publish(propagator_.getRawRangeImage());
     
 }
 

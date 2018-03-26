@@ -209,9 +209,7 @@ add_executable(${PROJECT_NAME}_node src/egocylindrical.cpp src/cylindricalVisual
 
 # Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
-   generate_range_image
    transform_points
-   #generate_point_cloud
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    ${PCL_LIBRARIES}
@@ -244,6 +242,25 @@ target_compile_options(pointcloud_publisher PRIVATE -g -std=c++11 -Wall #${OpenM
   )
   
 
+  
+
+add_executable(range_image_publisher src/range_image_node.cpp)
+
+#TODO: Add dependencies as needed
+add_dependencies(range_image_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(range_image_publisher
+   generate_range_image
+   ${catkin_LIBRARIES}
+   #${OpenCV_LIBRARIES}
+   #${PCL_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
+
+target_compile_options(range_image_publisher PRIVATE -g -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+  #${OpenMP_CXX_FLAGS}
+  )
+  
   
 # add_executable(function_tester src/function_tester.cpp)
 # target_link_libraries(function_tester

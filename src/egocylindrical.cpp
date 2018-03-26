@@ -111,6 +111,8 @@ namespace egocylindrical
     
     */
     
+    /*
+    
     sensor_msgs::Image::ConstPtr EgoCylindricalPropagator::getRawRangeImage()
     {
         ros::WallTime start = ros::WallTime::now();
@@ -121,6 +123,8 @@ namespace egocylindrical
         
         return image_ptr;
     }
+    
+    */
     
 
     void EgoCylindricalPropagator::init()
