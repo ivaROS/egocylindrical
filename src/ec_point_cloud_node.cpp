@@ -6,6 +6,9 @@
 #include <egocylindrical/EgoCylinderPoints.h>
 #include <ros/ros.h>
 
+#include <sensor_msgs/PointCloud2.h>
+
+
 namespace egocylindrical
 {
 

@@ -5,19 +5,19 @@
 
 #include <ros/ros.h>
 #include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <image_geometry/pinhole_camera_model.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf/LinearMath/Matrix3x3.h>
-#include <omp.h>
-#include <sensor_msgs/PointCloud2.h>
+//#include <opencv2/highgui.hpp>
+//#include <opencv2/imgproc.hpp>
+//#include <image_transport/image_transport.h>
+//#include <cv_bridge/cv_bridge.h>
+//#include <image_geometry/pinhole_camera_model.h>
+//#include <tf2_ros/transform_listener.h>
+//#include <tf/LinearMath/Matrix3x3.h>
+//#include <omp.h>
+//#include <sensor_msgs/PointCloud2.h>
 
 #include <egocylindrical/EgoCylinderPoints.h>
 
-#include <iomanip> // for debug printing
+//#include <iomanip> // for debug printing
 
 
 namespace egocylindrical
@@ -38,6 +38,8 @@ namespace egocylindrical
         
         class ECWrapper
         {
+        private:
+            
             cv::Mat points_;
             
             float* pointsx_;
@@ -53,15 +55,9 @@ namespace egocylindrical
             // For now, just get things working using this.
             // Note: It may be preferable to allocate x,y,z separately to ensure they are aligned (unless the width is chosen such that they will be anyway...)
             // Another idea: possibly template this class by height/width, potentially enabling compile time optimizations
+            // Also: maybe should store x, then z, then y, since only x and z are needed for range image
            
-           
-        private:
-            void mapMemory()
-            {
-                int step = height_ * width_ * sizeof(float);
-                
-                points_ = cv::Mat(3, height_ * width_, CV_32FC1, const_cast<float*>(&msg_->points.data[0]), step);
-            }
+
            
         public:
             
@@ -126,7 +122,7 @@ namespace egocylindrical
                 
                 points_ = cv::Mat(components, height_ * width_, CV_32FC1, const_cast<float*>(const_msg_->points.data.data()), step);
                 
-                //std::cout << "Address: " << std::hex  << const_msg_->points.data.data() << std::dec << ", height=" << height_ << ", width=" << width_ << ", step=" << step << std::endl;
+                std::cout << "Address: " << std::hex  << const_msg_->points.data.data() << std::dec << ", height=" << height_ << ", width=" << width_ << ", step=" << step << std::endl;
                 
             }
             

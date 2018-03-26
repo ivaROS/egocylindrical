@@ -170,7 +170,7 @@ add_library(transform_points src/transform_points.cpp)
 target_link_libraries(transform_points
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
-   ${PCL_LIBRARIES}
+   #${PCL_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )
 
@@ -181,9 +181,9 @@ target_compile_options(transform_points PRIVATE -g -std=c++11 -Wall -ftree-vecto
 add_library(generate_point_cloud src/generate_point_cloud.cpp)
 target_link_libraries(generate_point_cloud
    ${catkin_LIBRARIES}
-   ${OpenCV_LIBRARIES}
-   ${PCL_LIBRARIES}
-   ${OpenMP_CXX_FLAGS}
+   #${OpenCV_LIBRARIES}
+   #${PCL_LIBRARIES}
+   #${OpenMP_CXX_FLAGS}
    )
 
 target_compile_options(generate_point_cloud PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} ${OpenMP_CXX_FLAGS} #-funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
