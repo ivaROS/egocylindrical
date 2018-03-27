@@ -22,60 +22,7 @@ namespace egocylindrical
 
 namespace utils
 {
-    
-    
 
-    inline
-    float worldToRange(cv::Point3f point)
-    {
-        return std::sqrt(point.x*point.x + point.z*point.z);
-    }
-   /*
-    
-    cv::Point3f worldToCylindrical(cv::Point3f point, int cyl_width, int cyl_height, double hfov, double vfov)
-    {
-        cv::Point3f Pcyl_t = point / cv::sqrt(cv::pow(point.x, 2) + cv::pow(point.z, 2));   
-        
-        double theta = std::atan2(point.x,point.z);
-        double phi = std::atan2(point.y,point.z);
-        
-        cyl_width* theta /hfov
-        
-        
-    }
-    */
-    
-    /*
-    inline
-    cv::Point cylindricalToImage(cv::Point3f point)
-    {
-        
-    }
-    */
-    
-    inline
-    cv::Point3f projectWorldToCylinder(const cv::Point3f& point)
-    {
-        cv::Point3f Pcyl_t = point / std::sqrt(point.x * point.x + point.z * point.z);
-        return Pcyl_t;
-    }
-    
-
-    inline
-    cv::Point worldToCylindricalImage(const cv::Point3f& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-    {
-        
-        cv::Point3f p_cyl = projectWorldToCylinder(point);
-        
-        
-        float x = std::atan2(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
-        float y = p_cyl.y * v_scale + cyl_height / 2;
-                
-        cv::Point im_pt(x,y);
-        return im_pt;
-    }
-
-    
     struct CylindricalCoordsConverter
     {
        int width, height;
@@ -138,7 +85,7 @@ namespace utils
     
     
     inline
-    void addPoints(utils::ECWrapper& cylindrical_history, utils::ECWrapper& new_points, const CylindricalCoordsConverter& ccc, bool overwrite)
+    void addPoints(utils::ECWrapper& cylindrical_history, const utils::ECWrapper& new_points, const CylindricalCoordsConverter& ccc, bool overwrite)
     {
         cv::Rect image_roi = ccc.getImageROI();
         
@@ -164,9 +111,9 @@ namespace utils
             {
                 // The following 3 steps could probably be moved to the point propagation step and performed in parallel
                 // It will depend on whether the extra memory access for the steps cost more or less than the calculations
-                cv::Point image_pnt = ccc.worldToCylindricalImage(world_pnt);
+                cv::Point image_pnt = cylindrical_history.worldToCylindricalImage(world_pnt);
                 
-                int idx =  image_pnt.y * ccc.width +image_pnt.x;
+                int idx =  image_pnt.y * cylindrical_history.getWidth() +image_pnt.x;
                 
 
                 if(image_roi.contains(image_pnt))
@@ -197,12 +144,12 @@ namespace utils
 
     
     inline
-    void addDepthImage(utils::ECWrapper& cylindrical_history, const cv::Mat& depth_image, const CylindricalCoordsConverter& ccc, const image_geometry::PinholeCameraModel& cam_model)
+    void addDepthImage(utils::ECWrapper& cylindrical_history, const cv::Mat& depth_image, const image_geometry::PinholeCameraModel& cam_model)
     {
         ROS_DEBUG("Generating depth to cylindrical image mapping");
         
-        const cv::Rect image_roi = ccc.getImageROI();
-        const int width = ccc.width;
+        const cv::Rect image_roi = cylindrical_history.getImageRoi();
+        const int width = cylindrical_history.getWidth();
         //const int height = ccc.height;
         
         float* x = cylindrical_history.getX();
@@ -223,7 +170,7 @@ namespace utils
                 if(depth==depth)
                 {
                     cv::Point3f world_pnt = cam_model.projectPixelTo3dRay(pt)*depth;
-                    cv::Point image_pnt = ccc.worldToCylindricalImage(world_pnt);
+                    cv::Point image_pnt = cylindrical_history.worldToCylindricalImage(world_pnt);
                     
                     if(image_roi.contains(image_pnt))
                     {
@@ -241,10 +188,10 @@ namespace utils
     
     
     inline
-    void addDepthImage(utils::ECWrapper& cylindrical_history, const sensor_msgs::Image::ConstPtr& image_msg, const CylindricalCoordsConverter& ccc, const image_geometry::PinholeCameraModel& cam_model)
+    void addDepthImage(utils::ECWrapper& cylindrical_history, const sensor_msgs::Image::ConstPtr& image_msg, const image_geometry::PinholeCameraModel& cam_model)
     {
         const cv::Mat image = cv_bridge::toCvShare(image_msg)->image;
-        addDepthImage(cylindrical_history, image, ccc, cam_model);
+        addDepthImage(cylindrical_history, image, cam_model);
     }
     
     

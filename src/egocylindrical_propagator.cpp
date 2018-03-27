@@ -51,7 +51,7 @@ namespace egocylindrical
     {
         model_t.fromCameraInfo(cam_info);
         
-        utils::addDepthImage(cylindrical_points, image, ccc_, model_t);
+        utils::addDepthImage(cylindrical_points, image, model_t);
         
     }
 
@@ -59,17 +59,20 @@ namespace egocylindrical
     void EgoCylindricalPropagator::update(const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
     {
         ros::WallTime start = ros::WallTime::now();
-
+        
         new_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
-
+        ROS_INFO_STREAM("Creating new datastructure took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        
         try
         {
             if(old_pts_)
             {
+                ros::WallTime start = ros::WallTime::now();
+                
                 EgoCylindricalPropagator::propagateHistory(*old_pts_, *new_pts_, image->header);
                 ROS_INFO_STREAM("Propagation took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
             }
-   
+            
         }
         catch (tf2::TransformException &ex) 
         {
@@ -78,24 +81,27 @@ namespace egocylindrical
         
         
         
-        start = ros::WallTime::now();
+        ros::WallTime temp = ros::WallTime::now();
         
         EgoCylindricalPropagator::addDepthImage(*new_pts_, image, cam_info);
-        ROS_INFO_STREAM("Adding depth image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        ROS_INFO_STREAM("Adding depth image took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
         
         
         if(ec_pub_.getNumSubscribers() > 0)
         {
-            start = ros::WallTime::now();
+            temp = ros::WallTime::now();
             
             egocylindrical::EgoCylinderPoints::ConstPtr msg = new_pts_->getEgoCylinderPointsMsg();
-            ROS_INFO_STREAM("Copying EgoCylinderPoints took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+            ROS_INFO_STREAM("Copying EgoCylinderPoints took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
             
             ec_pub_.publish(msg);
         }
         
         
-        std::swap(new_pts_, old_pts_);        
+        std::swap(new_pts_, old_pts_);  
+        
+        ROS_INFO_STREAM("Total time: " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        
         
     }
     

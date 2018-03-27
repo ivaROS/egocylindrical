@@ -24,7 +24,7 @@ namespace egocylindrical
         * 
         */
         inline
-        void transform_impl(utils::ECWrapper points, const float*  const _R, const float*  const _T)
+        void transform_impl(utils::ECWrapper& points, const float*  const _R, const float*  const _T)
         {
 
             float* point_ptr = (float*)__builtin_assume_aligned(points.getPoints(), 16);            
@@ -32,6 +32,8 @@ namespace egocylindrical
             const float* const R = (float*)__builtin_assume_aligned(_R, __BIGGEST_ALIGNMENT__);
             const float* const T = (float*)__builtin_assume_aligned(_T, __BIGGEST_ALIGNMENT__);
             
+            //points.ranges_ = new float[height_*width_];
+            //points.inds_ = new long int[height_*width_];
 
             const int num_cols = points.getCols();
             
