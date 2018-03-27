@@ -104,6 +104,7 @@ namespace egocylindrical
         typedef ::egocylindrical::EgoCylinderPoints_<boost::alignment::aligned_allocator<void, 32> > AlignedEgoCylinderPoints;
         
         
+        //typedef AlignedEgoCylinderPoints ECMsg;
         typedef EgoCylinderPoints ECMsg;
         typedef boost::shared_ptr<ECMsg> ECMsgPtr;
         typedef boost::shared_ptr<ECMsg const> ECMsgConstPtr;
@@ -155,7 +156,7 @@ namespace egocylindrical
                 //Eigen::aligned_allocator<EgoCylinderPoints> Alloc;
                 //msg_ = boost::allocate_shared<EgoCylinderPoints>(Alloc);
                 
-                msg_->points.data.resize(3*height_*width_);  //Note: can pass 'utils::dNaN as 2nd argument to set all values
+                msg_->points.data.resize(3*height_*width_, dNaN);  //Note: can pass 'utils::dNaN as 2nd argument to set all values
                 
                 
                 ranges_ = new float[height_*width_];
@@ -166,29 +167,29 @@ namespace egocylindrical
                 hscale_ = width_/(2*M_PI);
                 vscale_ = height_/vfov;
                 
-                std::vector<std_msgs::MultiArrayDimension>& dims = msg_->points.layout.dim;
+                auto& dims = msg_->points.layout.dim;
                 dims.resize(3);
                 
                 
-                std_msgs::MultiArrayDimension dim0;
+                auto& dim0 = dims[0];
                 dim0.label = "components";
                 dim0.size = 3;
                 dim0.stride = 3*height_*width_;
-                dims[0] = dim0;
+                //dims[0] = dim0;
                 
                 
-                std_msgs::MultiArrayDimension dim1;
+                auto& dim1 = dims[1];
                 dim1.label = "rows";
                 dim1.size = height_;
                 dim1.stride = height_*width_;
-                dims[1] = dim1;
+                //dims[1] = dim1;
 
                 
-                std_msgs::MultiArrayDimension dim2;
+                auto& dim2 = dims[2];
                 dim2.label = "point";
                 dim2.size = width_;
                 dim2.stride = width_;             
-                dims[2] = dim2;
+                //dims[2] = dim2;
                 
                 
                 int step = dim1.stride * sizeof(float);
@@ -199,7 +200,7 @@ namespace egocylindrical
                 //std::cout << "Address: " << std::hex  << msg_->points.data.data() << std::dec << ", height=" << height_ << ", width=" << width_ << ", step=" << step << std::endl; //std::setfill('0') << std::setw(2) << ar[i] << " ";
                 
 
-                points_.setTo(utils::dNaN);
+                //points_.setTo(utils::dNaN);
             }
             
             ECWrapper(const ECMsgConstPtr& ec_points) 
