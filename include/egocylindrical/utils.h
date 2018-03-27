@@ -43,73 +43,28 @@ namespace utils
         for(int i = 0; i < new_points.getCols(); ++i)
         {
             
-            cv::Point3f world_pnt(n_x[i],n_y[i],n_z[i]);
-            
-            float depth = worldToRangeSquared(world_pnt);
-            
-            if(depth==depth)
-            {
-                // The following 3 steps could probably be moved to the point propagation step and performed in parallel
-                // It will depend on whether the extra memory access for the steps cost more or less than the calculations
-                cv::Point image_pnt = cylindrical_history.worldToCylindricalImage(world_pnt);
-                
-                int idx =  image_pnt.y * cylindrical_history.getWidth() +image_pnt.x;
-                
-                int idx2 = new_points.inds_[i];
-
-                
-
-                if(image_roi.contains(image_pnt))
-                {
-                    if(idx != idx2)
-                    {
-                        ROS_INFO_STREAM("Not the same indicies!" << idx << ", " << idx2);
-                    }
-                    
-                    cv::Point3f prev_point(x[idx], y[idx], z[idx]);
-                    
-                    float prev_depth = worldToRangeSquared(prev_point);
-                    
-                    if(!(prev_depth >= depth)) //overwrite || 
-                    {
-                        x[idx] = world_pnt.x;
-                        y[idx] = world_pnt.y;
-                        z[idx] = world_pnt.z;
-                        
-                        float depth2 = new_points.ranges_[i];
-                                                
-                        if((prev_depth >= depth2))
-                        {
-                            ROS_INFO_STREAM("Not the same depth evaluation! ");
-                        }
-                    }
-                    
-
-                    
-                }
-                else
-                {
-                    //ROS_DEBUG_STREAM("Outside of image!: (" << world_pnt << " => " << image_pnt);
-                }
-            }
-            
-            /*
             int idx = new_points.inds_[i];
             
             if(idx >=0)
             {
                 float depth = new_points.ranges_[i];
                 
-                float prev_depth = new_points.ranges_[idx];
+                cv::Point3f prev_point(x[idx], y[idx], z[idx]);
+                
+                float prev_depth = worldToRangeSquared(prev_point);
                 
                 if(!(prev_depth >= depth)) //overwrite || 
-                {
+                {   
+                    cv::Point3f world_pnt(n_x[i],n_y[i],n_z[i]);
+                    
                     x[idx] = world_pnt.x;
                     y[idx] = world_pnt.y;
                     z[idx] = world_pnt.z;
+                    
                 }
+                
             }
-            */
+            
             
         }
     
