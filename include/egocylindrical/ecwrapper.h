@@ -17,6 +17,10 @@
 
 #include <egocylindrical/EgoCylinderPoints.h>
 
+//#include <eigen_stl_containers/eigen_stl_containers.h>
+#include <boost/align/aligned_allocator.hpp>
+
+
 //#include <iomanip> // for debug printing
 
 
@@ -94,6 +98,17 @@ namespace egocylindrical
             return std::sqrt(worldToRangeSquared(point));
         }
         
+        
+        
+        //typedef ::egocylindrical::EgoCylinderPoints_<Eigen::aligned_allocator<void, 32> > AlignedEgoCylinderPoints;
+        typedef ::egocylindrical::EgoCylinderPoints_<boost::alignment::aligned_allocator<void, 32> > AlignedEgoCylinderPoints;
+        
+        
+        typedef EgoCylinderPoints ECMsg;
+        typedef boost::shared_ptr<ECMsg> ECMsgPtr;
+        typedef boost::shared_ptr<ECMsg const> ECMsgConstPtr;
+        
+        
         /*
          * This class is intended to act as an abstraction of the egocylindrical representation
          * to enable other functions to operate on it without requiring knowledge of the implementation.
@@ -114,9 +129,9 @@ namespace egocylindrical
             float hscale_, vscale_;
             
             std_msgs::Header header_;
-            EgoCylinderPoints::Ptr msg_; // The idea would be to store everything in the message's allocated storage to prevent copies
+            ECMsgPtr msg_; // The idea would be to store everything in the message's allocated storage to prevent copies
             
-            EgoCylinderPoints::ConstPtr const_msg_;
+            ECMsgConstPtr const_msg_;
             
             // For now, just get things working using this.
             // Note: It may be preferable to allocate x,y,z separately to ensure they are aligned (unless the width is chosen such that they will be anyway...)
@@ -135,7 +150,11 @@ namespace egocylindrical
             width_(width),
             vfov_(vfov)
             {
-                msg_ = boost::make_shared<EgoCylinderPoints>();
+                msg_ = boost::make_shared<ECMsg>();
+                
+                //Eigen::aligned_allocator<EgoCylinderPoints> Alloc;
+                //msg_ = boost::allocate_shared<EgoCylinderPoints>(Alloc);
+                
                 msg_->points.data.resize(3*height_*width_);  //Note: can pass 'utils::dNaN as 2nd argument to set all values
                 
                 
@@ -183,7 +202,7 @@ namespace egocylindrical
                 points_.setTo(utils::dNaN);
             }
             
-            ECWrapper(const egocylindrical::EgoCylinderPointsConstPtr& ec_points) 
+            ECWrapper(const ECMsgConstPtr& ec_points) 
             {
                 const_msg_ = ec_points;
                 header_ = const_msg_->header;
@@ -273,7 +292,7 @@ namespace egocylindrical
             
             
             inline
-            EgoCylinderPoints::ConstPtr getEgoCylinderPointsMsg()
+            ECMsgConstPtr getEgoCylinderPointsMsg()
             {
                 /* This is a temporary solution until I can decide how to do this. Ideally, I would publish the final message directly
                  * so that other nodelets can do their thing. However, currently I transform points in place, overwriting the old values.
@@ -282,9 +301,9 @@ namespace egocylindrical
                  * 2. Publish the message, then make a copy for use in callback
                  * 3. Perform out of place point transformation
                  */
-                EgoCylinderPoints::ConstPtr msg = boost::make_shared<EgoCylinderPoints>(*msg_);
+                ECMsgConstPtr msg = boost::make_shared<EgoCylinderPoints>(*msg_);
                 
-                return (EgoCylinderPoints::ConstPtr) msg_;
+                return (ECMsgConstPtr) msg_;
             }
             
             // Function stubs to fill in and uncomment as needed

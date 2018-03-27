@@ -95,7 +95,7 @@ namespace egocylindrical
         {
             temp = ros::WallTime::now();
             
-            egocylindrical::EgoCylinderPoints::ConstPtr msg = new_pts_->getEgoCylinderPointsMsg();
+            utils::ECMsgConstPtr msg = new_pts_->getEgoCylinderPointsMsg();
             ROS_INFO_STREAM("Copying EgoCylinderPoints took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
             
             ec_pub_.publish(msg);
