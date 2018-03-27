@@ -26,19 +26,27 @@ namespace egocylindrical
         inline
         void transform_impl(utils::ECWrapper& points, const float*  const _R, const float*  const _T)
         {
-
+            cv::Rect image_roi = points.getImageRoi();
+            
+            
+            
             float* point_ptr = (float*)__builtin_assume_aligned(points.getPoints(), 16);            
             
             const float* const R = (float*)__builtin_assume_aligned(_R, __BIGGEST_ALIGNMENT__);
             const float* const T = (float*)__builtin_assume_aligned(_T, __BIGGEST_ALIGNMENT__);
-            
-            //points.ranges_ = new float[height_*width_];
-            //points.inds_ = new long int[height_*width_];
 
             const int num_cols = points.getCols();
+            const int width = points.getWidth();
+            const int height = points.getHeight();
+            
+            const float* x = points.getX();
+            const float* y = points.getY();
+            const float* z = points.getZ();
+            
             
             #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-            for(size_t p = 0; p < num_cols; ++p)
+            //#pragma omp simd
+            for(long int p = 0; p < num_cols; ++p)
             {
                 float temp[3];
                 for(int row=0; row < 3; ++row)
@@ -54,6 +62,63 @@ namespace egocylindrical
                 {
                     point_ptr[num_cols * row + p] = temp[row] + T[row];
                 }
+                
+                
+                float depth=dNaN;
+                
+                int idx = -1;
+      
+                cv::Point3f world_pnt(x[p],y[p],z[p]);
+                
+                depth= worldToRangeSquared(world_pnt);
+                
+                cv::Point image_pnt = points.worldToCylindricalImage(world_pnt);
+                
+                int tidx = image_pnt.y * width +image_pnt.x;
+                
+                if(tidx < num_cols)
+                    idx = tidx;
+                
+                
+                /*
+                int isgood0 = (image_pnt.x >= 0) ? 1 : 0;
+                int isgood1 = (image_pnt.x <= width) ? 1 : 0;
+                int isgood2 = (image_pnt.y >= 0) ? 1 : 0;
+                int isgood3 = (image_pnt.y <= height) ? 1 : 0;
+                
+                int isgood = isgood0 & isgood1 & isgood2 & isgood3;
+                
+                if(isgood == 1)
+                {
+                    idx = image_pnt.y * width +image_pnt.x;
+                }
+                */
+                
+                /*
+                if(image_pnt.x >= 0)
+                {
+                    if(image_pnt.x <= width)
+                    {
+                        if(image_pnt.y >= 0)
+                        {
+                            if(image_pnt.y <= height)
+                            {
+                                idx = image_pnt.y * width +image_pnt.x;
+                            }
+                        }
+                    }
+                }
+                */
+                
+                /*
+                if(image_roi.contains(image_pnt))
+                {
+                    idx =  image_pnt.y * width +image_pnt.x;
+                }
+                */
+   
+                points.inds_[p] = idx;
+                points.ranges_[p] = depth;
                 
             }
                     

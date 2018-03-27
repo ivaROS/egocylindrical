@@ -28,6 +28,37 @@ namespace egocylindrical
 
         constexpr float dNaN=(std::numeric_limits<float>::has_quiet_NaN) ? std::numeric_limits<float>::quiet_NaN() : 0;
         
+        // Source: https://gist.github.com/volkansalma/2972237
+        inline
+        float atan2_approximation1(float y, float x)
+        {
+            //http://pubs.opengroup.org/onlinepubs/009695399/functions/atan2.html
+            //Volkan SALMA
+            
+            constexpr float ONEQTR_PI = M_PI / 4.0;
+            constexpr float THRQTR_PI = 3.0 * M_PI / 4.0;
+            float r, angle;
+            float abs_y = fabs(y) + 1e-10f;      // kludge to prevent 0/0 condition
+            if ( x < 0.0f )
+            {
+                r = (x + abs_y) / (abs_y - x);
+                angle = THRQTR_PI;
+            }
+            else
+            {
+                r = (x - abs_y) / (x + abs_y);
+                angle = ONEQTR_PI;
+            }
+            angle += (0.1963f * r * r - 0.9817f) * r;
+            if ( y < 0.0f )
+                return( -angle );     // negate if in quad III or IV
+                else
+                    return( angle );
+                
+                
+        }
+        
+        
         
         inline
         cv::Point3f projectWorldToCylinder(const cv::Point3f& point)
@@ -43,8 +74,8 @@ namespace egocylindrical
             
             cv::Point3f p_cyl = projectWorldToCylinder(point);
             
-            
-            float x = std::atan2(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
+            float x = atan2_approximation1(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
+            //float x = std::atan2(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
             float y = p_cyl.y * v_scale + cyl_height / 2;
             
             cv::Point im_pt(x,y);
@@ -96,8 +127,8 @@ namespace egocylindrical
            
         public:
             
-            float* ranges_;
-            long int* inds_; // Note: on 32/64 bit systems, int almost always has the same size as long, but just to be safe...
+            float* ranges_=nullptr;
+            long int* inds_=nullptr; // Note: on 32/64 bit systems, int almost always has the same size as long, but just to be safe...
             
             ECWrapper(int height, int width, float vfov):
             height_(height),
@@ -106,6 +137,10 @@ namespace egocylindrical
             {
                 msg_ = boost::make_shared<EgoCylinderPoints>();
                 msg_->points.data.resize(3*height_*width_);  //Note: can pass 'utils::dNaN as 2nd argument to set all values
+                
+                
+                ranges_ = new float[height_*width_];
+                inds_ = new long int[height_*width_];
                 
                 msg_->fov_v = vfov_;
                 
@@ -167,6 +202,15 @@ namespace egocylindrical
                 
             }
             
+            ~ECWrapper()
+            {
+                
+                   if(inds_ != nullptr)
+                   {
+                       delete inds_;
+                       delete ranges_;
+                   }
+            }
             
             
             
