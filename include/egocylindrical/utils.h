@@ -45,7 +45,7 @@ namespace utils
             
             cv::Point3f world_pnt(n_x[i],n_y[i],n_z[i]);
             
-            float depth = worldToRange(world_pnt);
+            float depth = worldToRangeSquared(world_pnt);
             
             if(depth==depth)
             {
@@ -55,25 +55,62 @@ namespace utils
                 
                 int idx =  image_pnt.y * cylindrical_history.getWidth() +image_pnt.x;
                 
+                int idx2 = new_points.inds_[i];
+
+                
 
                 if(image_roi.contains(image_pnt))
                 {
+                    if(idx != idx2)
+                    {
+                        ROS_INFO_STREAM("Not the same indicies!" << idx << ", " << idx2);
+                    }
+                    
                     cv::Point3f prev_point(x[idx], y[idx], z[idx]);
                     
-                    float prev_depth = worldToRange(prev_point);
+                    float prev_depth = worldToRangeSquared(prev_point);
                     
                     if(!(prev_depth >= depth)) //overwrite || 
                     {
                         x[idx] = world_pnt.x;
                         y[idx] = world_pnt.y;
                         z[idx] = world_pnt.z;
+                        
+                        float depth2 = new_points.ranges_[i];
+                                                
+                        if((prev_depth >= depth2))
+                        {
+                            ROS_INFO_STREAM("Not the same depth evaluation! ");
+                        }
                     }
+                    
+
+                    
                 }
                 else
                 {
                     //ROS_DEBUG_STREAM("Outside of image!: (" << world_pnt << " => " << image_pnt);
                 }
             }
+            
+            /*
+            int idx = new_points.inds_[i];
+            
+            if(idx >=0)
+            {
+                float depth = new_points.ranges_[i];
+                
+                float prev_depth = new_points.ranges_[idx];
+                
+                if(!(prev_depth >= depth)) //overwrite || 
+                {
+                    x[idx] = world_pnt.x;
+                    y[idx] = world_pnt.y;
+                    z[idx] = world_pnt.z;
+                }
+            }
+            */
+            
         }
     
         

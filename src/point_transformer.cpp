@@ -78,44 +78,6 @@ namespace egocylindrical
                 
                 if(tidx < num_cols)
                     idx = tidx;
-                
-                
-                /*
-                int isgood0 = (image_pnt.x >= 0) ? 1 : 0;
-                int isgood1 = (image_pnt.x <= width) ? 1 : 0;
-                int isgood2 = (image_pnt.y >= 0) ? 1 : 0;
-                int isgood3 = (image_pnt.y <= height) ? 1 : 0;
-                
-                int isgood = isgood0 & isgood1 & isgood2 & isgood3;
-                
-                if(isgood == 1)
-                {
-                    idx = image_pnt.y * width +image_pnt.x;
-                }
-                */
-                
-                /*
-                if(image_pnt.x >= 0)
-                {
-                    if(image_pnt.x <= width)
-                    {
-                        if(image_pnt.y >= 0)
-                        {
-                            if(image_pnt.y <= height)
-                            {
-                                idx = image_pnt.y * width +image_pnt.x;
-                            }
-                        }
-                    }
-                }
-                */
-                
-                /*
-                if(image_roi.contains(image_pnt))
-                {
-                    idx =  image_pnt.y * width +image_pnt.x;
-                }
-                */
    
                 points.inds_[p] = idx;
                 points.ranges_[p] = depth;
