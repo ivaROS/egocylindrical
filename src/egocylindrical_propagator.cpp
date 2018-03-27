@@ -41,7 +41,7 @@ namespace egocylindrical
         ROS_INFO_STREAM_NAMED("timing", "Transform points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
         start = ros::WallTime::now();
-        utils::addPoints(new_pnts, old_pnts, ccc_, false);
+        utils::addPoints(new_pnts, old_pnts, false);
         ROS_INFO_STREAM_NAMED("timing", "Inserting transformed points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
 
     }
@@ -124,9 +124,7 @@ namespace egocylindrical
         
         cylinder_width_ = 2048;
         cylinder_height_ = 320;
-        
-        ccc_ = utils::CylindricalCoordsConverter(cylinder_width_, cylinder_height_, hfov_, vfov_);
-        
+                
         
         // Get topic names
         std::string depth_topic="/camera/depth/image_raw", info_topic= "/camera/depth/camera_info", pub_topic="egocylindrical_points";

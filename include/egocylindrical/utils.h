@@ -23,71 +23,11 @@ namespace egocylindrical
 namespace utils
 {
 
-    struct CylindricalCoordsConverter
-    {
-       int width, height;
-       float hfov, vfov;
-       float h_scale, v_scale;
-       float h_offset=0, v_offset=0;
-       
-       CylindricalCoordsConverter()
-       {
-       }
-       
-       CylindricalCoordsConverter(int width, int height, float hfov, float vfov):
-            width(width),
-            height(height),
-            hfov(hfov),
-            vfov(vfov)
-        {
-            h_scale = width/hfov;
-            v_scale = height/vfov;
-        }
-        
-        inline
-        cv::Point worldToCylindricalImage(cv::Point3f point) const
-        {
-            return utils::worldToCylindricalImage(point, width, height, h_scale, v_scale, h_offset, v_offset);
-        }
-        
-        inline
-        cv::Rect getImageROI() const
-        {
-            return cv::Rect(cv::Point(), cv::Size(width,height));
-            
-        }
-        
-        /*
-        inline
-        cv::Point3f getWorldPoint(const cv::Mat& image, const cv::Point& image_pnt) const
-        {
-            
-        }
-        */
-        
-        /* TODO: check ROI and perform worldToCylindricalImage call in here
-         * Goal: abstract away the underlying data representation from the rest of my code
-         */
-        
-        inline
-        bool setWorldPoint(cv::Mat& image, const cv::Point3f& world_pnt, const cv::Point& image_pnt)
-        {
-            image.at<float>(0,image_pnt.y*width + image_pnt.x) = world_pnt.x;
-            image.at<float>(1,image_pnt.y*width + image_pnt.x) = world_pnt.y;
-            image.at<float>(2,image_pnt.y*width + image_pnt.x) = world_pnt.z;
-            
-            return true;
-        }
-        
-        
-        
-    };
-    
     
     inline
-    void addPoints(utils::ECWrapper& cylindrical_history, const utils::ECWrapper& new_points, const CylindricalCoordsConverter& ccc, bool overwrite)
+    void addPoints(utils::ECWrapper& cylindrical_history, const utils::ECWrapper& new_points, bool overwrite)
     {
-        cv::Rect image_roi = ccc.getImageROI();
+        cv::Rect image_roi = cylindrical_history.getImageRoi();
         
         float* x = cylindrical_history.getX();
         float* y = cylindrical_history.getY();

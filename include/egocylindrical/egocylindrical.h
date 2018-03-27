@@ -56,10 +56,7 @@ private:
     boost::shared_ptr<synchronizer> timeSynchronizer;
     
     ros::Publisher ec_pub_;
-    
-    
-    
-    utils::CylindricalCoordsConverter ccc_;
+
 
     void propagateHistory(utils::ECWrapper& old_pnts, utils::ECWrapper& new_pnts, std_msgs::Header new_header);
     void addDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info);
