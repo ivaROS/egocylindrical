@@ -146,7 +146,7 @@ namespace egocylindrical
             float* ranges_=nullptr;
             long int* inds_=nullptr; // Note: on 32/64 bit systems, int almost always has the same size as long, but just to be safe...
             
-            ECWrapper(int height, int width, float vfov):
+            ECWrapper(int height, int width, float vfov, bool allocate_arrays = false):
             height_(height),
             width_(width),
             vfov_(vfov)
@@ -158,9 +158,11 @@ namespace egocylindrical
                 
                 msg_->points.data.resize(3*height_*width_, dNaN);  //Note: can pass 'utils::dNaN as 2nd argument to set all values
                 
-                
-                ranges_ = new float[height_*width_];
-                inds_ = new long int[height_*width_];
+                if(allocate_arrays)
+                {
+                    ranges_ = new float[height_*width_];
+                    inds_ = new long int[height_*width_];
+                }
                 
                 msg_->fov_v = vfov_;
                 
@@ -302,7 +304,7 @@ namespace egocylindrical
                  * 2. Publish the message, then make a copy for use in callback
                  * 3. Perform out of place point transformation
                  */
-                ECMsgConstPtr msg = boost::make_shared<EgoCylinderPoints>(*msg_);
+                //ECMsgConstPtr msg = boost::make_shared<EgoCylinderPoints>(*msg_);
                 
                 return (ECMsgConstPtr) msg_;
             }
@@ -359,9 +361,9 @@ namespace egocylindrical
         typedef std::shared_ptr<ECWrapper> ECWrapperPtr;
         
         inline
-        ECWrapperPtr getECWrapper(int height, int width, float vfov)
+        ECWrapperPtr getECWrapper(int height, int width, float vfov, bool allocate_arrays=false)
         {
-            return std::make_shared<ECWrapper>(height,width,vfov);
+            return std::make_shared<ECWrapper>(height,width,vfov,allocate_arrays);
         }
         
     }
