@@ -87,6 +87,13 @@ namespace egocylindrical
         }
         
         inline
+        float worldToRangeSquared(const float x, const float z)
+        {
+            return x*x + z*z;
+        }
+        
+
+        inline
         float worldToRangeSquared(const cv::Point3f& point)
         {
             return point.x*point.x + point.z*point.z;
@@ -234,9 +241,7 @@ namespace egocylindrical
                    }
             }
             
-            
-            
-            
+                        
             inline float* getPoints()                   { return (float*)__builtin_assume_aligned(points_.data, 16); }
             inline const float* getPoints()     const   { return (const float*)__builtin_assume_aligned(points_.data, 16); }
             
@@ -288,9 +293,21 @@ namespace egocylindrical
             }
             
             inline
-            cv::Point worldToCylindricalImage(cv::Point3f point) const
+            cv::Point worldToCylindricalImage(const cv::Point3f& point) const
             {
                 return utils::worldToCylindricalImage(point, width_, height_, hscale_, vscale_, 0, 0);
+            }
+            
+            
+            
+            inline
+            int worldToCylindricalIdx(float x, float y, float z) const
+            {
+                cv::Point image_pnt = worldToCylindricalImage(cv::Point3f(x,y,z));
+                
+                int tidx = image_pnt.y * getWidth() +image_pnt.x;
+                
+                return tidx;
             }
             
             

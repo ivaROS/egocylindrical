@@ -134,6 +134,58 @@ namespace egocylindrical
                     
         }
         
+        void runLoop(float* temp1, float* temp2, float* temp3, int size)
+        {
+            #pragma omp simd
+            for(long int i = 0; i < size; ++i)
+            {
+                temp3[i] = temp1[i] + temp2[i];
+            }
+        }
+        
+        
+        void just_transform(const float* x, const float* y, const float* z, float* x_n, float* y_n, float* z_n, const float* const _R, const float* const _T, int num_cols, const utils::ECWrapper& points, utils::ECWrapper& transformed_points)
+        {
+            
+            const float r0 = _R[0];
+            const float r1 = _R[1];
+            const float r2 = _R[2];
+            const float r3 = _R[3];
+            const float r4 = _R[4];
+            const float r5 = _R[5];
+            const float r6 = _R[6];
+            const float r7 = _R[7];
+            const float r8 = _R[8];
+            
+            const float t0 = _T[0];
+            const float t1 = _T[1];
+            const float t2 = _T[2];
+            
+            #pragma omp parallel for simd  num_threads(4)
+            for(int p = 0; p < num_cols; ++p)
+            {
+                
+                x_n[p] = r0 * x[p] + r1 * y[p] + r2 * z[p] + t0;
+                y_n[p] = r3 * x[p] + r4 * y[p] + r5 * z[p] + t1;
+                z_n[p] = r6 * x[p] + r7 * y[p] + r8 * z[p] + t2;
+                
+                float depth=dNaN;
+                
+                int idx = -1;
+                
+                depth = worldToRangeSquared(x[p], z[p]);
+                
+                int tidx = points.worldToCylindricalIdx(x[p],y[p],z[p]);
+                
+                if(tidx < num_cols)
+                    idx = tidx;
+                
+                transformed_points.inds_[p] = idx;
+                transformed_points.ranges_[p] = depth;
+            }
+            
+        }
+        
         
         inline
         void transform_impl(const utils::ECWrapper& points, utils::ECWrapper& transformed_points, const float*  const _R, const float*  const _T)
@@ -171,34 +223,55 @@ namespace egocylindrical
             float* y_n = transformed_points.getY();
             float* z_n = transformed_points.getZ();
             
+            int size = 40960000;
+            
+            float* temp1 = new float[size];
+            float* temp2 = new float[size];
+            float* temp3 = new float[size];
+            
+            
+            ros::WallTime start = ros::WallTime::now();
+            
+            //runLoop(temp1,temp2,temp3, size);
+            
+            just_transform(x,y,z, x_n, y_n, z_n, _R, _T, num_cols, points, transformed_points);
+            
+            ros::WallTime end = ros::WallTime::now();
+            
+            
+            
+            
+            ROS_INFO_STREAM("TIME = " << (end - start).toSec() * 1000  << "ms" << temp3[0]);
+            
+            delete temp1;
+            delete temp2;
+            delete temp3;
+            
+            bool use_parallel = true;
             
             if (omp_get_dynamic())
                 omp_set_dynamic(0);
             
             //#pragma omp parallel
             {
-                //#pragma omp single
+                if(use_parallel)
                 {
-                    if(omp_in_parallel())
+                    #pragma omp single
                     {
-                        ROS_INFO_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
+                        if(omp_in_parallel())
+                        {
+                            ROS_INFO_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
+                        }
                     }
                 }
                 
-                #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-                //#pragma omp for schedule(static)//simd      
+                //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
+                #pragma omp simd //schedule(static)
                 for(long int p = 0; p < num_cols; ++p)
                 {
+
                     
-                    if(false && omp_in_parallel())
-                    {
-                        int thread_id = omp_get_thread_num();
-                        
-                        ROS_INFO_STREAM_NAMED("omp","OpenMP active! Thread # " << thread_id);
-                        
-                    }
-                    
-                    if(true)
+                    if(false)
                     {
                         float temp[3];
                         for(int row=0; row < 3; ++row)
@@ -234,11 +307,94 @@ namespace egocylindrical
                     
                     cv::Point3f world_pnt(x[p],y[p],z[p]);
                     
-                    depth= worldToRangeSquared(world_pnt);
+                    depth = worldToRangeSquared(x[p], z[p]);
                     
-                    cv::Point image_pnt = points.worldToCylindricalImage(world_pnt);
+                    int tidx = points.worldToCylindricalIdx(x[p],y[p],z[p]);
+                                        
+                    if(tidx < num_cols)
+                        idx = tidx;
                     
-                    int tidx = image_pnt.y * width +image_pnt.x;
+                    transformed_points.inds_[p] = idx;
+                    transformed_points.ranges_[p] = depth;
+                    
+                }
+                
+            }
+        }
+        
+        inline
+        void transform_impl2(const utils::ECWrapper& points, utils::ECWrapper& transformed_points, const float*  const _R, const float*  const _T)
+        {
+            cv::Rect image_roi = points.getImageRoi();
+            
+            const float r0 = _R[0];
+            const float r1 = _R[1];
+            const float r2 = _R[2];
+            const float r3 = _R[3];
+            const float r4 = _R[4];
+            const float r5 = _R[5];
+            const float r6 = _R[6];
+            const float r7 = _R[7];
+            const float r8 = _R[8];
+            
+            const float t0 = _T[0];
+            const float t1 = _T[1];
+            const float t2 = _T[2];
+                        
+            const float* const R = (float*)__builtin_assume_aligned(_R, __BIGGEST_ALIGNMENT__);
+            const float* const T = (float*)__builtin_assume_aligned(_T, __BIGGEST_ALIGNMENT__);
+            
+            const int num_cols = points.getCols();
+            const int width = points.getWidth();
+            const int height = points.getHeight();
+            
+            const float* x = points.getX();
+            const float* y = points.getY();
+            const float* z = points.getZ();
+            
+            float* x_n = transformed_points.getX();
+            float* y_n = transformed_points.getY();
+            float* z_n = transformed_points.getZ();
+            
+                        
+            if (omp_get_dynamic())
+                omp_set_dynamic(0);
+            
+            #pragma omp parallel num_threads(4)
+            {
+                
+                #pragma omp single
+                {
+                    if(omp_in_parallel())
+                    {
+                        ROS_INFO_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
+                    }
+                }
+                
+                
+                
+                //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
+                #pragma omp for simd //num_threads(4)//schedule(static)
+                for(long int p = 0; p < num_cols; ++p)
+                {
+
+                    float x_p = x[p];
+                    float y_p = y[p];
+                    float z_p = z[p];
+                    
+                    x_n[p] = r0 * x[p] + r1 * y[p] + r2 * z[p] + t0;
+                    y_n[p] = r3 * x[p] + r4 * y[p] + r5 * z[p] + t1;
+                    z_n[p] = r6 * x[p] + r7 * y[p] + r8 * z[p] + t2;
+                     
+                    float depth=dNaN;
+                    
+                    int idx = -1;
+                    
+                    //cv::Point3f world_pnt(x[p],y[p],z[p]);
+                    
+                    depth = worldToRangeSquared(x[p], z[p]);
+                    
+                    int tidx = points.worldToCylindricalIdx(x[p],y[p],z[p]);
                     
                     if(tidx < num_cols)
                         idx = tidx;
@@ -320,7 +476,7 @@ namespace egocylindrical
             translationArray[1] = trans.transform.translation.y;
             translationArray[2] = trans.transform.translation.z;
             
-            transform_impl(points, transformed_points, rotationArray, translationArray);
+            transform_impl2(points, transformed_points, rotationArray, translationArray);
             
         }
         
