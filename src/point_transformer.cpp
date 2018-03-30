@@ -56,57 +56,80 @@ namespace egocylindrical
             float* z = points.getZ();
             
             
-            #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-            //#pragma omp simd
-            for(long int p = 0; p < num_cols; ++p)
+            //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
+            
+            if (omp_get_dynamic())
+                omp_set_dynamic(0);
+            
+            #pragma omp parallel
             {
-                /*
-                float temp[3];
-                for(int row=0; row < 3; ++row)
+                if(omp_in_parallel())
                 {
-                    temp[row] = 0;
-                    for(int col=0; col < 3; ++col)
+                    ROS_INFO_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
+                }
+                
+                
+                #pragma omp for schedule(dynamic)//simd
+                for(long int p = 0; p < num_cols; ++p)
+                {
+                    if(omp_in_parallel())
                     {
-                        temp[row] += R[row*3+col] * point_ptr[num_cols * col + p]; // points.at<float>(col,p);
+                        int thread_id = omp_get_thread_num();
+                        
+                        ROS_INFO_STREAM_NAMED("omp","OpenMP active! Thread # " << thread_id);
+                        
                     }
-                }
-                
-                for(int row=0; row < 3; ++row)
-                {
-                    point_ptr[num_cols * row + p] = temp[row] + T[row];
-                }
-                */
-                
-                
-                float x_p = x[p];
-                float y_p = y[p];
-                float z_p = z[p];
-                
-                x[p] = r0 * x[p] + r1 * y[p] + r2 * z[p] + t0;
-                y[p] = r3 * x[p] + r4 * y[p] + r5 * z[p] + t1;
-                z[p] = r6 * x[p] + r7 * y[p] + r8 * z[p] + t2;
-                
+                    ROS_INFO_STREAM("testing");
+                    
+                    
+                    float temp[3];
+                    for(int row=0; row < 3; ++row)
+                    {
+                        temp[row] = 0;
+                        for(int col=0; col < 3; ++col)
+                        {
+                            temp[row] += R[row*3+col] * point_ptr[num_cols * col + p]; // points.at<float>(col,p);
+                        }
+                    }
+                    
+                    for(int row=0; row < 3; ++row)
+                    {
+                        point_ptr[num_cols * row + p] = temp[row] + T[row];
+                    }
+                    
+                    /*
+                    
+                    float x_p = x[p];
+                    float y_p = y[p];
+                    float z_p = z[p];
+                    
+                    x[p] = r0 * x[p] + r1 * y[p] + r2 * z[p] + t0;
+                    y[p] = r3 * x[p] + r4 * y[p] + r5 * z[p] + t1;
+                    z[p] = r6 * x[p] + r7 * y[p] + r8 * z[p] + t2;
+                    */
 
-                
-                
-                float depth=dNaN;
-                
-                int idx = -1;
-      
-                cv::Point3f world_pnt(x[p],y[p],z[p]);
-                
-                depth= worldToRangeSquared(world_pnt);
-                
-                cv::Point image_pnt = points.worldToCylindricalImage(world_pnt);
-                
-                int tidx = image_pnt.y * width +image_pnt.x;
-                
-                if(tidx < num_cols)
-                    idx = tidx;
-   
-                points.inds_[p] = idx;
-                points.ranges_[p] = depth;
-                
+                    
+                    
+                    float depth=dNaN;
+                    
+                    int idx = -1;
+        
+                    cv::Point3f world_pnt(x[p],y[p],z[p]);
+                    
+                    depth= worldToRangeSquared(world_pnt);
+                    
+                    cv::Point image_pnt = points.worldToCylindricalImage(world_pnt);
+                    
+                    int tidx = image_pnt.y * width +image_pnt.x;
+                    
+                    if(tidx < num_cols)
+                        idx = tidx;
+    
+                    points.inds_[p] = idx;
+                    points.ranges_[p] = depth;
+                    
+                }
+            
             }
                     
         }
@@ -149,59 +172,76 @@ namespace egocylindrical
             float* z_n = transformed_points.getZ();
             
             
-            #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-            //#pragma omp simd
-            for(long int p = 0; p < num_cols; ++p)
-            {
-                /*
-                 *       float temp[3];
-                 *       for(int row=0; row < 3; ++row)
-                 *       {
-                 *           temp[row] = 0;
-                 *           for(int col=0; col < 3; ++col)
-                 *           {
-                 *               temp[row] += R[row*3+col] * point_ptr[num_cols * col + p]; // points.at<float>(col,p);
-            }
-            }
+            if (omp_get_dynamic())
+                omp_set_dynamic(0);
             
-            for(int row=0; row < 3; ++row)
+            #pragma omp parallel
             {
-            point_ptr[num_cols * row + p] = temp[row] + T[row];
+                if(omp_in_parallel())
+                {
+                    ROS_INFO_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
+                }
+                
+                //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
+                #pragma omp for schedule(static)//simd      
+                for(long int p = 0; p < num_cols; ++p)
+                {
+                    /*
+                    *       float temp[3];
+                    *       for(int row=0; row < 3; ++row)
+                    *       {
+                    *           temp[row] = 0;
+                    *           for(int col=0; col < 3; ++col)
+                    *           {
+                    *               temp[row] += R[row*3+col] * point_ptr[num_cols * col + p]; // points.at<float>(col,p);
+                }
+                }
+                
+                for(int row=0; row < 3; ++row)
+                {
+                point_ptr[num_cols * row + p] = temp[row] + T[row];
+                }
+                */
+                    if(omp_in_parallel())
+                    {
+                        int thread_id = omp_get_thread_num();
+                        
+                        ROS_INFO_STREAM_NAMED("omp","OpenMP active! Thread # " << thread_id);
+                        
+                    }
+                    
+                    float x_p = x[p];
+                    float y_p = y[p];
+                    float z_p = z[p];
+                    
+                    x_n[p] = r0 * x[p] + r1 * y[p] + r2 * z[p] + t0;
+                    y_n[p] = r3 * x[p] + r4 * y[p] + r5 * z[p] + t1;
+                    z_n[p] = r6 * x[p] + r7 * y[p] + r8 * z[p] + t2;
+                    
+                    
+                    
+                    
+                    float depth=dNaN;
+                    
+                    int idx = -1;
+                    
+                    cv::Point3f world_pnt(x[p],y[p],z[p]);
+                    
+                    depth= worldToRangeSquared(world_pnt);
+                    
+                    cv::Point image_pnt = points.worldToCylindricalImage(world_pnt);
+                    
+                    int tidx = image_pnt.y * width +image_pnt.x;
+                    
+                    if(tidx < num_cols)
+                        idx = tidx;
+                    
+                    transformed_points.inds_[p] = idx;
+                    transformed_points.ranges_[p] = depth;
+                    
+                }
+                
             }
-            */
-                
-                
-                float x_p = x[p];
-                float y_p = y[p];
-                float z_p = z[p];
-                
-                x_n[p] = r0 * x[p] + r1 * y[p] + r2 * z[p] + t0;
-                y_n[p] = r3 * x[p] + r4 * y[p] + r5 * z[p] + t1;
-                z_n[p] = r6 * x[p] + r7 * y[p] + r8 * z[p] + t2;
-                
-                
-                
-                
-                float depth=dNaN;
-                
-                int idx = -1;
-                
-                cv::Point3f world_pnt(x[p],y[p],z[p]);
-                
-                depth= worldToRangeSquared(world_pnt);
-                
-                cv::Point image_pnt = points.worldToCylindricalImage(world_pnt);
-                
-                int tidx = image_pnt.y * width +image_pnt.x;
-                
-                if(tidx < num_cols)
-                    idx = tidx;
-                
-                transformed_points.inds_[p] = idx;
-                transformed_points.ranges_[p] = depth;
-                
-            }
-            
         }
         
         
