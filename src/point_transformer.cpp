@@ -175,34 +175,22 @@ namespace egocylindrical
             if (omp_get_dynamic())
                 omp_set_dynamic(0);
             
-            #pragma omp parallel
+            //#pragma omp parallel
             {
-                if(omp_in_parallel())
+                //#pragma omp single
                 {
-                    ROS_INFO_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
+                    if(omp_in_parallel())
+                    {
+                        ROS_INFO_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
+                    }
                 }
                 
-                //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-                #pragma omp for schedule(static)//simd      
+                #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
+                //#pragma omp for schedule(static)//simd      
                 for(long int p = 0; p < num_cols; ++p)
                 {
-                    /*
-                    *       float temp[3];
-                    *       for(int row=0; row < 3; ++row)
-                    *       {
-                    *           temp[row] = 0;
-                    *           for(int col=0; col < 3; ++col)
-                    *           {
-                    *               temp[row] += R[row*3+col] * point_ptr[num_cols * col + p]; // points.at<float>(col,p);
-                }
-                }
-                
-                for(int row=0; row < 3; ++row)
-                {
-                point_ptr[num_cols * row + p] = temp[row] + T[row];
-                }
-                */
-                    if(omp_in_parallel())
+                    
+                    if(false && omp_in_parallel())
                     {
                         int thread_id = omp_get_thread_num();
                         
@@ -210,15 +198,34 @@ namespace egocylindrical
                         
                     }
                     
-                    float x_p = x[p];
-                    float y_p = y[p];
-                    float z_p = z[p];
-                    
-                    x_n[p] = r0 * x[p] + r1 * y[p] + r2 * z[p] + t0;
-                    y_n[p] = r3 * x[p] + r4 * y[p] + r5 * z[p] + t1;
-                    z_n[p] = r6 * x[p] + r7 * y[p] + r8 * z[p] + t2;
-                    
-                    
+                    if(true)
+                    {
+                        float temp[3];
+                        for(int row=0; row < 3; ++row)
+                        {
+                            temp[row] = 0;
+                            for(int col=0; col < 3; ++col)
+                            {
+                                temp[row] += R[row*3+col] * point_ptr[num_cols * col + p]; // points.at<float>(col,p);
+                            }
+                        }
+                        
+                        for(int row=0; row < 3; ++row)
+                        {
+                            point_ptr[num_cols * row + p] = temp[row] + T[row];
+                        }
+                    }
+                    else
+                    {
+                        float x_p = x[p];
+                        float y_p = y[p];
+                        float z_p = z[p];
+                        
+                        x_n[p] = r0 * x[p] + r1 * y[p] + r2 * z[p] + t0;
+                        y_n[p] = r3 * x[p] + r4 * y[p] + r5 * z[p] + t1;
+                        z_n[p] = r6 * x[p] + r7 * y[p] + r8 * z[p] + t2;
+                        
+                    }
                     
                     
                     float depth=dNaN;
