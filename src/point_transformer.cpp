@@ -153,24 +153,7 @@ namespace egocylindrical
             //#pragma omp simd
             for(long int p = 0; p < num_cols; ++p)
             {
-                /*
-                 *       float temp[3];
-                 *       for(int row=0; row < 3; ++row)
-                 *       {
-                 *           temp[row] = 0;
-                 *           for(int col=0; col < 3; ++col)
-                 *           {
-                 *               temp[row] += R[row*3+col] * point_ptr[num_cols * col + p]; // points.at<float>(col,p);
-            }
-            }
-            
-            for(int row=0; row < 3; ++row)
-            {
-            point_ptr[num_cols * row + p] = temp[row] + T[row];
-            }
-            */
-                
-                
+
                 float x_p = x[p];
                 float y_p = y[p];
                 float z_p = z[p];
@@ -186,7 +169,7 @@ namespace egocylindrical
                 
                 int idx = -1;
                 
-                cv::Point3f world_pnt(x[p],y[p],z[p]);
+                cv::Point3f world_pnt(x_n[p],y_n[p],z_n[p]);
                 
                 depth= worldToRangeSquared(world_pnt);
                 
