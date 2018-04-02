@@ -37,19 +37,20 @@ namespace utils
         const float* n_y = new_points.getY();
         const float* n_z = new_points.getZ();
         
+        const float* ranges = new_points.getRanges();
+        const long int* inds = new_points.getInds();
+        
 
         ROS_DEBUG("Relocated the propagated image");
         //#pragma omp parallel for
         for(int i = 0; i < new_points.getCols(); ++i)
         {
             
-            int idx = new_points.inds_[i];
+            int idx = inds[i];
             
             if(idx >=0)
             {
-                
-                //ROS_WARN_STREAM("Point transformed!");
-                float depth = new_points.ranges_[i];
+                float depth = ranges[i];
                 
                 cv::Point3f prev_point(x[idx], y[idx], z[idx]);
                 

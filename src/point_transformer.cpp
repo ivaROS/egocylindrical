@@ -55,58 +55,84 @@ namespace egocylindrical
             float* y = points.getY();
             float* z = points.getZ();
             
+            float* ranges = points.getRanges();
+            long int* inds = points.getInds();
             
-            #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-            //#pragma omp simd
-            for(long int p = 0; p < num_cols; ++p)
+            
+            //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
+            
+            if (omp_get_dynamic())
+                omp_set_dynamic(0);
+            
+            #pragma omp parallel
             {
-                /*
-                float temp[3];
-                for(int row=0; row < 3; ++row)
+                if(omp_in_parallel())
                 {
-                    temp[row] = 0;
-                    for(int col=0; col < 3; ++col)
+                    ROS_INFO_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
+                }
+                
+                
+                #pragma omp for schedule(dynamic)//simd
+                for(long int p = 0; p < num_cols; ++p)
+                {
+                    if(omp_in_parallel())
                     {
-                        temp[row] += R[row*3+col] * point_ptr[num_cols * col + p]; // points.at<float>(col,p);
+                        int thread_id = omp_get_thread_num();
+                        
+                        ROS_INFO_STREAM_NAMED("omp","OpenMP active! Thread # " << thread_id);
+                        
                     }
-                }
-                
-                for(int row=0; row < 3; ++row)
-                {
-                    point_ptr[num_cols * row + p] = temp[row] + T[row];
-                }
-                */
-                
-                
-                float x_p = x[p];
-                float y_p = y[p];
-                float z_p = z[p];
-                
+                    ROS_INFO_STREAM("testing");
+                    
+                    
+                    float temp[3];
+                    for(int row=0; row < 3; ++row)
+                    {
+                        temp[row] = 0;
+                        for(int col=0; col < 3; ++col)
+                        {
+                            temp[row] += R[row*3+col] * point_ptr[num_cols * col + p]; // points.at<float>(col,p);
+                        }
+                    }
+                    
+                    for(int row=0; row < 3; ++row)
+                    {
+                        point_ptr[num_cols * row + p] = temp[row] + T[row];
+                    }
+                    
+                    /*
+                    
+                    float x_p = x[p];
+                    float y_p = y[p];
+                    float z_p = z[p];
+                    
                 x[p] = r0 * x_p + r1 * y_p + r2 * z_p + t0;
                 y[p] = r3 * x_p + r4 * y_p + r5 * z_p + t1;
                 z[p] = r6 * x_p + r7 * y_p + r8 * z_p + t2;
-                
+                    */
 
-                
-                
-                float depth=dNaN;
-                
-                int idx = -1;
-      
-                cv::Point3f world_pnt(x[p],y[p],z[p]);
-                
-                depth= worldToRangeSquared(world_pnt);
-                
-                cv::Point image_pnt = points.worldToCylindricalImage(world_pnt);
-                
-                int tidx = image_pnt.y * width +image_pnt.x;
-                
-                if(tidx < num_cols)
-                    idx = tidx;
-   
-                points.inds_[p] = idx;
-                points.ranges_[p] = depth;
-                
+                    
+                    
+                    float depth=dNaN;
+                    
+                    int idx = -1;
+        
+                    cv::Point3f world_pnt(x[p],y[p],z[p]);
+                    
+                    depth= worldToRangeSquared(world_pnt);
+                    
+                    cv::Point image_pnt = points.worldToCylindricalImage(world_pnt);
+                    
+                    int tidx = image_pnt.y * width +image_pnt.x;
+                    
+                    if(tidx < num_cols)
+                        idx = tidx;
+    
+                    inds[p] = idx;
+                    ranges[p] = depth;
+                    
+                }
+            
             }
                     
         }
@@ -130,9 +156,7 @@ namespace egocylindrical
             const float t0 = _T[0];
             const float t1 = _T[1];
             const float t2 = _T[2];
-            
-            float* point_ptr = (float*)__builtin_assume_aligned(points.getPoints(), 16);            
-            
+                        
             const float* const R = (float*)__builtin_assume_aligned(_R, __BIGGEST_ALIGNMENT__);
             const float* const T = (float*)__builtin_assume_aligned(_T, __BIGGEST_ALIGNMENT__);
             
@@ -148,47 +172,56 @@ namespace egocylindrical
             float* y_n = transformed_points.getY();
             float* z_n = transformed_points.getZ();
             
+            float* ranges = transformed_points.getRanges();
+            long int* inds = transformed_points.getInds();
             
-            #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-            //#pragma omp simd
-            for(long int p = 0; p < num_cols; ++p)
+            
+                        
+            if (omp_get_dynamic())
+                omp_set_dynamic(0);
+            
+            #pragma omp parallel num_threads(4)
             {
-
-                float x_p = x[p];
-                float y_p = y[p];
-                float z_p = z[p];
                 
-                x_n[p] = r0 * x[p] + r1 * y[p] + r2 * z[p] + t0;
-                y_n[p] = r3 * x[p] + r4 * y[p] + r5 * z[p] + t1;
-                z_n[p] = r6 * x[p] + r7 * y[p] + r8 * z[p] + t2;
-                
-                
-                
-                
-                float depth=dNaN;
-                
-                int idx = -1;
-                
-                cv::Point3f world_pnt(x_n[p],y_n[p],z_n[p]);
-                
-                depth= worldToRangeSquared(world_pnt);
-                
-                if(depth == depth)
+                #pragma omp single nowait
                 {
-                    cv::Point image_pnt = points.worldToCylindricalImage(world_pnt);
+                    if(omp_in_parallel())
+                    {
+                        ROS_INFO_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
+                    }
+                }
+                
+                
+                //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
+                #pragma omp for simd schedule(static)
+                for(long int p = 0; p < num_cols; ++p)
+                {
+
+                    float x_p = x[p];
+                    float y_p = y[p];
+                    float z_p = z[p];
                     
-                    int tidx = image_pnt.y * width +image_pnt.x;
+                    x_n[p] = r0 * x[p] + r1 * y[p] + r2 * z[p] + t0;
+                    y_n[p] = r3 * x[p] + r4 * y[p] + r5 * z[p] + t1;
+                    z_n[p] = r6 * x[p] + r7 * y[p] + r8 * z[p] + t2;
+                     
+                    float depth=dNaN;
+                    
+                    int idx = -1;
+                                    
+                    depth= worldToRangeSquared(x_n[p],z_n[p]);
+                
+                    int tidx = points.worldToCylindricalIdx(x_n[p],y_n[p],z_n[p]);
                     
                     if(tidx < num_cols)
                         idx = tidx;
-                
+                    
+                    inds[p] = idx;
+                    ranges[p] = depth;
+                    
                 }
                 
-                transformed_points.inds_[p] = idx;
-                transformed_points.ranges_[p] = depth;
-                
             }
-            
         }
         
         

@@ -20,6 +20,8 @@
 //#include <eigen_stl_containers/eigen_stl_containers.h>
 #include <boost/align/aligned_allocator.hpp>
 
+#include <cstddef>
+#include <cstdalign>
 
 //#include <iomanip> // for debug printing
 
@@ -87,6 +89,13 @@ namespace egocylindrical
         }
         
         inline
+        float worldToRangeSquared(const float x, const float z)
+        {
+            return x*x + z*z;
+        }
+        
+
+        inline
         float worldToRangeSquared(const cv::Point3f& point)
         {
             return point.x*point.x + point.z*point.z;
@@ -125,6 +134,12 @@ namespace egocylindrical
             
             float* pointsx_;
             
+            float* ranges_=nullptr;
+            long int* inds_=nullptr; // Note: on 32/64 bit systems, int almost always has the same size as long, but just to be safe...
+            
+            float* aligned_ranges_ = nullptr;
+            long int* aligned_inds_ = nullptr;
+            
             int height_, width_;
             float vfov_;
             float hscale_, vscale_;
@@ -143,9 +158,6 @@ namespace egocylindrical
            
         public:
             
-            float* ranges_=nullptr;
-            long int* inds_=nullptr; // Note: on 32/64 bit systems, int almost always has the same size as long, but just to be safe...
-            
             ECWrapper(int height, int width, float vfov, bool allocate_arrays = false):
             height_(height),
             width_(width),
@@ -156,12 +168,81 @@ namespace egocylindrical
                 //Eigen::aligned_allocator<EgoCylinderPoints> Alloc;
                 //msg_ = boost::allocate_shared<EgoCylinderPoints>(Alloc);
                 
-                msg_->points.data.resize(3*height_*width_, dNaN);  //Note: can pass 'utils::dNaN as 2nd argument to set all values
+                int max_alignment = alignof(std::max_align_t);
+                
+                int biggest_alignment = __BIGGEST_ALIGNMENT__;
+                
+                size_t object_size = sizeof(float);
+                
+                size_t object_alignment = alignof(float);
+                
+                size_t buffer_size = biggest_alignment - object_size;
+                size_t buffer_objects = buffer_size / object_size;
+                
+                // NOTE: width x height must be divisible by 8 for this approach to work. Otherwise, additional information will be necessary in order to properly place the x,y,z pointers
+                
+                ROS_INFO_STREAM("max_alignment: " << max_alignment << ", biggest_alignment: " << biggest_alignment << ", object_size: " << object_size << ", object_alignment: " << object_alignment << ", number buffer objects: " << buffer_objects);
+
+                msg_->points.data.resize(3*height_*width_ + buffer_objects, dNaN);  //Note: can pass 'utils::dNaN as 2nd argument to set all values
+                
+                
+                pointsx_ = msg_->points.data.data();
+                
+                // TODO: create templated function to get aligned pointers. Something similar here: http://en.cppreference.com/w/cpp/memory/align
+                /*
+                {
+                    void* temp_points = (void*) msg_->points.data.data();
+                    
+                    size_t space_before = height_*width_*3*sizeof(float);
+                    size_t space_after = space_before;
+                    
+                    std::align(biggest_alignment, sizeof(float), temp_points, space_after);
+                    pointsx_ = (float*) temp_points;
+                    
+                    msg_->points.layout.data_offset = (space_before - space_after);
+                    
+                    
+                    ROS_INFO_STREAM("Aligned pointsx_, adjusted pointer by " << (space_before - space_after) << " bytes");
+                }
+                */
+                
                 
                 if(allocate_arrays)
                 {
-                    ranges_ = new float[height_*width_];
-                    inds_ = new long int[height_*width_];
+                    {
+                        ranges_ = new float[height_*width_ + buffer_objects];
+                        aligned_ranges_ = ranges_;
+                        
+                        /*
+                        void* temp_range = (void*) ranges_;
+                        //aligned_ranges_ = ranges_;
+                        
+                        size_t space_before = height_*width_*sizeof(float);
+                        size_t space_after = space_before;
+                        
+                        std::align(biggest_alignment, sizeof(float), temp_range, space_after);
+                        aligned_ranges_ = (float*) temp_range;
+                        
+                        ROS_INFO_STREAM("Aligned ranges_, adjusted pointer by " << (space_before - space_after) << " bytes");
+                        */
+                    }
+                    
+                    {
+                        inds_ = new long int[height_*width_ + (biggest_alignment / sizeof(long int)) - 1];
+                        aligned_inds_ = inds_;
+                        
+                        /*
+                        void* temp_inds = (void*) inds_;
+                        
+                        size_t space_before = height_*width_*sizeof(long int);
+                        size_t space_after = space_before;
+                        
+                        std::align(biggest_alignment, sizeof(long int), temp_inds, space_after);
+                        aligned_inds_ = (long int*) temp_inds;
+                        
+                        ROS_INFO_STREAM("Aligned inds_, adjusted pointer by " << (space_before - space_after) << " bytes");
+                        */
+                    }
                 }
                 
                 msg_->fov_v = vfov_;
@@ -169,25 +250,26 @@ namespace egocylindrical
                 hscale_ = width_/(2*M_PI);
                 vscale_ = height_/vfov;
                 
-                auto& dims = msg_->points.layout.dim;
+                
+                std::vector<std_msgs::MultiArrayDimension>& dims = msg_->points.layout.dim;
                 dims.resize(3);
                 
                 
-                auto& dim0 = dims[0];
+                std_msgs::MultiArrayDimension& dim0 = dims[0];
                 dim0.label = "components";
                 dim0.size = 3;
                 dim0.stride = 3*height_*width_;
                 //dims[0] = dim0;
                 
                 
-                auto& dim1 = dims[1];
+                std_msgs::MultiArrayDimension& dim1 = dims[1];
                 dim1.label = "rows";
                 dim1.size = height_;
                 dim1.stride = height_*width_;
                 //dims[1] = dim1;
 
                 
-                auto& dim2 = dims[2];
+                std_msgs::MultiArrayDimension& dim2 = dims[2];
                 dim2.label = "point";
                 dim2.size = width_;
                 dim2.stride = width_;             
@@ -220,6 +302,8 @@ namespace egocylindrical
                 
                 points_ = cv::Mat(components, height_ * width_, CV_32FC1, const_cast<float*>(const_msg_->points.data.data()), step);
                 
+                pointsx_ = (float*) const_msg_->points.data.data();// + (const_msg_->points.layout.data_offset) / sizeof(float);
+                
                 //std::cout << "Address: " << std::hex  << const_msg_->points.data.data() << std::dec << ", height=" << height_ << ", width=" << width_ << ", step=" << step << std::endl;
                 
             }
@@ -234,11 +318,9 @@ namespace egocylindrical
                    }
             }
             
-            
-            
-            
-            inline float* getPoints()                   { return (float*)__builtin_assume_aligned(points_.data, 16); }
-            inline const float* getPoints()     const   { return (const float*)__builtin_assume_aligned(points_.data, 16); }
+                        
+            inline float* getPoints()                   { return (float*) points_.data; }
+            inline const float* getPoints()     const   { return (const float*) points_.data; }
             
             inline float* getX()                        { return getPoints(); }
             inline const float* getX()          const   { return (const float*) getPoints(); }
@@ -248,6 +330,12 @@ namespace egocylindrical
             
             inline float* getZ()                        { return getPoints() + 2*(height_ * width_); }
             inline const float* getZ()          const   { return (const float*) getPoints() + 2*(height_ * width_); }
+            
+            inline float* getRanges()                   { return aligned_ranges_; }
+            inline const float* getRanges()     const   { return (const float*) aligned_ranges_; }
+            
+            inline long int* getInds()                  { return aligned_inds_; }
+            inline const long int* getInds()    const   { return (const long int*) aligned_inds_; }
             
 
             inline
@@ -259,6 +347,12 @@ namespace egocylindrical
             
             inline
             int getCols() const
+            {
+                return height_*width_;
+            }
+            
+            inline
+            int getNumPts() const
             {
                 return height_*width_;
             }
@@ -288,9 +382,21 @@ namespace egocylindrical
             }
             
             inline
-            cv::Point worldToCylindricalImage(cv::Point3f point) const
+            cv::Point worldToCylindricalImage(const cv::Point3f& point) const
             {
                 return utils::worldToCylindricalImage(point, width_, height_, hscale_, vscale_, 0, 0);
+            }
+            
+            
+            
+            inline
+            int worldToCylindricalIdx(float x, float y, float z) const
+            {
+                cv::Point image_pnt = worldToCylindricalImage(cv::Point3f(x,y,z));
+                
+                int tidx = image_pnt.y * getWidth() +image_pnt.x;
+                
+                return tidx;
             }
             
             

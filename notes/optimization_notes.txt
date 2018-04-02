@@ -242,4 +242,8 @@ cost model: epilogue peel iters set to vf/2 because peeling for alignment is unk
 
 
 
+#Made quite a few updates/improvements. Unfortunately, it appears that I didn't test that everything was working after each one, and now propagation only partly works. I have confirmed that everything works in commit 7279729fbb5b350cb4036dee810d91c6968d9f55 and will work my way forward.
+c558be6a6bc976628ff710900b03c4290737ea8a: also good
+db4b5875f4ebbc6b03ccf40b7ce8f81e42eba2b7: this is the commit that broke things. Unfortunately, I did a lot in this one.
+Bug fixed in commit 2e454e2d8a17f6c315936c508dfa5006b5f1a011
 

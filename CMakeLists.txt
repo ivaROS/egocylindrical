@@ -142,6 +142,8 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
 )
 
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/egocylindrical.cpp
@@ -175,10 +177,13 @@ target_link_libraries(point_transformer
    )
 
    #-fopt-info-vec-all
-target_compile_options(point_transformer PRIVATE -g -std=c++11 -Wall -ftree-vectorize  -fopenmp ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno #-finite-math-only and -fno-trapping-math. -ffinite-math-only 
+target_compile_options(point_transformer PRIVATE -g -std=c++11 -Wall -ftree-vectorize  -fopt-info-vec-optimized ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno #-finite-math-only and -fno-trapping-math. -ffinite-math-only 
   ${OpenMP_CXX_FLAGS}
   )
 
+##Verified that ${OpenMP_CXX_FLAGS} contains what it should
+#message(STATUS=WARNING ${OpenMP_CXX_FLAGS})
+  
 add_library(point_cloud_generator src/point_cloud_generator.cpp)
 target_link_libraries(point_cloud_generator
    ${catkin_LIBRARIES}
