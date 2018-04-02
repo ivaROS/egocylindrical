@@ -82,9 +82,9 @@ namespace egocylindrical
                 float y_p = y[p];
                 float z_p = z[p];
                 
-                x[p] = r0 * x[p] + r1 * y[p] + r2 * z[p] + t0;
-                y[p] = r3 * x[p] + r4 * y[p] + r5 * z[p] + t1;
-                z[p] = r6 * x[p] + r7 * y[p] + r8 * z[p] + t2;
+                x[p] = r0 * x_p + r1 * y_p + r2 * z_p + t0;
+                y[p] = r3 * x_p + r4 * y_p + r5 * z_p + t1;
+                z[p] = r6 * x_p + r7 * y_p + r8 * z_p + t2;
                 
 
                 
@@ -190,12 +190,16 @@ namespace egocylindrical
                 
                 depth= worldToRangeSquared(world_pnt);
                 
-                cv::Point image_pnt = points.worldToCylindricalImage(world_pnt);
+                if(depth == depth)
+                {
+                    cv::Point image_pnt = points.worldToCylindricalImage(world_pnt);
+                    
+                    int tidx = image_pnt.y * width +image_pnt.x;
+                    
+                    if(tidx < num_cols)
+                        idx = tidx;
                 
-                int tidx = image_pnt.y * width +image_pnt.x;
-                
-                if(tidx < num_cols)
-                    idx = tidx;
+                }
                 
                 transformed_points.inds_[p] = idx;
                 transformed_points.ranges_[p] = depth;

@@ -47,6 +47,8 @@ namespace utils
             
             if(idx >=0)
             {
+                
+                //ROS_WARN_STREAM("Point transformed!");
                 float depth = new_points.ranges_[i];
                 
                 cv::Point3f prev_point(x[idx], y[idx], z[idx]);

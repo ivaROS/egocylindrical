@@ -37,11 +37,11 @@ namespace egocylindrical
                 
         
         start = ros::WallTime::now();        
-        utils::transformPoints(old_pnts, *transformed_pts_, trans);
+        utils::transformPoints(old_pnts, trans);
         ROS_INFO_STREAM_NAMED("timing", "Transform points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
         start = ros::WallTime::now();
-        utils::addPoints(new_pnts, *transformed_pts_, false);
+        utils::addPoints(new_pnts, old_pnts, false);
         ROS_INFO_STREAM_NAMED("timing", "Inserting transformed points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
 
     }
@@ -60,7 +60,7 @@ namespace egocylindrical
     {
         ros::WallTime start = ros::WallTime::now();
         
-        new_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
+        new_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_, true);
         ROS_INFO_STREAM("Creating new datastructure took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
         try
