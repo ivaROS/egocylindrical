@@ -36,7 +36,7 @@ private:
     double hfov_, vfov_;
         
 
-    utils::ECWrapperPtr new_pts_, old_pts_, transformed_pts_;
+    utils::ECWrapperPtr new_pts_, old_pts_, transformed_pts_, next_pts_;
 
     image_geometry::PinholeCameraModel model_t;
     

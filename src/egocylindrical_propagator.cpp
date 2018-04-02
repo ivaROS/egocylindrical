@@ -60,47 +60,65 @@ namespace egocylindrical
     {
         ros::WallTime start = ros::WallTime::now();
         
-        new_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
-        ROS_INFO_STREAM("Creating new datastructure took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        //new_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
+        // NOTE: It may be better to only create the necessary wrappers once and just 'swap' the msg_ pointers
+        new_pts_ = next_pts_;
         
-        try
+        #pragma omp parallel sections num_threads(2)
         {
-            if(old_pts_)
+          #pragma omp section
+          {
+            try
             {
-                ros::WallTime start = ros::WallTime::now();
+                if(old_pts_)
+                {
+                    ros::WallTime start = ros::WallTime::now();
+                    
+                    EgoCylindricalPropagator::propagateHistory(*old_pts_, *new_pts_, image->header);
+                    //ROS_INFO_STREAM("Propagation took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+                }
+                else
+                {
+                    new_pts_->setHeader(image->header);
+                }
                 
-                EgoCylindricalPropagator::propagateHistory(*old_pts_, *new_pts_, image->header);
-                ROS_INFO_STREAM("Propagation took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
             }
-            else
+            catch (tf2::TransformException &ex) 
             {
-                new_pts_->setHeader(image->header);
+                ROS_WARN_STREAM("Problem finding transform:\n" <<ex.what());
             }
             
-        }
-        catch (tf2::TransformException &ex) 
-        {
-            ROS_WARN_STREAM("Problem finding transform:\n" <<ex.what());
-        }
-        
-        
-        
-        ros::WallTime temp = ros::WallTime::now();
-        
-        EgoCylindricalPropagator::addDepthImage(*new_pts_, image, cam_info);
-        ROS_INFO_STREAM("Adding depth image took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
-        
-        
-        if(ec_pub_.getNumSubscribers() > 0)
-        {
-            temp = ros::WallTime::now();
             
-            utils::ECMsgConstPtr msg = new_pts_->getEgoCylinderPointsMsg();
-            ROS_INFO_STREAM("Copying EgoCylinderPoints took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
             
-            ec_pub_.publish(msg);
-        }
+            ros::WallTime temp = ros::WallTime::now();
+            
+            EgoCylindricalPropagator::addDepthImage(*new_pts_, image, cam_info);
+            ROS_INFO_STREAM("Adding depth image took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
+            
+            
+            if(ec_pub_.getNumSubscribers() > 0)
+            {
+                // TODO: if no one is subscribing, we can propagate the points in place next time (if that turns out to be faster)
+                temp = ros::WallTime::now();
+                
+                utils::ECMsgConstPtr msg = new_pts_->getEgoCylinderPointsMsg();
+                ROS_INFO_STREAM("Copying EgoCylinderPoints took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
+                
+                ec_pub_.publish(msg);
+            }
+          }
+          
+          #pragma omp section
+          {
+            ros::WallTime start = ros::WallTime::now();
+            
+            next_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
+            
+            ROS_INFO_STREAM("Creating new datastructure took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+          }
+          
         
+        }
         
         std::swap(new_pts_, old_pts_);  
         
@@ -131,6 +149,7 @@ namespace egocylindrical
         
         transformed_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_,true);
         
+        next_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
                 
         
         // Get topic names

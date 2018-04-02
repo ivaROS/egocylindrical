@@ -90,7 +90,9 @@ namespace utils
         float* x = cylindrical_history.getX();
         float* y = cylindrical_history.getY();
         float* z = cylindrical_history.getZ();
-                
+        
+        // Technically, it's probably not 'ok' to do this in parallel, as more than one depth image pixel may project to the same egocylindrical pixel
+        // However, adjacent pixels should generally be similar values, so I don't consider this to be a huge issue
         depth_image.forEach<float>
         (
             [&](const float &depth, const int* position) -> void

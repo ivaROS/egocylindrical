@@ -75,6 +75,7 @@ namespace egocylindrical
                 #pragma omp for schedule(dynamic)//simd
                 for(long int p = 0; p < num_cols; ++p)
                 {
+                  /*
                     if(omp_in_parallel())
                     {
                         int thread_id = omp_get_thread_num();
@@ -83,7 +84,7 @@ namespace egocylindrical
                         
                     }
                     ROS_INFO_STREAM("testing");
-                    
+                    */
                     
                     float temp[3];
                     for(int row=0; row < 3; ++row)
@@ -179,8 +180,13 @@ namespace egocylindrical
                         
             if (omp_get_dynamic())
                 omp_set_dynamic(0);
+            omp_set_nested(1);
+            int omp_p = omp_get_max_threads();
             
-            #pragma omp parallel num_threads(4)
+            omp_p = std::min(omp_p-1, 4);
+            
+            
+            #pragma omp parallel num_threads(omp_p)
             {
                 
                 #pragma omp single nowait
