@@ -410,9 +410,9 @@ namespace egocylindrical
                  * 2. Publish the message, then make a copy for use in callback
                  * 3. Perform out of place point transformation
                  */
-                ECMsgConstPtr msg = boost::make_shared<EgoCylinderPoints>(*msg_);
+                //ECMsgConstPtr msg = boost::make_shared<EgoCylinderPoints>(*msg_);
                 
-                return (ECMsgConstPtr) msg;
+                return (ECMsgConstPtr) msg_;
             }
             
             // Function stubs to fill in and uncomment as needed
