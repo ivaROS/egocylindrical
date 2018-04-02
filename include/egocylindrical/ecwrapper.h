@@ -130,9 +130,9 @@ namespace egocylindrical
         {
         private:
             
-            cv::Mat points_;
+            //cv::Mat points_;
             
-            float* pointsx_;
+            float* points_;
             
             float* ranges_=nullptr;
             long int* inds_=nullptr; // Note: on 32/64 bit systems, int almost always has the same size as long, but just to be safe...
@@ -186,7 +186,7 @@ namespace egocylindrical
                 msg_->points.data.resize(3*height_*width_ + buffer_objects, dNaN);  //Note: can pass 'utils::dNaN as 2nd argument to set all values
                 
                 
-                pointsx_ = msg_->points.data.data();
+                points_ = msg_->points.data.data();
                 
                 // TODO: create templated function to get aligned pointers. Something similar here: http://en.cppreference.com/w/cpp/memory/align
                 /*
@@ -278,7 +278,7 @@ namespace egocylindrical
                 
                 int step = dim1.stride * sizeof(float);
                 
-                points_ = cv::Mat(3, height_ * width_, CV_32FC1, const_cast<float*>(msg_->points.data.data()), step);
+                //points_ = cv::Mat(3, height_ * width_, CV_32FC1, const_cast<float*>(msg_->points.data.data()), step);
                 
                 
                 //std::cout << "Address: " << std::hex  << msg_->points.data.data() << std::dec << ", height=" << height_ << ", width=" << width_ << ", step=" << step << std::endl; //std::setfill('0') << std::setw(2) << ar[i] << " ";
@@ -300,9 +300,9 @@ namespace egocylindrical
                 
                 int step = dims[1].stride * sizeof(float);
                 
-                points_ = cv::Mat(components, height_ * width_, CV_32FC1, const_cast<float*>(const_msg_->points.data.data()), step);
+                //points_ = cv::Mat(components, height_ * width_, CV_32FC1, const_cast<float*>(const_msg_->points.data.data()), step);
                 
-                pointsx_ = (float*) const_msg_->points.data.data();// + (const_msg_->points.layout.data_offset) / sizeof(float);
+                points_ = (float*) const_msg_->points.data.data();// + (const_msg_->points.layout.data_offset) / sizeof(float);
                 
                 //std::cout << "Address: " << std::hex  << const_msg_->points.data.data() << std::dec << ", height=" << height_ << ", width=" << width_ << ", step=" << step << std::endl;
                 
@@ -319,8 +319,8 @@ namespace egocylindrical
             }
             
                         
-            inline float* getPoints()                   { return (float*) points_.data; }
-            inline const float* getPoints()     const   { return (const float*) points_.data; }
+            inline float* getPoints()                   { return (float*) points_; }
+            inline const float* getPoints()     const   { return (const float*) points_; }
             
             inline float* getX()                        { return getPoints(); }
             inline const float* getX()          const   { return (const float*) getPoints(); }
