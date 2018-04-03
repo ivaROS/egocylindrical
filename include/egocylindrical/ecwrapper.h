@@ -18,6 +18,8 @@
 #include <egocylindrical/EgoCylinderPoints.h>
 
 //#include <eigen_stl_containers/eigen_stl_containers.h>
+
+#include <boost/align/aligned_alloc.hpp>
 #include <boost/align/aligned_allocator.hpp>
 
 #include <cstddef>
@@ -137,9 +139,13 @@ namespace egocylindrical
             
             float* points_;
             
-            void* ranges_=nullptr;
+            //void* ranges_=nullptr;
+            AlignedVector<float> ranges_;
+            
             //long int* inds_=nullptr; // Note: on 32/64 bit systems, int almost always has the same size as long, but just to be safe...
+            
             AlignedVector<long int> inds_;
+
             
             float* aligned_ranges_ = nullptr;
             long int* aligned_inds_ = nullptr;
@@ -193,7 +199,7 @@ namespace egocylindrical
                 points_ = msg_->points.data.data();
                 
                 // TODO: create templated function to get aligned pointers. Something similar here: http://en.cppreference.com/w/cpp/memory/align
-                /*
+                
                 {
                     void* temp_points = (void*) msg_->points.data.data();
                     
@@ -201,19 +207,20 @@ namespace egocylindrical
                     size_t space_after = space_before;
                     
                     std::align(biggest_alignment, sizeof(float), temp_points, space_after);
-                    pointsx_ = (float*) temp_points;
+                    points_ = (float*) temp_points;
                     
                     msg_->points.layout.data_offset = (space_before - space_after);
                     
                     
-                    ROS_INFO_STREAM("Aligned pointsx_, adjusted pointer by " << (space_before - space_after) << " bytes");
+                    ROS_INFO_STREAM("Aligned points_, adjusted pointer by " << (space_before - space_after) << " bytes");
                 }
-                */
+                
                 
                 
                 if(allocate_arrays)
                 {
-                  ranges_ = boost::alignment::aligned_alloc(__BIGGEST_ALIGNMENT__, height_*width_*sizeof(float));
+                  ranges_.resize(height_*width_);
+                  //ranges_ = boost::alignment::aligned_alloc(__BIGGEST_ALIGNMENT__, height_*width_*sizeof(float));
                     {
                         //ranges_ = new float[height_*width_ + buffer_objects];
                         //aligned_ranges_ = ranges_;
@@ -309,7 +316,7 @@ namespace egocylindrical
                 
                 //points_ = cv::Mat(components, height_ * width_, CV_32FC1, const_cast<float*>(const_msg_->points.data.data()), step);
                 
-                points_ = (float*) const_msg_->points.data.data();// + (const_msg_->points.layout.data_offset) / sizeof(float);
+                points_ = (float*) const_msg_->points.data.data() + (const_msg_->points.layout.data_offset) / sizeof(float);
                 
                 //std::cout << "Address: " << std::hex  << const_msg_->points.data.data() << std::dec << ", height=" << height_ << ", width=" << width_ << ", step=" << step << std::endl;
                 
@@ -317,7 +324,7 @@ namespace egocylindrical
             
             ~ECWrapper()
             {
-                
+                /*
                 if(ranges_ != nullptr)
                    {
                        //delete inds_;
@@ -325,6 +332,7 @@ namespace egocylindrical
                        boost::alignment::aligned_free(ranges_);
                        
                    }
+                   */
             }
             
                         
@@ -340,8 +348,8 @@ namespace egocylindrical
             inline float* getZ()                        { return getPoints() + 2*(height_ * width_); }
             inline const float* getZ()          const   { return (const float*) getPoints() + 2*(height_ * width_); }
             
-            inline float* getRanges()                   { return (float*) ranges_; }
-            inline const float* getRanges()     const   { return (const float*) ranges_; }
+            inline float* getRanges()                   { return (float*) ranges_.data(); }
+            inline const float* getRanges()     const   { return (const float*) ranges_.data(); }
             
             inline long int* getInds()                  { return inds_.data(); }
             inline const long int* getInds()    const   { return (const long int*) inds_.data(); }
