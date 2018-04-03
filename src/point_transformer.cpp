@@ -167,12 +167,12 @@ namespace egocylindrical
             
             
             const float* x = (const float*)__builtin_assume_aligned(points.getX(), __BIGGEST_ALIGNMENT__);
-            const float* y = points.getY();
-            const float* z = points.getZ();
+            const float* y = (const float*)__builtin_assume_aligned(points.getY(), __BIGGEST_ALIGNMENT__);
+            const float* z = (const float*)__builtin_assume_aligned(points.getZ(), __BIGGEST_ALIGNMENT__);
             
-            float* x_n = transformed_points.getX();
-            float* y_n = transformed_points.getY();
-            float* z_n = transformed_points.getZ();
+            float* x_n = (float*)__builtin_assume_aligned(transformed_points.getX(), __BIGGEST_ALIGNMENT__);
+            float* y_n = (float*)__builtin_assume_aligned(transformed_points.getY(), __BIGGEST_ALIGNMENT__);
+            float* z_n = (float*)__builtin_assume_aligned(transformed_points.getZ(), __BIGGEST_ALIGNMENT__);
             
             //float* ranges = transformed_points.getRanges();
             //long int* inds = transformed_points.getInds();
