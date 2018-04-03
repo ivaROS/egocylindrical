@@ -46,7 +46,7 @@ namespace egocylindrical
             const float* y = points.getY();
             const float* z = points.getZ();
 
-            #pragma omp parallel for
+            #pragma omp parallel for num_threads(4)
             for(int j = 0; j < num_cols; ++j)
             {   pcl::PointXYZ point(x[j],y[j],z[j]);
                 pcloud.at(j) = point;
