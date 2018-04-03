@@ -118,6 +118,9 @@ namespace egocylindrical
         typedef boost::shared_ptr<ECMsg> ECMsgPtr;
         typedef boost::shared_ptr<ECMsg const> ECMsgConstPtr;
         
+        template <typename T>
+        using AlignedVector = std::vector<T, boost::alignment::aligned_allocator<T, __BIGGEST_ALIGNMENT__> >;
+        
         
         /*
          * This class is intended to act as an abstraction of the egocylindrical representation
@@ -134,8 +137,9 @@ namespace egocylindrical
             
             float* points_;
             
-            float* ranges_=nullptr;
-            long int* inds_=nullptr; // Note: on 32/64 bit systems, int almost always has the same size as long, but just to be safe...
+            void* ranges_=nullptr;
+            //long int* inds_=nullptr; // Note: on 32/64 bit systems, int almost always has the same size as long, but just to be safe...
+            AlignedVector<long int> inds_;
             
             float* aligned_ranges_ = nullptr;
             long int* aligned_inds_ = nullptr;
@@ -209,9 +213,10 @@ namespace egocylindrical
                 
                 if(allocate_arrays)
                 {
+                  ranges_ = boost::alignment::aligned_alloc(__BIGGEST_ALIGNMENT__, height_*width_*sizeof(float));
                     {
-                        ranges_ = new float[height_*width_ + buffer_objects];
-                        aligned_ranges_ = ranges_;
+                        //ranges_ = new float[height_*width_ + buffer_objects];
+                        //aligned_ranges_ = ranges_;
                         
                         /*
                         void* temp_range = (void*) ranges_;
@@ -227,9 +232,11 @@ namespace egocylindrical
                         */
                     }
                     
+                  inds_.resize(height_*width_);
+                    
                     {
-                        inds_ = new long int[height_*width_ + (biggest_alignment / sizeof(long int)) - 1];
-                        aligned_inds_ = inds_;
+                        //inds_ = new long int[height_*width_ + (biggest_alignment / sizeof(long int)) - 1];
+                        //aligned_inds_ = inds_;
                         
                         /*
                         void* temp_inds = (void*) inds_;
@@ -311,10 +318,12 @@ namespace egocylindrical
             ~ECWrapper()
             {
                 
-                   if(inds_ != nullptr)
+                if(ranges_ != nullptr)
                    {
-                       delete inds_;
-                       delete ranges_;
+                       //delete inds_;
+                       //delete ranges_;
+                       boost::alignment::aligned_free(ranges_);
+                       
                    }
             }
             
@@ -331,11 +340,11 @@ namespace egocylindrical
             inline float* getZ()                        { return getPoints() + 2*(height_ * width_); }
             inline const float* getZ()          const   { return (const float*) getPoints() + 2*(height_ * width_); }
             
-            inline float* getRanges()                   { return aligned_ranges_; }
-            inline const float* getRanges()     const   { return (const float*) aligned_ranges_; }
+            inline float* getRanges()                   { return (float*) ranges_; }
+            inline const float* getRanges()     const   { return (const float*) ranges_; }
             
-            inline long int* getInds()                  { return aligned_inds_; }
-            inline const long int* getInds()    const   { return (const long int*) aligned_inds_; }
+            inline long int* getInds()                  { return inds_.data(); }
+            inline const long int* getInds()    const   { return (const long int*) inds_.data(); }
             
 
             inline
