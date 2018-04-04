@@ -14,7 +14,7 @@ namespace egocylindrical
 
     namespace utils
     {
-        sensor_msgs::PointCloud2 generate_point_cloud(const utils::ECWrapper& points);
+        sensor_msgs::PointCloud2::ConstPtr generate_point_cloud(const utils::ECWrapper& points);
     }
 
 class EgoCylinderPointCloudGenerator
@@ -52,7 +52,7 @@ private:
         
         utils::ECWrapper ec_pts(ec_msg);
         
-        sensor_msgs::PointCloud2 msg = utils::generate_point_cloud(ec_pts);
+        sensor_msgs::PointCloud2::ConstPtr msg = utils::generate_point_cloud(ec_pts);
         
         ROS_INFO_STREAM("Generating point cloud took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         

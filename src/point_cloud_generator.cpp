@@ -20,20 +20,21 @@ namespace egocylindrical
     namespace utils
     {
         /* TODO: ensure that the right size 'ints' are used everywhere. On my current system, the size of int = minimum size of long int, so 32 bit system might fail */
-        sensor_msgs::PointCloud2 generate_point_cloud(const utils::ECWrapper& points)
+        sensor_msgs::PointCloud2::ConstPtr generate_point_cloud(const utils::ECWrapper& points)
         {
             const int num_cols = points.getCols();
             
             pcl::PointCloud<pcl::PointXYZ> pcloud;
             
             
-            sensor_msgs::PointCloud2 pcloud_msg;         
-            pcl::toROSMsg(pcloud, pcloud_msg);
+            sensor_msgs::PointCloud2::Ptr pcloud_msg = boost::make_shared<sensor_msgs::PointCloud2>();
             
-            pcloud_msg.data.resize(sizeof(pcl::PointXYZ) * num_cols);
+            pcl::toROSMsg(pcloud, *pcloud_msg);
             
-            pcloud_msg.width = num_cols;
-            pcloud_msg.height = 1;
+            pcloud_msg->data.resize(sizeof(pcl::PointXYZ) * num_cols);
+            
+            pcloud_msg->width = num_cols;
+            pcloud_msg->height = 1;
             
             
             
@@ -48,7 +49,7 @@ namespace egocylindrical
             const float* y = points.getY();
             const float* z = points.getZ();
             
-            float* data = (float*) pcloud_msg.data.data();
+            float* data = (float*) pcloud_msg->data.data();
 
             /*
             #pragma omp parallel for num_threads(4)
@@ -78,7 +79,7 @@ namespace egocylindrical
             
             //ROS_INFO_STREAM("pointcloud conversion took " << (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
             
-            pcloud_msg.header = points.getHeader();
+            pcloud_msg->header = points.getHeader();
             
             return pcloud_msg;
         
