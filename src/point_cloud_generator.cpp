@@ -26,57 +26,61 @@ namespace egocylindrical
             
             pcl::PointCloud<pcl::PointXYZ> pcloud;
             
-            /*
-            sensor_msgs::PointCloud2 pcloud_msg;            
+            
+            sensor_msgs::PointCloud2 pcloud_msg;         
             pcl::toROSMsg(pcloud, pcloud_msg);
             
-            pcloud_msg.data.resize(num_cols*4*sizeof(float));
+            pcloud_msg.data.resize(sizeof(pcl::PointXYZ) * num_cols);
             
             pcloud_msg.width = num_cols;
             pcloud_msg.height = 1;
             
-            */
+            
+            
+            /*
             
             pcloud.points.resize(num_cols);
             pcloud.width = num_cols;
             pcloud.height = 1;
             
-
+*/
             const float* x = points.getX();
             const float* y = points.getY();
             const float* z = points.getZ();
+            
+            float* data = (float*) pcloud_msg.data.data();
 
+            /*
             #pragma omp parallel for num_threads(4)
             for(int j = 0; j < num_cols; ++j)
             {   pcl::PointXYZ point(x[j],y[j],z[j]);
                 pcloud.at(j) = point;
             }
+            */
             
-            /*
-            #pragma omp parallel for
-            for(int j = 0; j < num_cols; j)
-            {   pcl::PointXYZ point(x[j],y[j],z[j]);
-                
-                
-                
-                pcloud_msg.data[
-                
+            
+            #pragma omp parallel for num_threads(4)
+            for(int j = 0; j < num_cols; ++j)
+            {   
+                data[4*j] = x[j];
+                data[4*j+1] = y[j];
+                data[4*j+2] = z[j];
             }
             
-            */
+            
             
             
             
 
-            ros::WallTime start = ros::WallTime::now();
-            sensor_msgs::PointCloud2 msg;
-            pcl::toROSMsg(pcloud, msg);
+            //ros::WallTime start = ros::WallTime::now();
+            //sensor_msgs::PointCloud2 msg;
+            //pcl::toROSMsg(pcloud, msg);
             
-            ROS_INFO_STREAM("pointcloud conversion took " << (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+            //ROS_INFO_STREAM("pointcloud conversion took " << (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
             
-            msg.header = points.getHeader();
+            pcloud_msg.header = points.getHeader();
             
-            return msg;
+            return pcloud_msg;
         
         }
         
