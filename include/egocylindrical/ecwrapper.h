@@ -36,6 +36,7 @@ namespace egocylindrical
 
         constexpr float dNaN=(std::numeric_limits<float>::has_quiet_NaN) ? std::numeric_limits<float>::quiet_NaN() : 0;
         
+        // TODO: Quantify max error and verify that it doesn't affect anything
         // Source: https://gist.github.com/volkansalma/2972237
         inline
         float atan2_approximation1(float y, float x)
@@ -66,7 +67,13 @@ namespace egocylindrical
                 
         }
         
-        
+        template <typename T>
+        inline
+        cv::Point3_<T> projectWorldToCylinder(const cv::Point3_<T>& point)
+        {
+          cv::Point3_<T> Pcyl_t = point / std::sqrt(point.x * point.x + point.z * point.z);
+          return Pcyl_t;
+        }
         
         inline
         cv::Point3f projectWorldToCylinder(const cv::Point3f& point)
@@ -77,7 +84,7 @@ namespace egocylindrical
         
         
         inline
-        cv::Point worldToCylindricalImage(const cv::Point3f& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+        cv::Point2f worldToCylindricalImage(const cv::Point3f& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
         {
             
             cv::Point3f p_cyl = projectWorldToCylinder(point);
@@ -86,7 +93,7 @@ namespace egocylindrical
             //float x = std::atan2(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
             float y = p_cyl.y * v_scale + cyl_height / 2;
             
-            cv::Point im_pt(x,y);
+            cv::Point2f im_pt(x,y);
             return im_pt;
         }
         
@@ -110,11 +117,13 @@ namespace egocylindrical
         }
         
         
+
+        
         
         //typedef ::egocylindrical::EgoCylinderPoints_<Eigen::aligned_allocator<void, 32> > AlignedEgoCylinderPoints;
         typedef ::egocylindrical::EgoCylinderPoints_<boost::alignment::aligned_allocator<void, 32> > AlignedEgoCylinderPoints;
         
-        
+        // NOTE: I'm not sure that using this typedef renamed version was such a good idea after all...
         //typedef AlignedEgoCylinderPoints ECMsg;
         typedef EgoCylinderPoints ECMsg;
         typedef boost::shared_ptr<ECMsg> ECMsgPtr;
@@ -124,6 +133,76 @@ namespace egocylindrical
         using AlignedVector = std::vector<T, boost::alignment::aligned_allocator<T, __BIGGEST_ALIGNMENT__> >;
         
         
+        
+        // TODO: pull the relevant egocylindrical 'camera' info into separate message and use this class as the interpreter of it
+        // ECWrapper would also use this class
+        class ECConverter
+        {
+        private:
+          int height_, width_;
+          float vfov_;
+          float hscale_, vscale_;
+          
+        public:
+          ECConverter()
+          {
+          }
+          
+          void fromCameraInfo(const ECMsgConstPtr& msg)
+          {
+            
+            //header_ = msg->header;
+            vfov_ = msg->fov_v;
+            
+            const std::vector<std_msgs::MultiArrayDimension>& dims = msg->points.layout.dim;
+            int components = dims[0].size;
+            height_ = dims[1].size;
+            width_ = dims[2].size;
+            hscale_ = width_/(2*M_PI);
+            vscale_ = height_/vfov_;
+          }
+          
+          inline
+          cv::Point worldToCylindricalImage(const cv::Point3f& point) const
+          {
+            return utils::worldToCylindricalImage(point, width_, height_, hscale_, vscale_, 0, 0);
+          }
+          
+          inline
+          int getHeight()
+          {
+            return height_;
+          }
+          
+          inline
+          int getWidth()
+          {
+            return width_;
+          }
+          
+          template <typename T>
+          inline 
+          cv::Point_<T> project3dToPixel(const cv::Point3_<T> point)
+          {
+            return utils::worldToCylindricalImage(point, width_, height_, hscale_, vscale_, 0, 0);
+          }
+          
+          
+          inline
+          cv::Point3d projectPixelTo3dRay(const cv::Point2d& point) const
+          {
+            cv::Point3d ray;
+            double theta = (point.x - (width_/2))/hscale_;
+            
+            ray.x = sin(theta);
+            ray.z = cos(theta);
+            
+            ray.y = (point.y - (height_/2))/vscale_;
+          }
+          
+        };
+        
+        
         /*
          * This class is intended to act as an abstraction of the egocylindrical representation
          * to enable other functions to operate on it without requiring knowledge of the implementation.
@@ -131,6 +210,7 @@ namespace egocylindrical
          * It is hoped that it will be extended to simplify other egocylindrical versions, ex. stixel
          */
         
+        // TODO: create an abstract class to serve as interface so that different storage mechanisms can be used on the backend
         class ECWrapper
         {
         private:

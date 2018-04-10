@@ -72,7 +72,7 @@ namespace egocylindrical
                 }
                 
                 
-                #pragma omp for schedule(dynamic)//simd
+                #pragma omp for simd schedule(static)
                 for(long int p = 0; p < num_cols; ++p)
                 {
                   /*
@@ -86,6 +86,7 @@ namespace egocylindrical
                     ROS_INFO_STREAM("testing");
                     */
                     
+                  /*
                     float temp[3];
                     for(int row=0; row < 3; ++row)
                     {
@@ -101,16 +102,18 @@ namespace egocylindrical
                         point_ptr[num_cols * row + p] = temp[row] + T[row];
                     }
                     
-                    /*
+                    */
+                    
+                    
                     
                     float x_p = x[p];
                     float y_p = y[p];
                     float z_p = z[p];
                     
-                x[p] = r0 * x_p + r1 * y_p + r2 * z_p + t0;
-                y[p] = r3 * x_p + r4 * y_p + r5 * z_p + t1;
-                z[p] = r6 * x_p + r7 * y_p + r8 * z_p + t2;
-                    */
+                    x[p] = r0 * x_p + r1 * y_p + r2 * z_p + t0;
+                    y[p] = r3 * x_p + r4 * y_p + r5 * z_p + t1;
+                    z[p] = r6 * x_p + r7 * y_p + r8 * z_p + t2;
+                    
 
                     
                     
