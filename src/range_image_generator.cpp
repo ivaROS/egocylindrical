@@ -80,6 +80,7 @@ namespace egocylindrical
             sensor_msgs::ImagePtr new_msg_ptr = boost::make_shared<sensor_msgs::Image>();
             
             sensor_msgs::Image &new_msg = *new_msg_ptr;
+            new_msg.header = cylindrical_history.getHeader();
             new_msg.height = cylindrical_history.getHeight();
             new_msg.width = cylindrical_history.getWidth();
             new_msg.encoding = sensor_msgs::image_encodings::TYPE_32FC1;
