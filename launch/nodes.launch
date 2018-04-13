@@ -1,6 +1,9 @@
 <launch>
+  <arg name="depth_image" default="/camera/depth/image_raw"/>
 
-  <node name="depth_to_egocylindrical_node" pkg="egocylindrical" type="egocylindrical_propagator_node" output="screen"/>
+  <node name="depth_to_egocylindrical_node" pkg="egocylindrical" type="egocylindrical_propagator_node" output="screen">
+      <remap from="/camera/depth/image_raw" to="$(arg depth_image)"/>
+  </node>
 
   <node name="egocylindrical_to_pointcloud" pkg="egocylindrical" type="pointcloud_generator_node" output="screen"/>
 
