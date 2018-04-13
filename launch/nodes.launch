@@ -1,6 +1,6 @@
 <launch>
 
-  <node name="depth_to_egocylindrical_node" pkg="egocylindrical" type="egocylindrical_propagator_node" output="log"/>
+  <node name="depth_to_egocylindrical_node" pkg="egocylindrical" type="egocylindrical_propagator_node" output="screen"/>
 
   <node name="egocylindrical_to_pointcloud" pkg="egocylindrical" type="pointcloud_generator_node" output="screen"/>
 
