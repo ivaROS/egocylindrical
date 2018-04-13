@@ -47,21 +47,24 @@ private:
     
     void ecPointsCB(const egocylindrical::EgoCylinderPoints::ConstPtr& ec_msg)
     {
-        ROS_INFO("Received EgoCylinderPoints msg");
+        ROS_DEBUG("Received EgoCylinderPoints msg");
+        
+        if(im_pub_.getNumSubscribers() > 0)
+        {
 
-        ros::WallTime start = ros::WallTime::now();
-        
-        utils::ECWrapper ec_pts(ec_msg);
-              
-        sensor_msgs::Image::ConstPtr image_ptr = utils::getRawRangeImageMsg(ec_pts);
+          ros::WallTime start = ros::WallTime::now();
+          
+          utils::ECWrapper ec_pts(ec_msg);
+                
+          sensor_msgs::Image::ConstPtr image_ptr = utils::getRawRangeImageMsg(ec_pts);
 
-        ROS_INFO_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
-        
+          ROS_INFO_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+          
 
-        ROS_INFO("publish egocylindrical image");
-        
-        im_pub_.publish(image_ptr);
-        
+          ROS_INFO("publish egocylindrical image");
+          
+          im_pub_.publish(image_ptr);
+        }
         
     }
 

@@ -46,21 +46,23 @@ private:
     
     void ecPointsCB(const egocylindrical::EgoCylinderPoints::ConstPtr& ec_msg)
     {
-        ROS_INFO("Received EgoCylinderPoints msg");
+        ROS_DEBUG("Received EgoCylinderPoints msg");
 
-        ros::WallTime start = ros::WallTime::now();
-        
-        utils::ECWrapper ec_pts(ec_msg);
-        
-        sensor_msgs::PointCloud2::ConstPtr msg = utils::generate_point_cloud(ec_pts);
-        
-        ROS_INFO_STREAM("Generating point cloud took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
-        
+        if(pc_pub_.getNumSubscribers()>0)
+        {
+          ros::WallTime start = ros::WallTime::now();
+          
+          utils::ECWrapper ec_pts(ec_msg);
+          
+          sensor_msgs::PointCloud2::ConstPtr msg = utils::generate_point_cloud(ec_pts);
+          
+          ROS_INFO_STREAM("Generating point cloud took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+          
 
-        ROS_INFO("publish egocylindrical pointcloud");
-        
-        pc_pub_.publish(msg);
-        
+          ROS_DEBUG("publish egocylindrical pointcloud");
+          
+          pc_pub_.publish(msg);
+        }
         
     }
 
