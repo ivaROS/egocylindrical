@@ -137,7 +137,7 @@ namespace egocylindrical
     }
     
     // TODO: add dynamic reconfigure for cylinder height/width, vfov, etc
-    void EgoCylindricalPropagator::init()
+    bool EgoCylindricalPropagator::init()
     {
         
         double pi = std::acos(-1);
@@ -174,7 +174,8 @@ namespace egocylindrical
         // Synchronize Image and CameraInfo callbacks
         timeSynchronizer = boost::make_shared<synchronizer>(depthSub, *info_tf_filter, 2);
         timeSynchronizer->registerCallback(boost::bind(&EgoCylindricalPropagator::update, this, _1, _2));
- 
+        
+        return true;
     }
 
     EgoCylindricalPropagator::EgoCylindricalPropagator(ros::NodeHandle& nh, ros::NodeHandle& pnh):

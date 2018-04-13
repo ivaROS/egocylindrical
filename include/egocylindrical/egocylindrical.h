@@ -73,7 +73,7 @@ public:
     sensor_msgs::PointCloud2  getPropagatedPointCloud();
     sensor_msgs::Image::ConstPtr getRawRangeImage();
 
-    void init();
+    bool init();
 
     //pcl::PointCloud<pcl::PointXYZI> getCylindricalPointCloud();
     //pcl::PointCloud<pcl::PointXYZ> getWorldPointCloud();

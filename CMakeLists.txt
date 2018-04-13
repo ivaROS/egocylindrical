@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   image_geometry
   image_transport
+  nodelet
   roscpp
   rospy
   sensor_msgs
@@ -239,6 +240,13 @@ target_link_libraries(egocylindrical_propagator_node
    ${catkin_LIBRARIES}
    )
 
+add_library(egocylindrical_propagator_nodelet MODULE src/egocylindrical_propagator_nodelet.cpp)
+
+target_link_libraries(egocylindrical_propagator_nodelet
+   egocylindrical_propagator
+   ${catkin_LIBRARIES}
+   )
+
   
 add_executable(pointcloud_generator_node src/point_cloud_node.cpp)
 
@@ -253,13 +261,23 @@ target_link_libraries(pointcloud_generator_node
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(pointcloud_generator_node PRIVATE -g -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+target_compile_options(pointcloud_generator_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
   #${OpenMP_CXX_FLAGS}
   )
   
 
-  
+add_library(pointcloud_generator_nodelet MODULE src/point_cloud_nodelet.cpp)
 
+target_compile_options(pointcloud_generator_nodelet PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+  #${OpenMP_CXX_FLAGS}
+  )
+
+target_link_libraries(pointcloud_generator_nodelet
+   point_cloud_generator
+   ${catkin_LIBRARIES}
+   )
+
+   
 add_executable(range_image_node src/range_image_node.cpp)
 
 #TODO: Add dependencies as needed
@@ -273,9 +291,18 @@ target_link_libraries(range_image_node
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(range_image_node PRIVATE -g -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+target_compile_options(range_image_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
   #${OpenMP_CXX_FLAGS}
   )
+  
+  
+
+add_library(range_image_nodelet MODULE src/range_image_nodelet.cpp)
+
+target_link_libraries(range_image_nodelet
+   range_image_generator
+   ${catkin_LIBRARIES}
+   )
   
   
 # add_executable(function_tester src/function_tester.cpp)

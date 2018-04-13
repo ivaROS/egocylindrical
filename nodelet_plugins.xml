@@ -1,0 +1,23 @@
+<library path="lib/libegocylindrical_propagator_nodelet">
+  <class name="egocylindrical/egocylindrical_propagator_nodelet" type="egocylindrical::EgocylindricalPropagatorNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet for egocylindrical propagation
+    </description>
+  </class>
+</library>
+
+<library path="lib/librange_image_nodelet">
+  <class name="egocylindrical/range_image_nodelet" type="egocylindrical::EgocylindricalRangeImageNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet for egocylindrical range image generation
+    </description>
+  </class>
+</library>
+
+<library path="lib/libpointcloud_generator_nodelet">
+  <class name="egocylindrical/point_cloud_nodelet" type="egocylindrical::EgocylindricalPointCloudNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet for egocylindrical point cloud generation
+    </description>
+  </class>
+</library>
