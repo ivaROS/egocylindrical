@@ -67,7 +67,7 @@ namespace egocylindrical
                 
         }
         
-        /*
+        
         template <typename T>
         inline
         cv::Point3_<T> projectWorldToCylinder(const cv::Point3_<T>& point)
@@ -75,25 +75,26 @@ namespace egocylindrical
           cv::Point3_<T> Pcyl_t = point / std::sqrt(point.x * point.x + point.z * point.z);
           return Pcyl_t;
         }
-        */
         
+        /*
         inline
         cv::Point3f projectWorldToCylinder(const cv::Point3f& point)
         {
             cv::Point3f Pcyl_t = point / std::sqrt(point.x * point.x + point.z * point.z);
             return Pcyl_t;
         }
+        */
         
-        
+        template <typename T>
         inline
-        cv::Point worldToCylindricalImage(const cv::Point3f& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+        cv::Point worldToCylindricalImage(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
         {
             
-            cv::Point3f p_cyl = projectWorldToCylinder(point);
+            cv::Point3_<T> p_cyl = projectWorldToCylinder(point);
             
-            float x = atan2_approximation1(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
+            T x = atan2_approximation1(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
             //float x = std::atan2(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
-            float y = p_cyl.y * v_scale + cyl_height / 2;
+            T y = p_cyl.y * v_scale + cyl_height / 2;
             
             cv::Point im_pt(x,y);
             return im_pt;
