@@ -247,3 +247,65 @@ c558be6a6bc976628ff710900b03c4290737ea8a: also good
 db4b5875f4ebbc6b03ccf40b7ce8f81e42eba2b7: this is the commit that broke things. Unfortunately, I did a lot in this one.
 Bug fixed in commit 2e454e2d8a17f6c315936c508dfa5006b5f1a011
 
+
+
+#templating 'worldToCylinder' to return the same precision point breaks vectorization. Below is an annotated analysis of the compiler's detailed vectorization output:
+
+projectWorldToCylinder:
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _188 = __builtin_sqrtf (_54);  #std::sqrt(point.x * point.x + point.z * point.z);
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _190 = _122 / _188;    #Pcyl_t.x 
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _191 = _123 / _188;    #Pcyl_t.y 
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _192 = _120 / _188;    #Pcyl_t.z 
+
+atan2_approximate:
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _166 = ABS_EXPR <_190>;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? abs_y_167 = _166 + 1.00000001335143196001808973960578441619873046875e-10;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _168 = abs_y_167 + _192;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _169 = abs_y_167 - _192;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? r_170 = _168 / _169;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _171 = _192 - abs_y_167;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _172 = abs_y_167 + _192;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? r_173 = _171 / _172;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? r_174 = _192 < 0.0 ? r_170 : r_173;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? angle_179 = _192 < 0.0 ? 2.35619449615478515625e+0 : 7.85398185253143310546875e-1;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? powmult_258 = r_174 * r_174;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _176 = powmult_258 * 1.962999999523162841796875e-1;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _177 = _176 - 9.81700003147125244140625e-1;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _178 = r_174 * _177;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? angle_180 = _178 + angle_179;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _181 = -angle_180;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _182 = _190 < 0.0 ? _181 : angle_180;    #atan2_approximate_result
+
+
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _144 = MEM[(float *)pretmp_415 + 84B]; #h_scale
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _145 = MEM[(float *)pretmp_415 + 88B]; #v_scale
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _157 = _144 * _182;    #x = h_scale * atan2_approximate_result
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? x_160 = _157 + pretmp_426; #x+= cyl_width/2
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _162 = _145 * _191;  #y = v_scale * p_cyl.y
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? y_165 = _162 + pretmp_428;   #y+= cyl_height/2
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? p_cyl ={v} {CLOBBER};
+
+worldToCylindricalIdx(float x, float y, float z):
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _147 = {y_165, 0.0, 0.0, 0.0};
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _148 = __builtin_ia32_cvtss2si (_147);   #image_pnt.y = y ; converts float to signed double word integer
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _150 = {x_160, 0.0, 0.0, 0.0};
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _151 = __builtin_ia32_cvtss2si (_150);   #image_pnt.x = x
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? D.305612 ={v} {CLOBBER};
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? D.305613 ={v} {CLOBBER};
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _153 = _148 * pretmp_423;  #tidx = image_pnt.y * getWidth()
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? idx_154 = _151 + _153;   #tidx += image_pnt.x
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? pretmp_435 = (long int) idx_154;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? prephitmp_436 = num_cols_13 > idx_154 ? pretmp_435 : -1;
+
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: phi relevant? p_183 = PHI <p_74(7), p_135(10)>
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: phi relevant? .MEM_263 = PHI <.MEM_8(7), .MEM_134(10)>
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? p.74_78 = (long unsigned int) p_183;
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _79 = p.74_78 * 4;     #inds*
+
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _127 = p.74_78 * 8;        #pointer to ranges
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _129 = pretmp_417 + _127;  #pointer to ranges[p]
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? *_129 = prephitmp_436;     #write range
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? _133 = pretmp_419 + _79;   #pointer to inds[p]
+/home/justin/catkin_ws/src/egocylindrical/src/point_transformer.cpp:214:36: note: init: stmt relevant? *_133 = _54;
+
+#So, the problem is the use of __builtin_ia32_cvtss2si to round

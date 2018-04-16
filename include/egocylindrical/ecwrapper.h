@@ -93,11 +93,25 @@ namespace egocylindrical
             cv::Point3_<T> p_cyl = projectWorldToCylinder(point);
             
             T x = std::atan2(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
-            //float x = std::atan2(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
             T y = p_cyl.y * v_scale + cyl_height / 2;
             
             cv::Point_<T> im_pt(x,y);
             return im_pt;
+        }
+        
+        template <typename T>
+        inline
+        cv::Point worldToCylindricalImageFast(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+        {
+          
+          cv::Point3_<T> p_cyl = projectWorldToCylinder(point);
+          
+          T x = atan2_approximation1(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
+
+          T y = p_cyl.y * v_scale + cyl_height / 2;
+          
+          cv::Point im_pt(x,y);
+          return im_pt;
         }
         
         inline
@@ -182,6 +196,14 @@ namespace egocylindrical
           {
             return width_;
           }
+
+          template <typename S, typename T>
+          inline 
+          void project3dToPixel(const cv::Point3_<S> point, cv::Point_<T>& pixel)
+          {
+            utils::worldToCylindricalImage(point, pixel, width_, height_, hscale_, vscale_, 0, 0);
+          }
+          
           
           template <typename T>
           inline 
@@ -495,7 +517,8 @@ namespace egocylindrical
             inline
             int worldToCylindricalIdx(float x, float y, float z) const
             {
-                cv::Point image_pnt = worldToCylindricalImage(cv::Point3f(x,y,z));
+                cv::Point3f point(x,y,z);
+                cv::Point image_pnt = utils::worldToCylindricalImageFast(point, width_, height_, hscale_, vscale_, 0, 0);
                 
                 int tidx = image_pnt.y * getWidth() +image_pnt.x;
                 
