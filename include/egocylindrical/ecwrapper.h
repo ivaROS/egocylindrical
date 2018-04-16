@@ -87,16 +87,16 @@ namespace egocylindrical
         
         template <typename T>
         inline
-        cv::Point worldToCylindricalImage(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+        cv::Point_<T> worldToCylindricalImage(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
         {
             
             cv::Point3_<T> p_cyl = projectWorldToCylinder(point);
             
-            T x = atan2_approximation1(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
+            T x = std::atan2(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
             //float x = std::atan2(p_cyl.x, p_cyl.z) * h_scale + cyl_width / 2;
             T y = p_cyl.y * v_scale + cyl_height / 2;
             
-            cv::Point im_pt(x,y);
+            cv::Point_<T> im_pt(x,y);
             return im_pt;
         }
         
