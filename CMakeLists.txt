@@ -143,28 +143,17 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
 )
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
-## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/egocylindrical.cpp
-# )
-
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 # This is a separate library partly to reduce compile times, but mostly because it needs to be compiled with certain 'fast-math' optimization options
-add_library(range_image_generator src/range_image_generator.cpp)
-target_link_libraries(range_image_generator
+add_library(range_image_core src/range_image_core.cpp)
+target_link_libraries(range_image_core
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
-   #${PCL_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(range_image_generator PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
+target_compile_options(range_image_core PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
   #${OpenMP_CXX_FLAGS}
   )
 
@@ -173,7 +162,6 @@ add_library(point_transformer src/point_transformer.cpp)
 target_link_libraries(point_transformer
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
-   #${PCL_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )
 
@@ -231,8 +219,7 @@ target_compile_options(egocylindrical_propagator PRIVATE -g -std=c++11 -Wall ${O
   #${OpenMP_CXX_FLAGS}
   )
 
-
-  
+#EGOCYLINDRICAL_PROPAGATOR_NODE
 add_executable(egocylindrical_propagator_node src/egocylindrical_propagator_node.cpp)
 
 target_link_libraries(egocylindrical_propagator_node
@@ -251,7 +238,10 @@ target_link_libraries(egocylindrical_propagator_nodelet
    )
 
 target_compile_options(egocylindrical_propagator_nodelet PRIVATE -g -std=c++11 -Wall)
-  
+
+
+
+
 add_executable(pointcloud_generator_node src/point_cloud_node.cpp)
 
 #TODO: Add only necessary dependencies
@@ -281,7 +271,24 @@ target_link_libraries(pointcloud_generator_nodelet
    ${catkin_LIBRARIES}
    )
 
-   
+
+#RANGE_IMAGE_GENERATOR
+add_library(range_image_generator src/range_image_generator.cpp)
+
+#TODO: Add dependencies as needed
+add_dependencies(range_image_generator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(range_image_generator
+   range_image_core
+   ${catkin_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
+
+target_compile_options(range_image_generator PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+  #${OpenMP_CXX_FLAGS}
+  )
+
+#RANGE_IMAGE_NODE
 add_executable(range_image_node src/range_image_node.cpp)
 
 #TODO: Add dependencies as needed
@@ -290,9 +297,6 @@ add_dependencies(range_image_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_E
 target_link_libraries(range_image_node
    range_image_generator
    ${catkin_LIBRARIES}
-   #${OpenCV_LIBRARIES}
-   #${PCL_LIBRARIES}
-   ${OpenMP_CXX_FLAGS}
    )
 
 target_compile_options(range_image_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
@@ -300,7 +304,7 @@ target_compile_options(range_image_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_F
   )
   
   
-
+#RANGE_IMAGE_NODELET
 add_library(range_image_nodelet MODULE src/range_image_nodelet.cpp)
 
 target_link_libraries(range_image_nodelet
@@ -309,18 +313,6 @@ target_link_libraries(range_image_nodelet
    )
   
   
-# add_executable(function_tester src/function_tester.cpp)
-# target_link_libraries(function_tester
-#    ${catkin_LIBRARIES}
-#    ${OpenCV_LIBRARIES}
-#    ${PCL_LIBRARIES}
-#    ${OpenMP_CXX_FLAGS}
-#    )
-# 
-#    target_compile_options(function_tester PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -fopt-info-vec-all -funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
-#   #${OpenMP_CXX_FLAGS}
-#   )
-
 #############
 ## Install ##
 #############

@@ -1,79 +1,15 @@
+#include <egocylindrical/range_image_generator.h>
 
 #include <nodelet/nodelet.h>
 #include <pluginlib/class_list_macros.h>
-#include <egocylindrical/ecwrapper.h>
-#include <egocylindrical/EgoCylinderPoints.h>
-#include <image_transport/image_transport.h>
+
+//Redundant
 #include <ros/ros.h>
+
 
 namespace egocylindrical
 {
-    //Forward declare functions from other compilation units
-    namespace utils
-    {
-        sensor_msgs::ImagePtr getRawRangeImageMsg(const utils::ECWrapper& cylindrical_history);
-    }
 
-    class EgoCylinderRangeImageGenerator
-    {
-        ros::NodeHandle nh_, pnh_;
-        image_transport::ImageTransport it_;
-        image_transport::Publisher im_pub_;
-        ros::Subscriber ec_sub_;
-        
-
-        
-        
-    public:
-
-      EgoCylinderRangeImageGenerator(ros::NodeHandle& nh, ros::NodeHandle& pnh) :
-            nh_(nh),
-            pnh_(pnh),
-            it_(nh_)
-        {
-
-        }
-        
-        bool init()
-        {
-            im_pub_ = it_.advertise("range_image", 2);
-          
-            ec_sub_ = nh_.subscribe("egocylindrical_points", 2, &EgoCylinderRangeImageGenerator::ecPointsCB, this);
-            
-            return true;
-        }
-
-
-    private:
-        
-        void ecPointsCB(const egocylindrical::EgoCylinderPoints::ConstPtr& ec_msg)
-        {
-            ROS_INFO("Received EgoCylinderPoints msg");
-            
-            if(im_pub_.getNumSubscribers() > 0)
-            {
-
-              ros::WallTime start = ros::WallTime::now();
-              
-              utils::ECWrapper ec_pts(ec_msg);
-                    
-              sensor_msgs::Image::ConstPtr image_ptr = utils::getRawRangeImageMsg(ec_pts);
-
-              ROS_INFO_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
-              
-
-              ROS_INFO("publish egocylindrical image");
-              
-              im_pub_.publish(image_ptr);
-            }
-            
-        }
-
-    };
-
-
-
-    
     /**
     * @brief Nodelet-wrapper of the EgocylindricalRangeImageNodelet class
     */

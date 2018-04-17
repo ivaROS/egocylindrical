@@ -269,6 +269,8 @@ namespace egocylindrical
             
             ECMsgConstPtr const_msg_;
             
+            bool msg_locked_;
+            
             // For now, just get things working using this.
             // Note: It may be preferable to allocate x,y,z separately to ensure they are aligned (unless the width is chosen such that they will be anyway...)
             // Another idea: possibly template this class by height/width, potentially enabling compile time optimizations
@@ -284,6 +286,8 @@ namespace egocylindrical
             vfov_(vfov)
             {
                 msg_ = boost::make_shared<ECMsg>();
+                
+                msg_locked_ = false;
                 
                 //Eigen::aligned_allocator<EgoCylinderPoints> Alloc;
                 //msg_ = boost::allocate_shared<EgoCylinderPoints>(Alloc);
@@ -430,6 +434,8 @@ namespace egocylindrical
                 
                 //std::cout << "Address: " << std::hex  << const_msg_->points.data.data() << std::dec << ", height=" << height_ << ", width=" << width_ << ", step=" << step << std::endl;
                 
+                msg_locked_ = true;
+                
             }
             
             ~ECWrapper()
@@ -444,8 +450,7 @@ namespace egocylindrical
                    }
                    */
             }
-            
-                        
+
             inline float* getPoints()                   { return (float*) points_; }
             inline const float* getPoints()     const   { return (const float*) points_; }
             
@@ -464,6 +469,7 @@ namespace egocylindrical
             inline long int* getInds()                  { return inds_.data(); }
             inline const long int* getInds()    const   { return (const long int*) inds_.data(); }
             
+            inline bool isLocked()              const   { return msg_locked_; }
 
             inline
             void setHeader(std_msgs::Header header)
@@ -539,8 +545,15 @@ namespace egocylindrical
                  * 3. Perform out of place point transformation
                  */
                 //ECMsgConstPtr msg = boost::make_shared<EgoCylinderPoints>(*msg_);
-                
+                msg_locked_ = true;
                 return (ECMsgConstPtr) msg_;
+            }
+            
+            inline
+            void useStorageFrom(const ECWrapper& other)
+            {
+                msg_ = other.msg_;
+                points_ = msg_->points.data.data();
             }
             
             // Function stubs to fill in and uncomment as needed
@@ -601,6 +614,7 @@ namespace egocylindrical
         }
         
     }
+    
 }
     
 #endif //EGOCYLINDRICAL_ECWRAPPER_H

@@ -36,7 +36,7 @@ namespace egocylindrical
         ROS_INFO_STREAM_NAMED("timing", "Finding transform took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
                 
         
-        start = ros::WallTime::now();        
+        start = ros::WallTime::now();    
         utils::transformPoints(old_pnts, *transformed_pts_, trans);
         ROS_INFO_STREAM_NAMED("timing", "Transform points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         

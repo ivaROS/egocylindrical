@@ -41,9 +41,7 @@ namespace egocylindrical
             const float t0 = _T[0];
             const float t1 = _T[1];
             const float t2 = _T[2];
-            
-            float* point_ptr = (float*)__builtin_assume_aligned(points.getPoints(), 16);            
-            
+                        
             const float* const R = (float*)__builtin_assume_aligned(_R, __BIGGEST_ALIGNMENT__);
             const float* const T = (float*)__builtin_assume_aligned(_T, __BIGGEST_ALIGNMENT__);
 
@@ -61,17 +59,29 @@ namespace egocylindrical
             
             //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
             
+                        
             if (omp_get_dynamic())
                 omp_set_dynamic(0);
             
-            #pragma omp parallel
+            omp_set_nested(1);
+            int omp_p = omp_get_max_threads();
+            
+            omp_p = std::min(omp_p-1, 4);
+            
+            
+            #pragma omp parallel num_threads(omp_p)
             {
-                if(omp_in_parallel())
+                
+                #pragma omp single nowait
                 {
-                    ROS_INFO_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
+                    if(omp_in_parallel())
+                    {
+                        ROS_INFO_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
+                    }
                 }
                 
                 
+                //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
                 #pragma omp for simd schedule(static)
                 for(long int p = 0; p < num_cols; ++p)
                 {
@@ -243,8 +253,7 @@ namespace egocylindrical
         // TODO: This functionality could be moved into a tf2_ros implementation
         void transformPoints(const utils::ECWrapper& points, utils::ECWrapper& transformed_points, const geometry_msgs::TransformStamped& trans)
         {
-            
-            
+  
             tf::Quaternion rotationQuaternion = tf::Quaternion(trans.transform.rotation.x,
                                                                trans.transform.rotation.y,
                                                                trans.transform.rotation.z,
@@ -272,7 +281,16 @@ namespace egocylindrical
             translationArray[1] = trans.transform.translation.y;
             translationArray[2] = trans.transform.translation.z;
             
-            transform_impl(points, transformed_points, rotationArray, translationArray);
+            
+            if(points.isLocked())
+            {
+                transform_impl(points, transformed_points, rotationArray, translationArray);
+            }
+            else
+            {
+                transformed_points.useStorageFrom(points);
+                transform_impl(points, transformed_points, rotationArray, translationArray);
+            }
             
         }
         
