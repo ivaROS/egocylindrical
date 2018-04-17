@@ -28,6 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(OpenCV REQUIRED)
 find_package(PCL    REQUIRED)
+find_package(OpenMP)
 
 if(1)
     set(SHOW_VECTORIZE_INFO "-fopt-info-vec-optimized")
@@ -166,8 +167,8 @@ target_link_libraries(point_transformer
    )
 
    #-fopt-info-vec-all
-target_compile_options(point_transformer PRIVATE -g -std=c++11 -Wall -ftree-vectorize   ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno #-finite-math-only and -fno-trapping-math. -ffinite-math-only 
-  ${OpenMP_CXX_FLAGS}
+target_compile_options(point_transformer PRIVATE -g -std=c++11 -Wall -ftree-vectorize   ${SHOW_VECTORIZE_INFO}-missed -funsafe-math-optimizations -fno-math-errno   ${OpenMP_CXX_FLAGS}#-finite-math-only and -fno-trapping-math. -ffinite-math-only 
+
   )
 
 ##Verified that ${OpenMP_CXX_FLAGS} contains what it should
@@ -192,7 +193,6 @@ target_compile_options(point_cloud_generator PRIVATE -g -std=c++11 -Wall -ftree-
 ## The recommended prefix ensures that target names across packages don't collide
 #${PROJECT_NAME}_
 
-add_library(egocylindrical_propagator src/egocylindrical_propagator.cpp)
 
 
 ## Rename C++ executable without prefix
@@ -205,7 +205,9 @@ add_library(egocylindrical_propagator src/egocylindrical_propagator.cpp)
 ## same as for the library above
 #add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-# Specify libraries to link a library or executable target against
+
+add_library(egocylindrical_propagator src/egocylindrical_propagator.cpp)
+
 target_link_libraries(egocylindrical_propagator
    point_transformer
    ${catkin_LIBRARIES}
@@ -216,7 +218,7 @@ target_link_libraries(egocylindrical_propagator
 add_dependencies(egocylindrical_propagator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_compile_options(egocylindrical_propagator PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
-  #${OpenMP_CXX_FLAGS}
+  ${OpenMP_CXX_FLAGS}
   )
 
 #EGOCYLINDRICAL_PROPAGATOR_NODE
@@ -224,6 +226,7 @@ add_executable(egocylindrical_propagator_node src/egocylindrical_propagator_node
 
 target_link_libraries(egocylindrical_propagator_node
    egocylindrical_propagator
+   ${OpenMP_CXX_FLAGS}
    ${catkin_LIBRARIES}
    )
    
@@ -234,6 +237,7 @@ add_library(egocylindrical_propagator_nodelet MODULE src/egocylindrical_propagat
 
 target_link_libraries(egocylindrical_propagator_nodelet
    egocylindrical_propagator
+   ${OpenMP_CXX_FLAGS}
    ${catkin_LIBRARIES}
    )
 

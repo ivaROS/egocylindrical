@@ -43,7 +43,7 @@ public:
 
 
 private:
-    
+    //ros::SubscriberStatusCallback info_cb = boost::bind(&camera_compression::RGBDThrottleNodelet::infoCB, this);
     void ecPointsCB(const egocylindrical::EgoCylinderPoints::ConstPtr& ec_msg)
     {
         ROS_DEBUG("Received EgoCylinderPoints msg");

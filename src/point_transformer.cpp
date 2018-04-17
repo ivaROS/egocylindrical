@@ -25,9 +25,7 @@ namespace egocylindrical
         */
         inline
         void transform_impl(utils::ECWrapper& points, const float*  const _R, const float*  const _T)
-        {
-            cv::Rect image_roi = points.getImageRoi();
-            
+        {            
             const float r0 = _R[0];
             const float r1 = _R[1];
             const float r2 = _R[2];
@@ -97,10 +95,8 @@ namespace egocylindrical
                     float depth=dNaN;
                     
                     int idx = -1;
-        
-                    cv::Point3f world_pnt(x[p],y[p],z[p]);
-                    
-                    depth= worldToRangeSquared(world_pnt);
+                            
+                    depth= worldToRangeSquared(x[p],z[p]);
                     
                     int tidx = points.worldToCylindricalIdx(x[p],y[p],z[p]);
 
@@ -119,9 +115,7 @@ namespace egocylindrical
         
         inline
         void transform_impl(const utils::ECWrapper& points, utils::ECWrapper& transformed_points, const float*  const _R, const float*  const _T)
-        {
-            cv::Rect image_roi = points.getImageRoi();
-            
+        {            
             const float r0 = _R[0];
             const float r1 = _R[1];
             const float r2 = _R[2];
@@ -284,10 +278,12 @@ namespace egocylindrical
             
             if(points.isLocked())
             {
+                ROS_INFO("Out of place");
                 transform_impl(points, transformed_points, rotationArray, translationArray);
             }
             else
             {
+                ROS_INFO("In place");
                 transformed_points.useStorageFrom(points);
                 transform_impl(points, transformed_points, rotationArray, translationArray);
             }
