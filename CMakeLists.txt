@@ -159,6 +159,24 @@ target_compile_options(range_image_core PRIVATE -g -std=c++11 -Wall -ftree-vecto
   )
 
   
+##Verified that ${OpenMP_CXX_FLAGS} contains what it should
+#message(STATUS=WARNING ${OpenMP_CXX_FLAGS})
+  
+add_library(point_cloud_core src/point_cloud_core.cpp)
+target_link_libraries(point_cloud_core
+   ${catkin_LIBRARIES}
+   #${OpenCV_LIBRARIES}
+   #${PCL_LIBRARIES}
+   #${OpenMP_CXX_FLAGS}
+   )
+
+target_compile_options(point_cloud_core PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} ${OpenMP_CXX_FLAGS} #-funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
+  ${OpenMP_CXX_FLAGS}
+  )
+
+
+
+
 add_library(point_transformer src/point_transformer.cpp)
 target_link_libraries(point_transformer
    ${catkin_LIBRARIES}
@@ -167,27 +185,10 @@ target_link_libraries(point_transformer
    )
 
    #-fopt-info-vec-all
-target_compile_options(point_transformer PRIVATE -g -std=c++11 -Wall -ftree-vectorize   ${SHOW_VECTORIZE_INFO}-missed -funsafe-math-optimizations -fno-math-errno   ${OpenMP_CXX_FLAGS}#-finite-math-only and -fno-trapping-math. -ffinite-math-only 
+target_compile_options(point_transformer PRIVATE -g -std=c++11 -Wall -ftree-vectorize   ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno   ${OpenMP_CXX_FLAGS}#-finite-math-only and -fno-trapping-math. -ffinite-math-only 
 
   )
-
-##Verified that ${OpenMP_CXX_FLAGS} contains what it should
-#message(STATUS=WARNING ${OpenMP_CXX_FLAGS})
   
-add_library(point_cloud_generator src/point_cloud_generator.cpp)
-target_link_libraries(point_cloud_generator
-   ${catkin_LIBRARIES}
-   #${OpenCV_LIBRARIES}
-   #${PCL_LIBRARIES}
-   #${OpenMP_CXX_FLAGS}
-   )
-
-target_compile_options(point_cloud_generator PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} ${OpenMP_CXX_FLAGS} #-funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
-  ${OpenMP_CXX_FLAGS}
-  )
-
-
-
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
@@ -221,6 +222,11 @@ target_compile_options(egocylindrical_propagator PRIVATE -g -std=c++11 -Wall ${O
   ${OpenMP_CXX_FLAGS}
   )
 
+  
+  
+  
+  
+  
 #EGOCYLINDRICAL_PROPAGATOR_NODE
 add_executable(egocylindrical_propagator_node src/egocylindrical_propagator_node.cpp)
 
@@ -246,12 +252,30 @@ target_compile_options(egocylindrical_propagator_nodelet PRIVATE -g -std=c++11 -
 
 
 
-add_executable(pointcloud_generator_node src/point_cloud_node.cpp)
+#POINT_CLOUD_GENERATOR
+add_library(point_cloud_generator src/point_cloud_generator.cpp)
+
+#TODO: Add dependencies as needed
+add_dependencies(point_cloud_generator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(point_cloud_generator
+   point_cloud_core
+   ${catkin_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
+
+target_compile_options(point_cloud_generator PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+  #${OpenMP_CXX_FLAGS}
+  )
+
+
+#POINT_CLOUD_NODE
+add_executable(point_cloud_node src/point_cloud_node.cpp)
 
 #TODO: Add only necessary dependencies
-add_dependencies(pointcloud_generator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(point_cloud_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(pointcloud_generator_node
+target_link_libraries(point_cloud_node
    point_cloud_generator
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
@@ -259,18 +283,19 @@ target_link_libraries(pointcloud_generator_node
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(pointcloud_generator_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+target_compile_options(point_cloud_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
   #${OpenMP_CXX_FLAGS}
   )
   
+  
+#POINT_CLOUD_NODELET
+add_library(point_cloud_nodelet MODULE src/point_cloud_nodelet.cpp)
 
-add_library(pointcloud_generator_nodelet MODULE src/point_cloud_nodelet.cpp)
-
-target_compile_options(pointcloud_generator_nodelet PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+target_compile_options(point_cloud_nodelet PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
   #${OpenMP_CXX_FLAGS}
   )
 
-target_link_libraries(pointcloud_generator_nodelet
+target_link_libraries(point_cloud_nodelet
    point_cloud_generator
    ${catkin_LIBRARIES}
    )

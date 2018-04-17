@@ -550,6 +550,7 @@ namespace egocylindrical
             }
             
             inline
+            // TODO: ensure that storage is correct size, etc
             void useStorageFrom(const ECWrapper& other)
             {
                 msg_ = other.msg_;

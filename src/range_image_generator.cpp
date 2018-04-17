@@ -1,0 +1,88 @@
+//
+// Created by root on 2/5/18.
+//
+
+#include <egocylindrical/range_image_generator.h>
+#include <egocylindrical/ecwrapper.h>
+
+// The below are redundant
+#include <egocylindrical/EgoCylinderPoints.h>
+#include <image_transport/image_transport.h>
+#include <ros/ros.h>
+
+namespace egocylindrical
+{
+    //Forward declare functions from other compilation units
+    namespace utils
+    {
+        sensor_msgs::ImagePtr getRawRangeImageMsg(const utils::ECWrapper& cylindrical_history);
+    }
+
+
+
+    EgoCylinderRangeImageGenerator::EgoCylinderRangeImageGenerator(ros::NodeHandle& nh, ros::NodeHandle& pnh) :
+        nh_(nh),
+        pnh_(pnh),
+        it_(nh_)
+    {
+        std::cout<<"Egocylindrical Range Image Node Initialized"<<std::endl;
+
+
+    }
+    
+    bool EgoCylinderRangeImageGenerator::init()
+    {
+        image_transport::SubscriberStatusCallback image_cb = boost::bind(&EgoCylinderRangeImageGenerator::ssCB, this);
+        im_pub_ = it_.advertise("range_image", 2, image_cb, image_cb);
+        
+        return true;
+    }
+    
+    void EgoCylinderRangeImageGenerator::ssCB()
+    {
+        if(im_pub_.getNumSubscribers()>0)
+        {
+            if(&ec_sub_) //if currently subscribed... no need to do anything
+            {
+                
+            }
+            else
+            {
+                ec_sub_ = nh_.subscribe("egocylindrical_points", 2, &EgoCylinderRangeImageGenerator::ecPointsCB, this);
+            }
+      
+        }
+        else
+        {
+            ec_sub_.shutdown();
+        }
+    }
+
+    
+    void EgoCylinderRangeImageGenerator::ecPointsCB(const egocylindrical::EgoCylinderPoints::ConstPtr& ec_msg)
+    {
+        ROS_DEBUG("Received EgoCylinderPoints msg");
+        
+        if(im_pub_.getNumSubscribers() > 0)
+        {
+
+          ros::WallTime start = ros::WallTime::now();
+          
+          utils::ECWrapper ec_pts(ec_msg);
+                
+          sensor_msgs::Image::ConstPtr image_ptr = utils::getRawRangeImageMsg(ec_pts);
+
+          ROS_INFO_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+          
+
+          ROS_INFO("publish egocylindrical image");
+          
+          im_pub_.publish(image_ptr);
+        }
+        
+    }
+
+
+
+
+}
