@@ -239,6 +239,9 @@ target_link_libraries(egocylindrical_propagator_node
    egocylindrical_propagator
    ${catkin_LIBRARIES}
    )
+   
+target_compile_options(egocylindrical_propagator_node PRIVATE -g -std=c++11 -Wall)
+
 
 add_library(egocylindrical_propagator_nodelet MODULE src/egocylindrical_propagator_nodelet.cpp)
 
@@ -247,6 +250,7 @@ target_link_libraries(egocylindrical_propagator_nodelet
    ${catkin_LIBRARIES}
    )
 
+target_compile_options(egocylindrical_propagator_nodelet PRIVATE -g -std=c++11 -Wall)
   
 add_executable(pointcloud_generator_node src/point_cloud_node.cpp)
 

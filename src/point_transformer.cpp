@@ -75,37 +75,7 @@ namespace egocylindrical
                 #pragma omp for simd schedule(static)
                 for(long int p = 0; p < num_cols; ++p)
                 {
-                  /*
-                    if(omp_in_parallel())
-                    {
-                        int thread_id = omp_get_thread_num();
-                        
-                        ROS_INFO_STREAM_NAMED("omp","OpenMP active! Thread # " << thread_id);
-                        
-                    }
-                    ROS_INFO_STREAM("testing");
-                    */
-                    
-                  /*
-                    float temp[3];
-                    for(int row=0; row < 3; ++row)
-                    {
-                        temp[row] = 0;
-                        for(int col=0; col < 3; ++col)
-                        {
-                            temp[row] += R[row*3+col] * point_ptr[num_cols * col + p]; // points.at<float>(col,p);
-                        }
-                    }
-                    
-                    for(int row=0; row < 3; ++row)
-                    {
-                        point_ptr[num_cols * row + p] = temp[row] + T[row];
-                    }
-                    
-                    */
-                    
-                    
-                    
+
                     float x_p = x[p];
                     float y_p = y[p];
                     float z_p = z[p];
@@ -113,10 +83,7 @@ namespace egocylindrical
                     x[p] = r0 * x_p + r1 * y_p + r2 * z_p + t0;
                     y[p] = r3 * x_p + r4 * y_p + r5 * z_p + t1;
                     z[p] = r6 * x_p + r7 * y_p + r8 * z_p + t2;
-                    
 
-                    
-                    
                     float depth=dNaN;
                     
                     int idx = -1;
@@ -125,10 +92,8 @@ namespace egocylindrical
                     
                     depth= worldToRangeSquared(world_pnt);
                     
-                    cv::Point image_pnt = points.worldToCylindricalImage(world_pnt);
-                    
-                    int tidx = image_pnt.y * width +image_pnt.x;
-                    
+                    int tidx = points.worldToCylindricalIdx(x[p],y[p],z[p]);
+
                     if(tidx < num_cols)
                         idx = tidx;
     
@@ -215,9 +180,9 @@ namespace egocylindrical
                     float y_p = y[p];
                     float z_p = z[p];
                     
-                    x_n[p] = r0 * x[p] + r1 * y[p] + r2 * z[p] + t0;
-                    y_n[p] = r3 * x[p] + r4 * y[p] + r5 * z[p] + t1;
-                    z_n[p] = r6 * x[p] + r7 * y[p] + r8 * z[p] + t2;
+                    x_n[p] = r0 * x_p + r1 * y_p + r2 * z_p + t0;
+                    y_n[p] = r3 * x_p + r4 * y_p + r5 * z_p + t1;
+                    z_n[p] = r6 * x_p + r7 * y_p + r8 * z_p + t2;
                      
                     float depth=dNaN;
                     

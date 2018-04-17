@@ -101,6 +101,7 @@ namespace egocylindrical
                 // TODO: if no one is subscribing, we can propagate the points in place next time (if that turns out to be faster)
                 temp = ros::WallTime::now();
                 
+                //TODO: this function call should trigger the ecwrapper to mark its message as locked
                 utils::ECMsgConstPtr msg = new_pts_->getEgoCylinderPointsMsg();
                 ROS_INFO_STREAM("Copying EgoCylinderPoints took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
                 

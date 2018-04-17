@@ -67,7 +67,9 @@ namespace egocylindrical
                 
         }
         
-        
+        /* Note: functions using 'std::sqrt' must be compiled with '-fno-math-errno' in order to be vectorized.
+         * See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=51890 for explanation.
+         */
         template <typename T>
         inline
         cv::Point3_<T> projectWorldToCylinder(const cv::Point3_<T>& point)
@@ -124,7 +126,7 @@ namespace egocylindrical
         inline
         float worldToRangeSquared(const cv::Point3f& point)
         {
-            return point.x*point.x + point.z*point.z;
+            return worldToRangeSquared(point.x, point.z);
         }
         
         inline
