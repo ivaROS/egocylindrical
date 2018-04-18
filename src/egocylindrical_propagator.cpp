@@ -63,8 +63,9 @@ namespace egocylindrical
         //new_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
         // NOTE: It may be better to only create the necessary wrappers once and just 'swap' the msg_ pointers
         new_pts_ = next_pts_;
+        bool allocate_next = !old_pts_ || old_pts_->isLocked();
         
-        #pragma omp parallel sections num_threads(2)
+        #pragma omp parallel sections num_threads(2) if(allocate_next)
         {
           #pragma omp section
           {
@@ -113,7 +114,14 @@ namespace egocylindrical
           {
             ros::WallTime start = ros::WallTime::now();
             
-            next_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
+            if(allocate_next)
+            {
+                next_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
+            }
+            else
+            {
+                std::swap(next_pts_,old_pts_);
+            }
             
             ROS_INFO_STREAM("Creating new datastructure took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
           }
