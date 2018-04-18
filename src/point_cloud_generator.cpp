@@ -28,8 +28,11 @@ namespace egocylindrical
     
     bool EgoCylinderPointCloudGenerator::init()
     {
+        ec_sub_.shutdown();
+        
         ros::SubscriberStatusCallback info_cb = boost::bind(&EgoCylinderPointCloudGenerator::ssCB, this);
-        pc_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("cylindrical", 2);
+        pc_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("cylindrical", 2, info_cb, info_cb);
+        //ssCB();
         
         return true;
     }
@@ -37,14 +40,17 @@ namespace egocylindrical
 
     void EgoCylinderPointCloudGenerator::ssCB()
     {
+        //std::cout << (void*)ec_sub_ << ": " << pc_pub_.getNumSubscribers() << std::endl;
+        
         if(pc_pub_.getNumSubscribers()>0)
         {
-            if(&ec_sub_) //if currently subscribed... no need to do anything
+            if(ec_sub_) //if currently subscribed... no need to do anything
             {
                 
             }
             else
             {
+                ROS_INFO("PointCloud Generator Subscribing");
                 ec_sub_ = nh_.subscribe("egocylindrical_points", 2, &EgoCylinderPointCloudGenerator::ecPointsCB, this);
             }
       
@@ -52,6 +58,7 @@ namespace egocylindrical
         else
         {
             ec_sub_.shutdown();
+            ROS_INFO("PointCloud Generator Unsubscribing");
         }
     }
     

@@ -10,8 +10,8 @@
       <remap from="/camera/depth/image_raw" to="$(arg depth_image)"/>
   </node>
 
-  <node name="egocylindrical_to_pointcloud" pkg="egocylindrical" type="pointcloud_generator_node" output="screen"/>
+  <node name="egocylindrical_to_pointcloud" pkg="egocylindrical" type="point_cloud_node" output="screen"/>
 
-  <node name="egocylindrical_to_range_image" pkg="egocylindrical" type="range_image_node"/>
+  <node name="egocylindrical_to_range_image" pkg="egocylindrical" type="range_image_node" output="screen"/>
   
 </launch>

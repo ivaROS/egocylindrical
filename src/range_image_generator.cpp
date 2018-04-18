@@ -40,21 +40,28 @@ namespace egocylindrical
     
     void EgoCylinderRangeImageGenerator::ssCB()
     {
+        
+        //std::cout << (void*)ec_sub_ << ": " << im_pub_.getNumSubscribers() << std::endl;
+
         if(im_pub_.getNumSubscribers()>0)
         {
-            if(&ec_sub_) //if currently subscribed... no need to do anything
+            if((void*)ec_sub_) //if currently subscribed... no need to do anything
             {
                 
             }
             else
             {
                 ec_sub_ = nh_.subscribe("egocylindrical_points", 2, &EgoCylinderRangeImageGenerator::ecPointsCB, this);
+                ROS_INFO("RangeImage Generator Subscribing");
+
             }
       
         }
         else
         {
             ec_sub_.shutdown();
+            ROS_INFO("RangeImage Generator Unsubscribing");
+
         }
     }
 
@@ -63,6 +70,7 @@ namespace egocylindrical
     {
         ROS_DEBUG("Received EgoCylinderPoints msg");
         
+        // This may be redundant now
         if(im_pub_.getNumSubscribers() > 0)
         {
 
