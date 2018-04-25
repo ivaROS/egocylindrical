@@ -12,6 +12,14 @@
 
   <node name="egocylindrical_to_pointcloud" pkg="egocylindrical" type="point_cloud_node" output="screen"/>
 
-  <node name="egocylindrical_to_range_image" pkg="egocylindrical" type="range_image_node" output="screen"/>
+  <node name="egocylindrical_to_range_image" pkg="egocylindrical" type="range_image_node" output="screen" >
+    <param name="use_raw" value="False"/>
+    <param name="image_topic" value="image"/>
+  </node>
+  
+  <node name="egocylindrical_to_raw_range_image" pkg="egocylindrical" type="range_image_node" output="screen" >
+    <param name="use_raw" value="True"/>
+    <param name="image_topic" value="image_raw"/>
+  </node>
   
 </launch>
