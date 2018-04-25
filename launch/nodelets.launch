@@ -15,6 +15,15 @@
   
   <node name="egocylindrical_to_pointcloud_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/point_cloud_nodelet $(arg nodelet_manager)" />
 
-  <node name="egocylindrical_to_range_image_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_nodelet $(arg nodelet_manager)"/>
+  <node name="egocylindrical_to_range_image_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_nodelet $(arg nodelet_manager)" >
+    <param name="use_raw" value="False"/>
+    <param name="image_topic" value="image"/>
+  </node>
+ 
+  <node name="egocylindrical_to_raw_range_image_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_nodelet $(arg nodelet_manager)" >
+    <param name="use_raw" value="True"/>
+    <param name="image_topic" value="image_raw"/>
+  </node>
+
  
 </launch>

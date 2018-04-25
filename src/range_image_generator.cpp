@@ -3,20 +3,17 @@
 //
 
 #include <egocylindrical/range_image_generator.h>
-#include <egocylindrical/ecwrapper.h>
+#include <egocylindrical/range_image_core.h>
 
 // The below are redundant
 #include <egocylindrical/EgoCylinderPoints.h>
 #include <image_transport/image_transport.h>
 #include <ros/ros.h>
+#include <egocylindrical/ecwrapper.h>
+
 
 namespace egocylindrical
 {
-    //Forward declare functions from other compilation units
-    namespace utils
-    {
-        sensor_msgs::ImagePtr getRawRangeImageMsg(const utils::ECWrapper& cylindrical_history);
-    }
 
 
 
@@ -32,8 +29,15 @@ namespace egocylindrical
     
     bool EgoCylinderRangeImageGenerator::init()
     {
+        use_raw_ = false;
+        std::string image_topic = "image";
+        
+        pnh_.getParam("use_raw", use_raw_ );
+        
+        pnh_.getParam("image_topic", image_topic );
+
         image_transport::SubscriberStatusCallback image_cb = boost::bind(&EgoCylinderRangeImageGenerator::ssCB, this);
-        im_pub_ = it_.advertise("range_image", 2, image_cb, image_cb);
+        im_pub_ = it_.advertise(image_topic, 2, image_cb, image_cb);
         
         return true;
     }
@@ -78,7 +82,7 @@ namespace egocylindrical
           
           utils::ECWrapper ec_pts(ec_msg);
                 
-          sensor_msgs::Image::ConstPtr image_ptr = utils::getRawRangeImageMsg(ec_pts);
+          sensor_msgs::Image::ConstPtr image_ptr = use_raw_ ? utils::getRawRangeImageMsg(ec_pts) : utils::getRangeImageMsg(ec_pts);
 
           ROS_INFO_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
           

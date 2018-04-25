@@ -17,6 +17,7 @@ namespace egocylindrical
         image_transport::ImageTransport it_;
         image_transport::Publisher im_pub_;
         ros::Subscriber ec_sub_;
+        bool use_raw_;
 
     public:
 
