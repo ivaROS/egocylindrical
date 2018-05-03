@@ -9,7 +9,7 @@
 
   
   <group ns="egocylinder">
-  <node name="$(arg nodelet_manager)" pkg="nodelet" type="nodelet" args="manager" unless="$(arg use_provided_manager)" output="screen"/>
+  <node name="$(arg nodelet_manager)" pkg="nodelet" type="nodelet" args="manager" unless="$(arg use_provided_manager)" output="log"/>
 
   <node name="depth_to_egocylindrical_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/egocylindrical_propagator_nodelet $(arg nodelet_manager)" >
     <remap from="/camera/depth/image_raw" to="$(arg depth_image)"/>

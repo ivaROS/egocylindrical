@@ -537,14 +537,6 @@ namespace egocylindrical
             inline
             ECMsgConstPtr getEgoCylinderPointsMsg()
             {
-                /* This is a temporary solution until I can decide how to do this. Ideally, I would publish the final message directly
-                 * so that other nodelets can do their thing. However, currently I transform points in place, overwriting the old values.
-                 * The whole point of storing the data in a msgptr may be undermined by this. It will come down to whether it is faster to
-                 * 1. Copy the message here before publishing
-                 * 2. Publish the message, then make a copy for use in callback
-                 * 3. Perform out of place point transformation
-                 */
-                //ECMsgConstPtr msg = boost::make_shared<EgoCylinderPoints>(*msg_);
                 msg_locked_ = true;
                 return (ECMsgConstPtr) msg_;
             }
