@@ -157,6 +157,9 @@ target_link_libraries(range_image_core
 target_compile_options(range_image_core PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
   #${OpenMP_CXX_FLAGS}
   )
+  
+add_dependencies(range_image_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 
   
 ##Verified that ${OpenMP_CXX_FLAGS} contains what it should
@@ -173,8 +176,8 @@ target_link_libraries(point_cloud_core
 target_compile_options(point_cloud_core PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} ${OpenMP_CXX_FLAGS} #-funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
   ${OpenMP_CXX_FLAGS}
   )
-
-
+  
+add_dependencies(point_cloud_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 add_library(point_transformer src/point_transformer.cpp)
@@ -188,6 +191,9 @@ target_link_libraries(point_transformer
 target_compile_options(point_transformer PRIVATE -g -std=c++11 -Wall -ftree-vectorize   ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno   ${OpenMP_CXX_FLAGS}#-finite-math-only and -fno-trapping-math. -ffinite-math-only 
 
   )
+  
+add_dependencies(point_transformer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
   
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context

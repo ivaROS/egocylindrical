@@ -1,3 +1,4 @@
+#include <egocylindrical/point_transformer.h>
 #include <egocylindrical/ecwrapper.h>
 
 #include <ros/ros.h>
@@ -24,24 +25,24 @@ namespace egocylindrical
         * 
         */
         inline
-        void transform_impl(utils::ECWrapper& points, const float*  const _R, const float*  const _T)
+        void transform_impl(utils::ECWrapper& points, const float*  const R, const float*  const T)
         {            
-            const float r0 = _R[0];
-            const float r1 = _R[1];
-            const float r2 = _R[2];
-            const float r3 = _R[3];
-            const float r4 = _R[4];
-            const float r5 = _R[5];
-            const float r6 = _R[6];
-            const float r7 = _R[7];
-            const float r8 = _R[8];
+            const float r0 = R[0];
+            const float r1 = R[1];
+            const float r2 = R[2];
+            const float r3 = R[3];
+            const float r4 = R[4];
+            const float r5 = R[5];
+            const float r6 = R[6];
+            const float r7 = R[7];
+            const float r8 = R[8];
             
-            const float t0 = _T[0];
-            const float t1 = _T[1];
-            const float t2 = _T[2];
+            const float t0 = T[0];
+            const float t1 = T[1];
+            const float t2 = T[2];
                         
-            const float* const R = (float*)__builtin_assume_aligned(_R, __BIGGEST_ALIGNMENT__);
-            const float* const T = (float*)__builtin_assume_aligned(_T, __BIGGEST_ALIGNMENT__);
+            //const float* const R = (float*)__builtin_assume_aligned(R, __BIGGEST_ALIGNMENT__);
+            //const float* const T = (float*)__builtin_assume_aligned(_T, __BIGGEST_ALIGNMENT__);
 
             const int num_cols = points.getCols();
             const int width = points.getWidth();
@@ -64,7 +65,7 @@ namespace egocylindrical
             omp_set_nested(1);
             int omp_p = omp_get_max_threads();
             
-            omp_p = std::min(omp_p-1, 4);
+            omp_p = std::min(omp_p-1, 1);
             
             
             #pragma omp parallel num_threads(omp_p)
@@ -80,7 +81,7 @@ namespace egocylindrical
                 
                 
                 //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-                #pragma omp for simd schedule(static)
+                #pragma omp for simd schedule(static) //aligned(x, y, z, ranges, inds: __BIGGEST_ALIGNMENT__)
                 for(long int p = 0; p < num_cols; ++p)
                 {
 
@@ -160,7 +161,7 @@ namespace egocylindrical
             omp_set_nested(1);
             int omp_p = omp_get_max_threads();
             
-            omp_p = std::min(omp_p-1, 4);
+            omp_p = std::min(omp_p-1, 1);
             
             
             #pragma omp parallel num_threads(omp_p)
