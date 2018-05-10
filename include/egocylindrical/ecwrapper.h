@@ -264,6 +264,8 @@ namespace egocylindrical
             float vfov_;
             float hscale_, vscale_;
             
+            bool allocate_arrays_;
+            
             std_msgs::Header header_;
             ECMsgPtr msg_; // The idea would be to store everything in the message's allocated storage to prevent copies
             
@@ -281,138 +283,16 @@ namespace egocylindrical
         public:
             
             ECWrapper(int height, int width, float vfov, bool allocate_arrays = false):
-            height_(height),
-            width_(width),
-            vfov_(vfov)
+                height_(height),
+                width_(width),
+                vfov_(vfov),
+                allocate_arrays_(allocate_arrays)
             {
                 msg_ = boost::make_shared<ECMsg>();
                 
                 msg_locked_ = false;
                 
-                //Eigen::aligned_allocator<EgoCylinderPoints> Alloc;
-                //msg_ = boost::allocate_shared<EgoCylinderPoints>(Alloc);
-                
-                int max_alignment = alignof(std::max_align_t);
-                
-                int biggest_alignment = __BIGGEST_ALIGNMENT__;
-                
-                size_t object_size = sizeof(float);
-                
-                size_t object_alignment = alignof(float);
-                
-                size_t buffer_size = biggest_alignment - object_size;
-                size_t buffer_objects = buffer_size / object_size;
-                
-                // NOTE: width x height must be divisible by 8 for this approach to work. Otherwise, additional information will be necessary in order to properly place the x,y,z pointers
-                
-                ROS_INFO_STREAM("max_alignment: " << max_alignment << ", biggest_alignment: " << biggest_alignment << ", object_size: " << object_size << ", object_alignment: " << object_alignment << ", number buffer objects: " << buffer_objects);
-
-                msg_->points.data.resize(3*height_*width_ + buffer_objects, dNaN);  //Note: can pass 'utils::dNaN as 2nd argument to set all values
-                
-                
-                points_ = msg_->points.data.data();
-                
-                // TODO: create templated function to get aligned pointers. Something similar here: http://en.cppreference.com/w/cpp/memory/align
-                
-                {
-                    void* temp_points = (void*) msg_->points.data.data();
-                    
-                    size_t space_before = height_*width_*3*sizeof(float);
-                    size_t space_after = space_before;
-                    
-                    std::align(biggest_alignment, sizeof(float), temp_points, space_after);
-                    points_ = (float*) temp_points;
-                    
-                    msg_->points.layout.data_offset = (space_before - space_after);
-                    
-                    
-                    ROS_INFO_STREAM("Aligned points_, adjusted pointer by " << (space_before - space_after) << " bytes");
-                }
-                
-                
-                
-                if(allocate_arrays)
-                {
-                  ranges_.resize(height_*width_);
-                  //ranges_ = boost::alignment::aligned_alloc(__BIGGEST_ALIGNMENT__, height_*width_*sizeof(float));
-                    {
-                        //ranges_ = new float[height_*width_ + buffer_objects];
-                        //aligned_ranges_ = ranges_;
-                        
-                        /*
-                        void* temp_range = (void*) ranges_;
-                        //aligned_ranges_ = ranges_;
-                        
-                        size_t space_before = height_*width_*sizeof(float);
-                        size_t space_after = space_before;
-                        
-                        std::align(biggest_alignment, sizeof(float), temp_range, space_after);
-                        aligned_ranges_ = (float*) temp_range;
-                        
-                        ROS_INFO_STREAM("Aligned ranges_, adjusted pointer by " << (space_before - space_after) << " bytes");
-                        */
-                    }
-                    
-                  inds_.resize(height_*width_);
-                    
-                    {
-                        //inds_ = new long int[height_*width_ + (biggest_alignment / sizeof(long int)) - 1];
-                        //aligned_inds_ = inds_;
-                        
-                        /*
-                        void* temp_inds = (void*) inds_;
-                        
-                        size_t space_before = height_*width_*sizeof(long int);
-                        size_t space_after = space_before;
-                        
-                        std::align(biggest_alignment, sizeof(long int), temp_inds, space_after);
-                        aligned_inds_ = (long int*) temp_inds;
-                        
-                        ROS_INFO_STREAM("Aligned inds_, adjusted pointer by " << (space_before - space_after) << " bytes");
-                        */
-                    }
-                }
-                
-                msg_->fov_v = vfov_;
-                
-                hscale_ = width_/(2*M_PI);
-                vscale_ = height_/vfov;
-                
-                
-                std::vector<std_msgs::MultiArrayDimension>& dims = msg_->points.layout.dim;
-                dims.resize(3);
-                
-                
-                std_msgs::MultiArrayDimension& dim0 = dims[0];
-                dim0.label = "components";
-                dim0.size = 3;
-                dim0.stride = 3*height_*width_;
-                //dims[0] = dim0;
-                
-                
-                std_msgs::MultiArrayDimension& dim1 = dims[1];
-                dim1.label = "rows";
-                dim1.size = height_;
-                dim1.stride = height_*width_;
-                //dims[1] = dim1;
-
-                
-                std_msgs::MultiArrayDimension& dim2 = dims[2];
-                dim2.label = "point";
-                dim2.size = width_;
-                dim2.stride = width_;             
-                //dims[2] = dim2;
-                
-                
-                int step = dim1.stride * sizeof(float);
-                
-                //points_ = cv::Mat(3, height_ * width_, CV_32FC1, const_cast<float*>(msg_->points.data.data()), step);
-                
-                
-                //std::cout << "Address: " << std::hex  << msg_->points.data.data() << std::dec << ", height=" << height_ << ", width=" << width_ << ", step=" << step << std::endl; //std::setfill('0') << std::setw(2) << ar[i] << " ";
-                
-
-                //points_.setTo(utils::dNaN);
+                init();
             }
             
             ECWrapper(const ECMsgConstPtr& ec_points) 
@@ -542,59 +422,94 @@ namespace egocylindrical
             }
             
             inline
+            void init()
+            {
+                int max_alignment = alignof(std::max_align_t);
+                
+                int biggest_alignment = __BIGGEST_ALIGNMENT__;
+                
+                size_t object_size = sizeof(float);
+                
+                size_t object_alignment = alignof(float);
+                
+                size_t buffer_size = biggest_alignment - object_size;
+                size_t buffer_objects = buffer_size / object_size;
+                
+                // NOTE: width x height must be divisible by 8 for this approach to work. Otherwise, additional information will be necessary in order to properly place the x,y,z pointers
+                
+                ROS_INFO_STREAM("max_alignment: " << max_alignment << ", biggest_alignment: " << biggest_alignment << ", object_size: " << object_size << ", object_alignment: " << object_alignment << ", number buffer objects: " << buffer_objects);
+                
+                msg_->points.data.resize(3*height_*width_ + buffer_objects, dNaN);
+                
+                
+                //Align data pointer
+                {
+                    void* temp_points = (void*) msg_->points.data.data();
+                    
+                    size_t space_before = height_*width_*3*sizeof(float);
+                    size_t space_after = space_before;
+                    
+                    std::align(biggest_alignment, sizeof(float), temp_points, space_after);
+                    points_ = (float*) temp_points;
+                    
+                    msg_->points.layout.data_offset = (space_before - space_after);
+                    
+                    ROS_INFO_STREAM("Aligned points_, adjusted pointer by " << (space_before - space_after) << " bytes");
+                }
+                
+                if(allocate_arrays_)
+                {
+                    ranges_.resize(height_*width_);
+                    inds_.resize(height_*width_); 
+                }
+                
+                msg_->fov_v = vfov_;
+                
+                hscale_ = width_/(2*M_PI);
+                vscale_ = height_/vfov_;
+                
+                
+                std::vector<std_msgs::MultiArrayDimension>& dims = msg_->points.layout.dim;
+                dims.resize(3);
+                
+                std_msgs::MultiArrayDimension& dim0 = dims[0];
+                dim0.label = "components";
+                dim0.size = 3;
+                dim0.stride = 3*height_*width_;                
+                
+                std_msgs::MultiArrayDimension& dim1 = dims[1];
+                dim1.label = "rows";
+                dim1.size = height_;
+                dim1.stride = height_*width_;                
+                
+                std_msgs::MultiArrayDimension& dim2 = dims[2];
+                dim2.label = "point";
+                dim2.size = width_;
+                dim2.stride = width_;   
+            }
+            
+            inline
+            bool resize(int height, int width)
+            {
+                if(!msg_locked_)
+                {
+                    height_ = height;
+                    width_ = width;
+                    
+                    init();
+                    return true;
+                }
+                return false;
+            }
+            
+            inline
             // TODO: ensure that storage is correct size, etc
+            // NOTE: Currently, this is only used by 'transformed_points', and in a way in which that doesn't matter
             void useStorageFrom(const ECWrapper& other)
             {
                 msg_ = other.msg_;
-                points_ = msg_->points.data.data();
+                points_ = other.points_;
             }
-            
-            // Function stubs to fill in and uncomment as needed
-            /*
-             *    inline
-             *    float& x(int row, int col)
-             *    {
-             *        
-        }
-        
-        inline
-        float& y(int row, int col)
-        {
-        
-        }
-        
-        inline
-        float& z(int row, int col)
-        {
-        
-        }
-        
-        inline
-        const float& x(int row, int col) const
-        {
-        return (const float& ) x(row, col);
-        }
-        
-        inline
-        const float& y(int row, int col) const
-        {
-        return (const float& ) y(row, col);
-        }
-        
-        inline
-        const float& z(int row, int col) const
-        {
-        return (const float& ) z(row, col);
-        }
-        
-        inline
-        cv::Point3f at(int row, int col)
-        {
-        
-        }
-        
-        */
-            
             
         };
         
