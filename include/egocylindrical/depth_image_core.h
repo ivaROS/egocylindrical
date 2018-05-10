@@ -5,6 +5,7 @@
 #include <egocylindrical/ecwrapper.h>
 #include <image_geometry/pinhole_camera_model.h>
 
+#include <egocylindrical/utils.h>
 
 namespace egocylindrical
 {
@@ -75,7 +76,7 @@ namespace egocylindrical
             ros::WallTime start = ros::WallTime::now();
             
             
-            /*
+            
             #pragma omp for simd aligned(n_x,n_y,n_z,t_x,t_y,t_z: __BIGGEST_ALIGNMENT__) aligned(depths: 16)
             for(int i = 0; i < num_pixels; ++i)
             {
@@ -91,10 +92,8 @@ namespace egocylindrical
             
             for(int i = 0; i < num_pixels; ++i)
             {
-                
-                T depth = depths[i];
-                
-                if(depth == depth)
+                                
+                if( t_x[i] ==  t_x[i])
                 {
                     U idx = inds[i];
                     x[idx] = t_x[i];
@@ -109,9 +108,9 @@ namespace egocylindrical
             
             ROS_INFO_STREAM("Inserting depth image points took " <<  (end - mid).toSec() * 1e3 << "ms");
             
-            */
             
             
+            /*
             for(int i = 0; i < num_pixels; ++i)
             {
                 
@@ -129,7 +128,7 @@ namespace egocylindrical
             ros::WallTime end = ros::WallTime::now();
             
             ROS_INFO_STREAM("Remapping depth image took " <<  (end - start).toSec() * 1e3 << "ms");
-            
+            */
             
             
         }
@@ -155,6 +154,8 @@ namespace egocylindrical
             const cv::Mat image = cv_bridge::toCvShare(image_msg)->image;
             remapDepthImage(cylindrical_points, image, inds, n_x, n_y, n_z, t_x, t_y, t_z, num_pixels);
         }
+        
+        
         
         
         class CleanCameraModel : public image_geometry::PinholeCameraModel
@@ -211,12 +212,15 @@ namespace egocylindrical
                 utils::remapDepthImage(cylindrical_points, image_msg, inds_.data(), x_.data(), y_.data(), z_.data(), t_x_.data(), t_y_.data(), t_z_.data(), num_pixels_);
             }
             
-            void update( ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
+            void update( ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
             {
                 ROS_INFO("Updating cylindrical points with depth image");
                 
-                updateMapping( cylindrical_points, image, cam_info);
-                remapDepthImage( cylindrical_points, image);
+                //updateMapping( cylindrical_points, image_msg, cam_info);
+                //remapDepthImage( cylindrical_points, image_msg);
+                
+                utils::addDepthImage(cylindrical_points, image_msg, model_t);
+                
             }
 
         };

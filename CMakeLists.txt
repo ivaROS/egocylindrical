@@ -225,7 +225,6 @@ target_link_libraries(egocylindrical_propagator
 add_dependencies(egocylindrical_propagator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_compile_options(egocylindrical_propagator PRIVATE -g -std=c++11 -Wall ${OpenMP_CXX_FLAGS} ${SHOW_VECTORIZE_INFO}-missed -ftree-vectorize -funsafe-math-optimizations 
-  ${OpenMP_CXX_FLAGS}
   )
 
   

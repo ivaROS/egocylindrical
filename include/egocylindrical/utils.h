@@ -93,6 +93,7 @@ namespace utils
         
         // Technically, it's probably not 'ok' to do this in parallel, as more than one depth image pixel may project to the same egocylindrical pixel
         // However, adjacent pixels should generally be similar values, so I don't consider this to be a huge issue
+        /*
         depth_image.forEach<float>
         (
             [&](const float &depth, const int* position) -> void
@@ -120,6 +121,35 @@ namespace utils
                 
             }
         );
+        */
+        
+        for(int i = 0; i < depth_image.rows; ++i)
+        {
+            for(int j = 0; j < depth_image.cols; ++j)
+            {   
+                
+                cv::Point2d pt;
+                pt.x = j;
+                pt.y = i;
+                
+                float depth = depth_image.at<float>(pt);
+                
+                if(depth==depth)
+                {
+                    cv::Point3f world_pnt = cam_model.projectPixelTo3dRay(pt)*depth;
+                    cv::Point image_pnt = cylindrical_history.worldToCylindricalImage(world_pnt);
+                    
+                    if(image_roi.contains(image_pnt))
+                    {
+                        x[image_pnt.y*width + image_pnt.x] = world_pnt.x;
+                        y[image_pnt.y*width + image_pnt.x] = world_pnt.y;
+                        z[image_pnt.y*width + image_pnt.x] = world_pnt.z;
+                        
+                    }
+                }
+                
+            }
+        }
         
     }
     
