@@ -75,7 +75,7 @@ namespace egocylindrical
             
             ros::WallTime start = ros::WallTime::now();
             
-            
+            /*
             
             //#pragma omp simd aligned(n_x,n_y,n_z,t_x,t_y,t_z: __BIGGEST_ALIGNMENT__) aligned(depths: 16)
             #pragma GCC ivdep
@@ -118,8 +118,8 @@ namespace egocylindrical
             ROS_INFO_STREAM("Max single error: " << max_diff);
             
             
+            */
             
-            /*
             for(int i = 0; i < num_pixels; ++i)
             {
                 
@@ -128,16 +128,20 @@ namespace egocylindrical
                 if(depth == depth)
                 {
                     U idx = inds[i];
-                    x[idx] = n_x[i]*depth;
-                    y[idx] = n_y[i]*depth;
-                    z[idx] = n_z[i]*depth;
+                    
+                    if(!(z[idx] <= n_z[i]*depth))
+                    {
+                        x[idx] = n_x[i]*depth;
+                        y[idx] = n_y[i]*depth;
+                        z[idx] = n_z[i]*depth;
+                    }
                 }
             }
             
             ros::WallTime end = ros::WallTime::now();
             
             ROS_INFO_STREAM("Remapping depth image took " <<  (end - start).toSec() * 1e3 << "ms");
-            */
+            
             
             
         }
