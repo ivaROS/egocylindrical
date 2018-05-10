@@ -72,6 +72,7 @@ namespace egocylindrical
             float* y = cylindrical_points.getY();
             float* z = cylindrical_points.getZ();
             
+            ros::WallTime start = ros::WallTime::now();
             
             #pragma omp for simd aligned(n_x,n_y,n_z,t_x,t_y,t_z: __BIGGEST_ALIGNMENT__) aligned(depths: 16)
             for(int i = 0; i < num_pixels; ++i)
@@ -82,6 +83,9 @@ namespace egocylindrical
                 t_y[i] = n_y[i]*depth;
                 t_z[i] = n_z[i]*depth;
             }
+            
+            ros::WallTime mid = ros::WallTime::now();
+            
             
             for(int i = 0; i < num_pixels; ++i)
             {
@@ -96,6 +100,13 @@ namespace egocylindrical
                     z[idx] = t_z[i];
                 }
             }
+            
+            ros::WallTime end = ros::WallTime::now();
+            
+            ROS_INFO_STREAM("Generating depth image points took " <<  (mid - start).toSec() * 1e3 << "ms");
+            
+            ROS_INFO_STREAM("Inserting depth image points took " <<  (end - mid).toSec() * 1e3 << "ms");
+            
             
         }
         
