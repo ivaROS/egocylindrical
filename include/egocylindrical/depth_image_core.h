@@ -55,23 +55,33 @@ namespace egocylindrical
 
 
         
-        template <typename T>
+        template <typename T, typename U, typename S>
         inline
-        void remapDepthImage(utils::ECWrapper& cylindrical_points, const cv::Mat& depth_image, const AlignedVector<long int>& inds, const AlignedVector<float>& n_x, const AlignedVector<float>& n_y, const AlignedVector<float>& n_z )
+        void remapDepthImage(utils::ECWrapper& cylindrical_points, const T* depths, const U* inds, const S* n_x, const S* n_y, const S* n_z, S* t_x, S* t_y, S* t_z, int num_pixels)
         {
             //decltype (inds)::value_type inds_t;
+            //typename decltype (*inds) inds_t;
             
-            typedef long int inds_t;
+            
+            //typedef long int inds_t;
             //typename std::remove_reference<decltype(inds)>::type::value_type inds_t;
             
-            const T* depths = (const T*) depth_image.data;
+            //const T* depths = (const T*) depth_image.data;
             
             float* x = cylindrical_points.getX();
             float* y = cylindrical_points.getY();
             float* z = cylindrical_points.getZ();
             
-            const int num_pixels = inds.size();
             
+            #pragma omp for simd aligned(n_x,n_y,n_z,t_x,t_y,t_z: __BIGGEST_ALIGNMENT__) aligned(depths: 16)
+            for(int i = 0; i < num_pixels; ++i)
+            {
+                T depth = depths[i];
+  
+                t_x[i] = n_x[i]*depth;
+                t_y[i] = n_y[i]*depth;
+                t_z[i] = n_z[i]*depth;
+            }
             
             for(int i = 0; i < num_pixels; ++i)
             {
@@ -80,34 +90,35 @@ namespace egocylindrical
                 
                 if(depth == depth)
                 {
-                    inds_t idx = inds[i];
-                    x[idx] = n_x[i]*depth;
-                    y[idx] = n_y[i]*depth;
-                    z[idx] = n_z[i]*depth;
+                    U idx = inds[i];
+                    x[idx] = t_x[i];
+                    y[idx] = t_y[i];
+                    z[idx] = t_z[i];
                 }
             }
             
         }
         
-        
+        template <typename U, typename S>
         inline
-        void remapDepthImage(utils::ECWrapper& cylindrical_points, const cv::Mat& image, const AlignedVector<long int>& inds, const AlignedVector<float>& n_x, const AlignedVector<float>& n_y, const AlignedVector<float>& n_z )
+        void remapDepthImage(utils::ECWrapper& cylindrical_points, const cv::Mat& image, const U* inds, const S* n_x, const S* n_y, const S* n_z, S* t_x, S* t_y, S* t_z, int num_pixels)
         {
             if(image.depth() == CV_32FC1)
             {
-                remapDepthImage<float>(cylindrical_points, image, inds, n_x, n_y, n_z);
+                remapDepthImage(cylindrical_points, (const float*)image.data, inds, n_x, n_y, n_z, t_x, t_y, t_z, num_pixels);
             }
             else if (image.depth() == CV_16UC1)
             {
-                remapDepthImage<uint16_t>(cylindrical_points, image, inds, n_x, n_y, n_z);
+                remapDepthImage(cylindrical_points, (const uint16_t*)image.data, inds, n_x, n_y, n_z, t_x, t_y, t_z, num_pixels);
             }
         }
         
+        template <typename U, typename S>
         inline
-        void remapDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const AlignedVector<long int>& inds, const AlignedVector<float>& n_x, const AlignedVector<float>& n_y, const AlignedVector<float>& n_z )
+        void remapDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const U* inds, const S* n_x, const S* n_y, const S* n_z, S* t_x, S* t_y, S* t_z, int num_pixels)
         {
             const cv::Mat image = cv_bridge::toCvShare(image_msg)->image;
-            remapDepthImage(cylindrical_points, image, inds, n_x, n_y, n_z);
+            remapDepthImage(cylindrical_points, image, inds, n_x, n_y, n_z, t_x, t_y, t_z, num_pixels);
         }
         
         
@@ -128,6 +139,12 @@ namespace egocylindrical
             AlignedVector<float> x_;
             AlignedVector<float> y_;
             AlignedVector<float> z_;
+            
+            AlignedVector<float> t_x_;
+            AlignedVector<float> t_y_;
+            AlignedVector<float> t_z_;
+            
+            int num_pixels_;
           
             CleanCameraModel model_t;
             
@@ -144,14 +161,19 @@ namespace egocylindrical
                     initializeDepthMapping(cylindrical_points, model_t, inds_, x_, y_, z_);
                     //const cv::Mat image = cv_bridge::toCvShare(image_msg)->image;
                     
+                    num_pixels_ = x_.size();
+                    
+                    t_x_.resize(num_pixels_);
+                    t_y_.resize(num_pixels_);
+                    t_z_.resize(num_pixels_);
                 }
 
             }
             
             inline
-            void remapDepthImage2(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg)
+            void remapDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg)
             {
-                remapDepthImage(cylindrical_points, image_msg, inds_, x_, y_, z_);
+                utils::remapDepthImage(cylindrical_points, image_msg, inds_.data(), x_.data(), y_.data(), z_.data(), t_x_.data(), t_y_.data(), t_z_.data(), num_pixels_);
             }
             
             void update( ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
@@ -159,7 +181,7 @@ namespace egocylindrical
                 ROS_INFO("Updating cylindrical points with depth image");
                 
                 updateMapping( cylindrical_points, image, cam_info);
-                remapDepthImage2( cylindrical_points, image);
+                remapDepthImage( cylindrical_points, image);
             }
 
         };
