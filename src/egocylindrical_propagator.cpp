@@ -4,6 +4,7 @@
 
 #include <egocylindrical/egocylindrical.h>
 #include <egocylindrical/point_transformer.h>
+#include <egocylindrical/depth_image_core.h>
 
 //#include <tf/LinearMath/Matrix3x3.h>
 //#include <cv_bridge/cv_bridge.h>
@@ -51,9 +52,7 @@ namespace egocylindrical
 
     void EgoCylindricalPropagator::addDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
     {
-        model_t.fromCameraInfo(cam_info);
-        
-        utils::addDepthImage(cylindrical_points, image, model_t);
+        depth_remapper_.update(cylindrical_points, image, cam_info);
         
     }
 
@@ -67,9 +66,9 @@ namespace egocylindrical
         new_pts_ = next_pts_;
         bool allocate_next = !old_pts_ || old_pts_->isLocked();
         
-        #pragma omp parallel sections num_threads(2) if(allocate_next)
+//        #pragma omp parallel sections num_threads(2) if(allocate_next)
         {
-          #pragma omp section
+//          #pragma omp section
           {
             try
             {
@@ -112,7 +111,7 @@ namespace egocylindrical
             }
           }
           
-          #pragma omp section
+ //         #pragma omp section
           {
             ros::WallTime start = ros::WallTime::now();
             

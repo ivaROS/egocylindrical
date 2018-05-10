@@ -6,6 +6,7 @@
 #define EGOCYLINDRICAL_EGOCYLINDRICAL_H
 
 #include <egocylindrical/utils.h>
+#include <egocylindrical/depth_image_core.h>
 
 #include <ros/ros.h>
 #include <opencv2/core.hpp>
@@ -40,6 +41,7 @@ private:
 
     image_geometry::PinholeCameraModel model_t;
     
+    utils::DepthImageRemapper depth_remapper_;
 
     ros::NodeHandle nh_, pnh_;
     tf2_ros::Buffer buffer_;
