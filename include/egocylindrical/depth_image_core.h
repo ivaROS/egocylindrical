@@ -58,67 +58,14 @@ namespace egocylindrical
         
         template <typename T, typename U, typename S>
         inline
-        void remapDepthImage(utils::ECWrapper& cylindrical_points, const T* depths, const U* inds, const S* n_x, const S* n_y, const S* n_z, S* t_x, S* t_y, S* t_z, int num_pixels)
+        void remapDepthImage(utils::ECWrapper& cylindrical_points, const T* depths, const U* inds, const S* n_x, const S* n_y, const S* n_z, int num_pixels)
         {
-            //decltype (inds)::value_type inds_t;
-            //typename decltype (*inds) inds_t;
-            
-            
-            //typedef long int inds_t;
-            //typename std::remove_reference<decltype(inds)>::type::value_type inds_t;
-            
-            //const T* depths = (const T*) depth_image.data;
-            
+
             float* x = cylindrical_points.getX();
             float* y = cylindrical_points.getY();
             float* z = cylindrical_points.getZ();
             
-            ros::WallTime start = ros::WallTime::now();
             
-            /*
-            
-            //#pragma omp simd aligned(n_x,n_y,n_z,t_x,t_y,t_z: __BIGGEST_ALIGNMENT__) aligned(depths: 16)
-            #pragma GCC ivdep
-            for(int i = 0; i < num_pixels; ++i)
-            {
-                T depth = depths[i];
-            
-                t_x[i] = n_x[i]*depth;
-                t_y[i] = n_y[i]*depth;
-                t_z[i] = n_z[i]*depth;
-            }
-            
-            ros::WallTime mid = ros::WallTime::now();
-            
-            float max_diff = 0;
-            
-            for(int i = 0; i < num_pixels; ++i)
-            {
-                U idx = inds[i];
-                
-                if( t_z[i]==t_z[i] && !(z[idx] <= t_z[i]) )
-                {
-                    if(z[idx] == z[idx])
-                    {
-                       max_diff = std::max((z[idx] - t_z[i]), max_diff);
-                    }
-                    
-                    x[idx] = t_x[i];
-                    y[idx] = t_y[i];
-                    z[idx] = t_z[i];
-                }
-            }
-            
-            ros::WallTime end = ros::WallTime::now();
-            
-            ROS_INFO_STREAM("Generating depth image points took " <<  (mid - start).toSec() * 1e3 << "ms");
-            
-            ROS_INFO_STREAM("Inserting depth image points took " <<  (end - mid).toSec() * 1e3 << "ms");
-            
-            ROS_INFO_STREAM("Max single error: " << max_diff);
-            
-            
-            */
             
             for(int i = 0; i < num_pixels; ++i)
             {
@@ -127,45 +74,41 @@ namespace egocylindrical
                 
                 if(depth == depth)
                 {
+                    // NOTE: Currently, no check that index is in bounds. As long as the camera's fov fits inside the egocylindrical fov, this is safe
                     U idx = inds[i];
                     
-                    if(!(z[idx] <= n_z[i]*depth))
+                    S z_val =  n_z[i]*depth;
+                    if(!(z[idx] <= z_val))
                     {
                         x[idx] = n_x[i]*depth;
                         y[idx] = n_y[i]*depth;
-                        z[idx] = n_z[i]*depth;
+                        z[idx] = z_val;
                     }
                 }
-            }
-            
-            ros::WallTime end = ros::WallTime::now();
-            
-            ROS_INFO_STREAM("Remapping depth image took " <<  (end - start).toSec() * 1e3 << "ms");
-            
-            
+            }         
             
         }
         
         template <typename U, typename S>
         inline
-        void remapDepthImage(utils::ECWrapper& cylindrical_points, const cv::Mat& image, const U* inds, const S* n_x, const S* n_y, const S* n_z, S* t_x, S* t_y, S* t_z, int num_pixels)
+        void remapDepthImage(utils::ECWrapper& cylindrical_points, const cv::Mat& image, const U* inds, const S* n_x, const S* n_y, const S* n_z, int num_pixels)
         {
             if(image.depth() == CV_32FC1)
             {
-                remapDepthImage(cylindrical_points, (const float*)image.data, inds, n_x, n_y, n_z, t_x, t_y, t_z, num_pixels);
+                remapDepthImage(cylindrical_points, (const float*)image.data, inds, n_x, n_y, n_z, num_pixels);
             }
             else if (image.depth() == CV_16UC1)
             {
-                remapDepthImage(cylindrical_points, (const uint16_t*)image.data, inds, n_x, n_y, n_z, t_x, t_y, t_z, num_pixels);
+                remapDepthImage(cylindrical_points, (const uint16_t*)image.data, inds, n_x, n_y, n_z, num_pixels);
             }
         }
         
         template <typename U, typename S>
         inline
-        void remapDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const U* inds, const S* n_x, const S* n_y, const S* n_z, S* t_x, S* t_y, S* t_z, int num_pixels)
+        void remapDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const U* inds, const S* n_x, const S* n_y, const S* n_z, int num_pixels)
         {
             const cv::Mat image = cv_bridge::toCvShare(image_msg)->image;
-            remapDepthImage(cylindrical_points, image, inds, n_x, n_y, n_z, t_x, t_y, t_z, num_pixels);
+            remapDepthImage(cylindrical_points, image, inds, n_x, n_y, n_z, num_pixels);
         }
         
         
@@ -188,11 +131,7 @@ namespace egocylindrical
             AlignedVector<float> x_;
             AlignedVector<float> y_;
             AlignedVector<float> z_;
-            
-            AlignedVector<float> t_x_;
-            AlignedVector<float> t_y_;
-            AlignedVector<float> t_z_;
-            
+
             int num_pixels_;
           
             CleanCameraModel model_t;
@@ -200,7 +139,7 @@ namespace egocylindrical
         public:
             // TODO: also trigger update if ECWrapper's parameters change. However, that will be part of a larger restructuring
             inline
-            void updateMapping(const ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
+            void updateMapping(const ECWrapper& cylindrical_points, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
             {
                 if( model_t.fromCameraInfo(cam_info) )
                 {
@@ -210,11 +149,12 @@ namespace egocylindrical
                     initializeDepthMapping(cylindrical_points, model_t, inds_, x_, y_, z_);
                     //const cv::Mat image = cv_bridge::toCvShare(image_msg)->image;
                     
-                    num_pixels_ = x_.size();
+                    cv::Size image_size = cam_model.reducedResolution();
+                    int image_width = image_size.width;
+                    int image_height = image_size.height;
                     
-                    t_x_.resize(num_pixels_);
-                    t_y_.resize(num_pixels_);
-                    t_z_.resize(num_pixels_);
+                    num_pixels_ = image_width * image_height;
+
                 }
 
             }
@@ -222,17 +162,22 @@ namespace egocylindrical
             inline
             void remapDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg)
             {
-                utils::remapDepthImage(cylindrical_points, image_msg, inds_.data(), x_.data(), y_.data(), z_.data(), t_x_.data(), t_y_.data(), t_z_.data(), num_pixels_);
+                utils::remapDepthImage(cylindrical_points, image_msg, inds_.data(), x_.data(), y_.data(), z_.data(), num_pixels_);
             }
             
             void update( ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
             {
                 ROS_INFO("Updating cylindrical points with depth image");
                 
-                updateMapping( cylindrical_points, image_msg, cam_info);
-                remapDepthImage( cylindrical_points, image_msg);
+                ros::WallTime start = ros::WallTime::now();
+                updateMapping( cylindrical_points, cam_info);
+                ros::WallTime mid = ros::WallTime::now();
                 
-                //utils::addDepthImage(cylindrical_points, image_msg, model_t);
+                remapDepthImage( cylindrical_points, image_msg);
+                ros::WallTime end = ros::WallTime::now();
+                
+                ROS_INFO_STREAM("Updating camera model took " <<  (mid - start).toSec() * 1e3 << "ms");
+                ROS_INFO_STREAM("Remapping depth image took " <<  (end - mid).toSec() * 1e3 << "ms");
                 
             }
 
