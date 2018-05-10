@@ -13,8 +13,9 @@ namespace egocylindrical
     {
 
         // TODO: use coordinate converter instead, since we don't need the actual data here
+        template <typename U, typename S>
         inline
-        void initializeDepthMapping(const utils::ECWrapper& cylindrical_history, const image_geometry::PinholeCameraModel& cam_model, AlignedVector<long int>& inds, AlignedVector<float>& x, AlignedVector<float>& y, AlignedVector<float>& z )
+        void initializeDepthMapping(const utils::ECWrapper& cylindrical_history, const image_geometry::PinholeCameraModel& cam_model, U* inds, S* x, S* y, S* z)
         {
             
             cv::Size image_size = cam_model.reducedResolution();
@@ -22,12 +23,6 @@ namespace egocylindrical
             int image_height = image_size.height;
             
             int num_pixels = image_width * image_height;
-            
-            inds.resize(num_pixels);
-            x.resize(num_pixels);
-            y.resize(num_pixels);
-            z.resize(num_pixels);
-            
             
             for(int i = 0; i < image_height; ++i)
             {
@@ -134,29 +129,30 @@ namespace egocylindrical
 
             int num_pixels_;
           
-            CleanCameraModel model_t;
+            CleanCameraModel cam_model_;
             
         public:
             // TODO: also trigger update if ECWrapper's parameters change. However, that will be part of a larger restructuring
             inline
             void updateMapping(const ECWrapper& cylindrical_points, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
             {
-                if( model_t.fromCameraInfo(cam_info) )
+                if( cam_model_.fromCameraInfo(cam_info) )
                 {
-                    model_t.init();
+                    cam_model_.init();
                     
-                    ROS_INFO("Generating depth to cylindrical image mapping");
-                    initializeDepthMapping(cylindrical_points, model_t, inds_, x_, y_, z_);
-                    //const cv::Mat image = cv_bridge::toCvShare(image_msg)->image;
-                    
-                    cv::Size image_size = cam_model.reducedResolution();
+                    cv::Size image_size = cam_model_.reducedResolution();
                     int image_width = image_size.width;
                     int image_height = image_size.height;
                     
                     num_pixels_ = image_width * image_height;
-
+                    inds_.resize(num_pixels_);
+                    x_.resize(num_pixels_);
+                    y_.resize(num_pixels_);
+                    z_.resize(num_pixels_);
+                    
+                    ROS_INFO("Generating depth to cylindrical image mapping");
+                    initializeDepthMapping(cylindrical_points, cam_model_, inds_.data(), x_.data(), y_.data(), z_.data());
                 }
-
             }
             
             inline
