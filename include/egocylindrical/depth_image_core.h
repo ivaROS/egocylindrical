@@ -77,7 +77,8 @@ namespace egocylindrical
             
             
             
-            #pragma omp for simd aligned(n_x,n_y,n_z,t_x,t_y,t_z: __BIGGEST_ALIGNMENT__) aligned(depths: 16)
+            //#pragma omp simd aligned(n_x,n_y,n_z,t_x,t_y,t_z: __BIGGEST_ALIGNMENT__) aligned(depths: 16)
+            #pragma GCC ivdep
             for(int i = 0; i < num_pixels; ++i)
             {
                 T depth = depths[i];
@@ -89,13 +90,19 @@ namespace egocylindrical
             
             ros::WallTime mid = ros::WallTime::now();
             
+            float max_diff = 0;
             
             for(int i = 0; i < num_pixels; ++i)
             {
-                                
-                if( t_x[i] ==  t_x[i])
+                U idx = inds[i];
+                
+                if( t_z[i]==t_z[i] && !(z[idx] <= t_z[i]) )
                 {
-                    U idx = inds[i];
+                    if(z[idx] == z[idx])
+                    {
+                       max_diff = std::max((z[idx] - t_z[i]), max_diff);
+                    }
+                    
                     x[idx] = t_x[i];
                     y[idx] = t_y[i];
                     z[idx] = t_z[i];
@@ -107,6 +114,8 @@ namespace egocylindrical
             ROS_INFO_STREAM("Generating depth image points took " <<  (mid - start).toSec() * 1e3 << "ms");
             
             ROS_INFO_STREAM("Inserting depth image points took " <<  (end - mid).toSec() * 1e3 << "ms");
+            
+            ROS_INFO_STREAM("Max single error: " << max_diff);
             
             
             
@@ -216,10 +225,10 @@ namespace egocylindrical
             {
                 ROS_INFO("Updating cylindrical points with depth image");
                 
-                //updateMapping( cylindrical_points, image_msg, cam_info);
-                //remapDepthImage( cylindrical_points, image_msg);
+                updateMapping( cylindrical_points, image_msg, cam_info);
+                remapDepthImage( cylindrical_points, image_msg);
                 
-                utils::addDepthImage(cylindrical_points, image_msg, model_t);
+                //utils::addDepthImage(cylindrical_points, image_msg, model_t);
                 
             }
 
