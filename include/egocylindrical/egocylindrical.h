@@ -49,9 +49,7 @@ private:
     int cylinder_height_;
     int cylinder_width_;
     double hfov_, vfov_;
-    
-    int use_depth_=0;
-        
+            
 
     utils::ECWrapperPtr new_pts_, old_pts_, transformed_pts_, next_pts_;
 

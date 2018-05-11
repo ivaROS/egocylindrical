@@ -91,7 +91,6 @@ namespace egocylindrical
             }
             
             
-            if(use_depth_ < 2)
             {
                 ros::WallTime temp = ros::WallTime::now();
                 
@@ -155,7 +154,6 @@ namespace egocylindrical
     
     void EgoCylindricalPropagator::configCB(const egocylindrical::PropagatorConfig &config, uint32_t level)
     {
-        use_depth_ +=1;
         WriteLock lock(config_mutex_);
      
         ROS_INFO_STREAM("Updating propagator config: height=" << config.height << ", width=" << config.width << ", vfov=" << config.vfov);
