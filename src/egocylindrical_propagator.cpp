@@ -66,9 +66,9 @@ namespace egocylindrical
         new_pts_ = next_pts_;
         bool allocate_next = !old_pts_ || old_pts_->isLocked();
         
-//        #pragma omp parallel sections num_threads(2) if(allocate_next)
+        #pragma omp parallel sections num_threads(2) if(allocate_next)
         {
-//          #pragma omp section
+          #pragma omp section
           {
             try
             {
@@ -111,17 +111,17 @@ namespace egocylindrical
             }
           }
           
- //         #pragma omp section
+          #pragma omp section
           {
             ros::WallTime start = ros::WallTime::now();
             
             //Lock mutex
             ReadLock lock(config_mutex_);
             
-           // if(allocate_next)
-            //{
+            if(allocate_next)
+            {
                 next_pts_ = utils::getECWrapper(config_.height, config_.width,config_.vfov);
-                /*
+                
             }
             else
             {
@@ -129,7 +129,7 @@ namespace egocylindrical
 
                 next_pts_->init(config_.height, config_.width, config_.vfov, true);   //This is probably not necessary every time                
             }
-            */
+            
             ROS_INFO_STREAM("Creating new datastructure took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
           }
           
