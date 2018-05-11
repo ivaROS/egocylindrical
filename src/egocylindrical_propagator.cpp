@@ -127,7 +127,7 @@ namespace egocylindrical
             {
                 std::swap(next_pts_,old_pts_);
 
-                next_pts_->init(config_.height, config_.width, config_.vfov, true);   //This is probably not necessary every time                
+                next_pts_->init(config_.height, config_.width, config_.vfov, true);
             }
             
             ROS_INFO_STREAM("Creating new datastructure took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");

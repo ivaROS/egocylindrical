@@ -67,6 +67,31 @@ namespace egocylindrical
                 
         }
         
+        //https://github.com/andrepuschmann/math-neon/blob/master/src/math_sqrtf.c
+        inline
+        float inv_sqrt_approximation(float x)
+        {
+            float b, c;
+            int m;
+            union {
+                float 	f;
+                int 	i;
+            } a;
+            
+            //fast invsqrt approx
+            a.f = x;
+            a.i = 0x5F3759DF - (a.i >> 1);		//VRSQRTE
+            c = x * a.f;
+            b = (3.0f - c * a.f) * 0.5;		//VRSQRTS
+            a.f = a.f * b;		
+            c = x * a.f;
+            b = (3.0f - c * a.f) * 0.5;
+            a.f = a.f * b;
+            
+            return a.f;
+        }
+        
+        
         /* Note: functions using 'std::sqrt' must be compiled with '-fno-math-errno' in order to be vectorized.
          * See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=51890 for explanation.
          */
@@ -74,7 +99,7 @@ namespace egocylindrical
         inline
         cv::Point3_<T> projectWorldToCylinder(const cv::Point3_<T>& point)
         {
-          cv::Point3_<T> Pcyl_t = point / std::sqrt(point.x * point.x + point.z * point.z);
+          cv::Point3_<T> Pcyl_t = point * inv_sqrt_approximation(point.x * point.x + point.z * point.z);
           return Pcyl_t;
         }
         
