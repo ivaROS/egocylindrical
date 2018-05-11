@@ -233,6 +233,18 @@ namespace egocylindrical
         };
         
         
+        
+        struct ECParams
+        {
+            int height, width;
+            float vfov;
+            
+            bool operator==(const ECParams &other) const 
+            {
+                return (height==other.height && width==other.width && vfov==other.vfov);
+            }
+        };
+        
         /*
          * This class is intended to act as an abstraction of the egocylindrical representation
          * to enable other functions to operate on it without requiring knowledge of the implementation.
@@ -422,6 +434,17 @@ namespace egocylindrical
             }
             
             inline
+            ECParams getParams() const
+            {
+                ECParams params;
+                params.height=height_;
+                params.width=width_;
+                params.vfov=vfov_;
+                
+                return params;
+            }
+            
+            inline
             void init()
             {
                 int max_alignment = alignof(std::max_align_t);
@@ -488,15 +511,29 @@ namespace egocylindrical
                 dim2.stride = width_;   
             }
             
+            bool init(const ECWrapper& other)
+            {
+                return init(other.height_, other.width_, other.vfov_);
+            }
+            
             inline
-            bool resize(int height, int width)
+            bool init(int height, int width, float vfov, bool clear=false)
             {
                 if(!msg_locked_)
                 {
-                    height_ = height;
-                    width_ = width;
-                    
-                    init();
+                    if(height!=height_ || width!=width_ || vfov!=vfov_) //Update this to use the 'getParams functions
+                    {
+                        height_ = height;
+                        width_ = width;
+                        vfov_ = vfov;
+                        
+                        if(clear)
+                        {
+                            msg_->points.data.clear();
+                        }
+                            
+                        init();
+                    }
                     return true;
                 }
                 return false;

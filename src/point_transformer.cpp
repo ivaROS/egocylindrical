@@ -115,7 +115,7 @@ namespace egocylindrical
         
         
         inline
-        void transform_impl(const utils::ECWrapper& points, utils::ECWrapper& transformed_points, const float*  const _R, const float*  const _T)
+        void transform_impl(const utils::ECWrapper& points, utils::ECWrapper& transformed_points, const utils::ECWrapper& new_points, const float*  const _R, const float*  const _T)
         {            
             const float r0 = _R[0];
             const float r1 = _R[1];
@@ -135,9 +135,7 @@ namespace egocylindrical
             const float* const T = (float*)__builtin_assume_aligned(_T, __BIGGEST_ALIGNMENT__);
             
             const int num_cols = points.getCols();
-            const int width = points.getWidth();
-            const int height = points.getHeight();
-            
+            const int max_ind = new_points.getCols();
             
             const float* x = (const float*)__builtin_assume_aligned(points.getX(), __BIGGEST_ALIGNMENT__);
             const float* y = (const float*)__builtin_assume_aligned(points.getY(), __BIGGEST_ALIGNMENT__);
@@ -195,9 +193,9 @@ namespace egocylindrical
                                     
                     depth= worldToRangeSquared(x_n[p],z_n[p]);
                 
-                    int tidx = points.worldToCylindricalIdx(x_n[p],y_n[p],z_n[p]);
+                    int tidx = new_points.worldToCylindricalIdx(x_n[p],y_n[p],z_n[p]);
                     
-                    if(tidx < num_cols)
+                    if(tidx < max_ind)
                         idx = tidx;
                     
                     inds[p] = idx;
@@ -246,7 +244,7 @@ namespace egocylindrical
         }
         
         // TODO: This functionality could be moved into a tf2_ros implementation
-        void transformPoints(const utils::ECWrapper& points, utils::ECWrapper& transformed_points, const geometry_msgs::TransformStamped& trans)
+        void transformPoints(const utils::ECWrapper& points, utils::ECWrapper& transformed_points, const utils::ECWrapper& new_points, const geometry_msgs::TransformStamped& trans)
         {
   
             tf::Quaternion rotationQuaternion = tf::Quaternion(trans.transform.rotation.x,
@@ -277,17 +275,20 @@ namespace egocylindrical
             translationArray[2] = trans.transform.translation.z;
             
             
-            if(points.isLocked())
-            {
-                ROS_INFO("Out of place");
-                transform_impl(points, transformed_points, rotationArray, translationArray);
+          //  if(points.isLocked())
+          //  {
+          //      ROS_INFO("Out of place");
+                transformed_points.init(points);    //This ensures that 'transformed_points' is big enough
+                transform_impl(points, transformed_points, new_points, rotationArray, translationArray);
+        /*
             }
             else
             {
                 ROS_INFO("In place");
                 transformed_points.useStorageFrom(points);
-                transform_impl(points, transformed_points, rotationArray, translationArray);
+                transform_impl(points, transformed_points, new_points, rotationArray, translationArray);
             }
+            */
             
         }
         

@@ -40,7 +40,7 @@ namespace egocylindrical
                 
         
         start = ros::WallTime::now();    
-        utils::transformPoints(old_pnts, *transformed_pts_, trans);
+        utils::transformPoints(old_pnts, *transformed_pts_, new_pnts, trans);
         ROS_INFO_STREAM_NAMED("timing", "Transform points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
         start = ros::WallTime::now();
@@ -91,17 +91,18 @@ namespace egocylindrical
             }
             
             
-            
-            ros::WallTime temp = ros::WallTime::now();
-            
-            EgoCylindricalPropagator::addDepthImage(*new_pts_, image, cam_info);
-            ROS_INFO_STREAM("Adding depth image took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
-            
+            if(use_depth_ < 2)
+            {
+                ros::WallTime temp = ros::WallTime::now();
+                
+                EgoCylindricalPropagator::addDepthImage(*new_pts_, image, cam_info);
+                ROS_INFO_STREAM("Adding depth image took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
+            }
             
             if(ec_pub_.getNumSubscribers() > 0)
             {
                 // TODO: if no one is subscribing, we can propagate the points in place next time (if that turns out to be faster)
-                temp = ros::WallTime::now();
+                ros::WallTime temp = ros::WallTime::now();
                 
                 //TODO: this function call should trigger the ecwrapper to mark its message as locked
                 utils::ECMsgConstPtr msg = new_pts_->getEgoCylinderPointsMsg();
@@ -115,15 +116,21 @@ namespace egocylindrical
           {
             ros::WallTime start = ros::WallTime::now();
             
-            if(allocate_next)
-            {
-                next_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
+            //Lock mutex
+            ReadLock lock(config_mutex_);
+            
+           // if(allocate_next)
+            //{
+                next_pts_ = utils::getECWrapper(config_.height, config_.width,config_.vfov);
+                /*
             }
             else
             {
                 std::swap(next_pts_,old_pts_);
+
+                next_pts_->init(config_.height, config_.width, config_.vfov, true);   //This is probably not necessary every time                
             }
-            
+            */
             ROS_INFO_STREAM("Creating new datastructure took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
           }
           
@@ -146,9 +153,20 @@ namespace egocylindrical
         }
     }
     
+    void EgoCylindricalPropagator::configCB(const egocylindrical::PropagatorConfig &config, uint32_t level)
+    {
+        use_depth_ +=1;
+        WriteLock lock(config_mutex_);
+     
+        ROS_INFO_STREAM("Updating propagator config: height=" << config.height << ", width=" << config.width << ", vfov=" << config.vfov);
+        config_ = config;
+    }
+    
+    
     // TODO: add dynamic reconfigure for cylinder height/width, vfov, etc
     bool EgoCylindricalPropagator::init()
     {
+        reconfigure_server_->setCallback(boost::bind(&EgoCylindricalPropagator::configCB, this, _1, _2));
         
         double pi = std::acos(-1);
         hfov_ = 2*pi;
@@ -157,9 +175,9 @@ namespace egocylindrical
         cylinder_width_ = 2048;
         cylinder_height_ = 320;
         
-        transformed_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_,true);
+        transformed_pts_ = utils::getECWrapper(config_.height, config_.width,config_.vfov,true);
         
-        next_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
+        next_pts_ = utils::getECWrapper(config_.height, config_.width,config_.vfov);
                 
         
         // Get topic names
@@ -194,6 +212,7 @@ namespace egocylindrical
         tf_listener_(buffer_),
         it_(nh)
     {
+        reconfigure_server_ = std::make_shared<ReconfigureServer>(pnh_);
         
         
     }

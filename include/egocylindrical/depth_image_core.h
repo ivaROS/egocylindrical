@@ -72,12 +72,16 @@ namespace egocylindrical
                     // NOTE: Currently, no check that index is in bounds. As long as the camera's fov fits inside the egocylindrical fov, this is safe
                     U idx = inds[i];
                     
-                    S z_val =  n_z[i]*depth;
-                    if(!(z[idx] <= z_val))
+                    if(idx >=0)
                     {
-                        x[idx] = n_x[i]*depth;
-                        y[idx] = n_y[i]*depth;
-                        z[idx] = z_val;
+                    
+                        S z_val =  n_z[i]*depth;
+                        if(!(z[idx] <= z_val))
+                        {
+                            x[idx] = n_x[i]*depth;
+                            y[idx] = n_y[i]*depth;
+                            z[idx] = z_val;
+                        }
                     }
                 }
             }         
@@ -128,6 +132,8 @@ namespace egocylindrical
             AlignedVector<float> z_;
 
             int num_pixels_;
+            
+            ECParams ec_params_;
           
             CleanCameraModel cam_model_;
             
@@ -136,6 +142,8 @@ namespace egocylindrical
             inline
             void updateMapping(const ECWrapper& cylindrical_points, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
             {
+                bool reinit = false;
+                
                 if( cam_model_.fromCameraInfo(cam_info) )
                 {
                     cam_model_.init();
@@ -149,6 +157,24 @@ namespace egocylindrical
                     x_.resize(num_pixels_);
                     y_.resize(num_pixels_);
                     z_.resize(num_pixels_);
+                    
+                    ROS_INFO("Camera parameters changed");
+                    
+                    reinit=true;
+                }
+                
+                ECParams new_params = cylindrical_points.getParams();
+                if(!(ec_params_ == new_params))
+                {
+                    ROS_INFO("Egocylindrical parameters changed");
+                    
+                    ec_params_ = new_params;
+                    
+                    reinit = true;
+                }
+                
+                if(reinit)
+                {
                     
                     ROS_INFO("Generating depth to cylindrical image mapping");
                     initializeDepthMapping(cylindrical_points, cam_model_, inds_.data(), x_.data(), y_.data(), z_.data());

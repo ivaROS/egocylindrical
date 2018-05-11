@@ -23,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   tf2_sensor_msgs
   message_generation
+  dynamic_reconfigure
 )
 
 
@@ -110,10 +111,10 @@ generate_messages(
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+
+generate_dynamic_reconfigure_options(
+  cfg/Propagator.cfg
+  )
 
 ###################################
 ## catkin specific configuration ##
@@ -224,7 +225,7 @@ target_link_libraries(egocylindrical_propagator
    )
 add_dependencies(egocylindrical_propagator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_compile_options(egocylindrical_propagator PRIVATE -g -std=c++11 -Wall ${SHOW_VECTORIZE_INFO}-missed -ftree-vectorize -funsafe-math-optimizations ${OpenMP_CXX_FLAGS} 
+target_compile_options(egocylindrical_propagator PRIVATE -g -std=c++11 -Wall ${SHOW_VECTORIZE_INFO} -ftree-vectorize -funsafe-math-optimizations ${OpenMP_CXX_FLAGS} 
   )
 
   
