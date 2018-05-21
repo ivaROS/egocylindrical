@@ -36,8 +36,24 @@ namespace egocylindrical
 
         constexpr float dNaN=(std::numeric_limits<float>::has_quiet_NaN) ? std::numeric_limits<float>::quiet_NaN() : 0;
         
+        
+        //https://stackoverflow.com/a/39714493/2906021
+        inline
+        float inverse_approximation(float x)
+        {
+            union {
+                float dbl;
+                unsigned uint;
+            } u;
+            u.dbl = x;
+            u.uint = ( 0xbe6eb3beU - u.uint ) >> (unsigned char)1;
+            // pow( x, -0.5 )
+            u.dbl *= u.dbl;                 // pow( pow(x,-0.5), 2 ) = pow( x, -1 ) = 1.0 / x
+            return u.dbl;
+        }
+        
         // TODO: Quantify max error and verify that it doesn't affect anything
-        // Source: https://gist.github.com/volkansalma/2972237
+        // Source:h ttps://gist.github.com/volkansalma/2972237
         inline
         float atan2_approximation1(float y, float x)
         {
@@ -50,12 +66,12 @@ namespace egocylindrical
             float abs_y = fabs(y) + 1e-10f;      // kludge to prevent 0/0 condition
             if ( x < 0.0f )
             {
-                r = (x + abs_y) / (abs_y - x);
+                r = (x + abs_y) * inverse_approximation(abs_y - x);
                 angle = THRQTR_PI;
             }
             else
             {
-                r = (x - abs_y) / (x + abs_y);
+                r = (x - abs_y) * inverse_approximation(x + abs_y);
                 angle = ONEQTR_PI;
             }
             angle += (0.1963f * r * r - 0.9817f) * r;
