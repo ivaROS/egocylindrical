@@ -37,7 +37,7 @@ namespace egocylindrical
         constexpr float dNaN=(std::numeric_limits<float>::has_quiet_NaN) ? std::numeric_limits<float>::quiet_NaN() : 0;
         
         
-        //https://stackoverflow.com/a/39714493/2906021
+        //Source: https://stackoverflow.com/a/39714493/2906021
         inline
         float inverse_approximation(float x)
         {
@@ -53,7 +53,7 @@ namespace egocylindrical
         }
         
         // TODO: Quantify max error and verify that it doesn't affect anything
-        // Source:h ttps://gist.github.com/volkansalma/2972237
+        // Source: https://gist.github.com/volkansalma/2972237
         inline
         float atan2_approximation1(float y, float x)
         {

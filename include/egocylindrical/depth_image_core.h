@@ -13,7 +13,7 @@ namespace egocylindrical
     {
 
         // TODO: use coordinate converter instead, since we don't need the actual data here
-        template <typename U, typename S>
+        template <uint scale, typename U, typename S>
         inline
         void initializeDepthMapping(const utils::ECWrapper& cylindrical_history, const image_geometry::PinholeCameraModel& cam_model, U* inds, S* x, S* y, S* z)
         {
@@ -40,15 +40,31 @@ namespace egocylindrical
                     
                     inds[image_idx] = cyl_idx;
                     
-                    x[image_idx] = world_pnt.x;
-                    y[image_idx] = world_pnt.y;
-                    z[image_idx] = world_pnt.z;
+                    x[image_idx] = world_pnt.x/scale;
+                    y[image_idx] = world_pnt.y/scale;
+                    z[image_idx] = world_pnt.z/scale;
 
                 }
             }
             
         }
 
+        
+        template <uint scale, typename U, typename S>
+        inline
+        void initializeDepthMapping(const utils::ECWrapper& cylindrical_history, const image_geometry::PinholeCameraModel& cam_model, U* inds, S* x, S* y, S* z)
+        {
+            const cv::Mat image = cv_bridge::toCvShare(image_msg)->image;
+            
+            if(image.depth() == CV_32FC1)
+            {
+                initializeDepthMapping<1>(cylindrical_points, cam_model, inds, x, y, z);
+            }
+            else if (image.depth() == CV_16UC1)
+            {
+                initializeDepthMapping<1000>(cylindrical_points, cam_model, inds, x, y, z);
+            }
+        }
 
         
         template <typename T, typename U, typename S>
@@ -140,7 +156,7 @@ namespace egocylindrical
         public:
             // TODO: also trigger update if ECWrapper's parameters change. However, that will be part of a larger restructuring
             inline
-            void updateMapping(const ECWrapper& cylindrical_points, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
+            void updateMapping(const ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
             {
                 bool reinit = false;
                 
@@ -192,7 +208,7 @@ namespace egocylindrical
                 ROS_INFO("Updating cylindrical points with depth image");
                 
                 ros::WallTime start = ros::WallTime::now();
-                updateMapping( cylindrical_points, cam_info);
+                updateMapping( cylindrical_points, image_msg, cam_info);
                 ros::WallTime mid = ros::WallTime::now();
                 
                 remapDepthImage( cylindrical_points, image_msg);
