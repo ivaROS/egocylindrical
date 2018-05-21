@@ -50,9 +50,9 @@ namespace egocylindrical
         }
 
         
-        template <uint scale, typename U, typename S>
+        template <typename U, typename S>
         inline
-        void initializeDepthMapping(const utils::ECWrapper& cylindrical_history, const image_geometry::PinholeCameraModel& cam_model, U* inds, S* x, S* y, S* z)
+        void initializeDepthMapping(const utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const image_geometry::PinholeCameraModel& cam_model, U* inds, S* x, S* y, S* z)
         {
             const cv::Mat image = cv_bridge::toCvShare(image_msg)->image;
             
@@ -193,7 +193,7 @@ namespace egocylindrical
                 {
                     
                     ROS_INFO("Generating depth to cylindrical image mapping");
-                    initializeDepthMapping(cylindrical_points, cam_model_, inds_.data(), x_.data(), y_.data(), z_.data());
+                    initializeDepthMapping(cylindrical_points, image_msg, cam_model_, inds_.data(), x_.data(), y_.data(), z_.data());
                 }
             }
             
