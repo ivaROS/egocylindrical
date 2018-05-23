@@ -501,7 +501,7 @@ namespace egocylindrical
                 
                 // NOTE: width x height must be divisible by 8 for this approach to work. Otherwise, additional information will be necessary in order to properly place the x,y,z pointers
                 
-                ROS_INFO_STREAM("max_alignment: " << max_alignment << ", biggest_alignment: " << biggest_alignment << ", object_size: " << object_size << ", object_alignment: " << object_alignment << ", number buffer objects: " << buffer_objects);
+                ROS_DEBUG_STREAM("max_alignment: " << max_alignment << ", biggest_alignment: " << biggest_alignment << ", object_size: " << object_size << ", object_alignment: " << object_alignment << ", number buffer objects: " << buffer_objects);
                 
                 msg_->points.data.resize(3*height_*width_ + buffer_objects, dNaN);
                 
@@ -518,7 +518,7 @@ namespace egocylindrical
                     
                     msg_->points.layout.data_offset = (space_before - space_after);
                     
-                    ROS_INFO_STREAM("Aligned points_, adjusted pointer by " << (space_before - space_after) << " bytes");
+                    ROS_DEBUG_STREAM("Aligned points_, adjusted pointer by " << (space_before - space_after) << " bytes");
                 }
                 
                 if(allocate_arrays_)

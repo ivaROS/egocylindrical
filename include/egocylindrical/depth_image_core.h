@@ -205,7 +205,7 @@ namespace egocylindrical
             
             void update( ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
             {
-                ROS_INFO("Updating cylindrical points with depth image");
+                ROS_DEBUG("Updating cylindrical points with depth image");
                 
                 ros::WallTime start = ros::WallTime::now();
                 updateMapping( cylindrical_points, image_msg, cam_info);
@@ -214,8 +214,8 @@ namespace egocylindrical
                 remapDepthImage( cylindrical_points, image_msg);
                 ros::WallTime end = ros::WallTime::now();
                 
-                ROS_INFO_STREAM("Updating camera model took " <<  (mid - start).toSec() * 1e3 << "ms");
-                ROS_INFO_STREAM("Remapping depth image took " <<  (end - mid).toSec() * 1e3 << "ms");
+                ROS_DEBUG_STREAM_NAMED("timing", "Updating camera model took " <<  (mid - start).toSec() * 1e3 << "ms");
+                ROS_DEBUG_STREAM_NAMED("timing", "Remapping depth image took " <<  (end - mid).toSec() * 1e3 << "ms");
                 
             }
 

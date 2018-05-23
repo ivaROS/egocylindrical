@@ -138,7 +138,7 @@ namespace egocylindrical
         
         std::swap(new_pts_, old_pts_);  
         
-        ROS_DEBUG_STREAM_NAMED("Total time: " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        ROS_DEBUG_STREAM_NAMED("timing", "Total time: " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
         
     }
