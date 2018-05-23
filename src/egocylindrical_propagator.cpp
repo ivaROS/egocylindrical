@@ -36,16 +36,16 @@ namespace egocylindrical
                                 old_header.frame_id, old_header.stamp,
                                 "odom");
         
-        ROS_INFO_STREAM_NAMED("timing", "Finding transform took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        ROS_DEBUG_STREAM_NAMED("timing", "Finding transform took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
                 
         
         start = ros::WallTime::now();    
         utils::transformPoints(old_pnts, *transformed_pts_, new_pnts, trans);
-        ROS_INFO_STREAM_NAMED("timing", "Transform points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        ROS_DEBUG_STREAM_NAMED("timing", "Transform points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
         start = ros::WallTime::now();
         utils::addPoints(new_pnts, *transformed_pts_, false);
-        ROS_INFO_STREAM_NAMED("timing", "Inserting transformed points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        ROS_DEBUG_STREAM_NAMED("timing", "Inserting transformed points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
 
     }
 
@@ -95,7 +95,7 @@ namespace egocylindrical
                 ros::WallTime temp = ros::WallTime::now();
                 
                 EgoCylindricalPropagator::addDepthImage(*new_pts_, image, cam_info);
-                ROS_INFO_STREAM("Adding depth image took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
+                ROS_DEBUG_STREAM("Adding depth image took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
             }
             
             if(ec_pub_.getNumSubscribers() > 0)
@@ -105,7 +105,7 @@ namespace egocylindrical
                 
                 //TODO: this function call should trigger the ecwrapper to mark its message as locked
                 utils::ECMsgConstPtr msg = new_pts_->getEgoCylinderPointsMsg();
-                ROS_INFO_STREAM("Copying EgoCylinderPoints took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
+                ROS_DEBUG_STREAM("Copying EgoCylinderPoints took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
                 
                 ec_pub_.publish(msg);
             }
@@ -130,7 +130,7 @@ namespace egocylindrical
                 next_pts_->init(config_.height, config_.width, config_.vfov, true);
             }
             
-            ROS_INFO_STREAM("Creating new datastructure took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+            ROS_DEBUG_STREAM_NAMED("timing", "Creating new datastructure took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
           }
           
         
@@ -138,7 +138,7 @@ namespace egocylindrical
         
         std::swap(new_pts_, old_pts_);  
         
-        ROS_INFO_STREAM("Total time: " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        ROS_DEBUG_STREAM_NAMED("Total time: " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
         
     }

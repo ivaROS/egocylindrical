@@ -84,10 +84,10 @@ namespace egocylindrical
                 
           sensor_msgs::Image::ConstPtr image_ptr = use_raw_ ? utils::getRawRangeImageMsg(ec_pts) : utils::getRangeImageMsg(ec_pts);
 
-          ROS_INFO_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+          ROS_DEBUG_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
           
 
-          ROS_INFO("publish egocylindrical image");
+          ROS_DEBUG("publish egocylindrical image");
           
           im_pub_.publish(image_ptr);
         }

@@ -75,7 +75,7 @@ namespace egocylindrical
                 {
                     if(omp_in_parallel())
                     {
-                        ROS_INFO_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
+                        ROS_DEBUG_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
                     }
                 }
                 
@@ -169,7 +169,7 @@ namespace egocylindrical
                 {
                     if(omp_in_parallel())
                     {
-                        ROS_INFO_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
+                        ROS_DEBUG_STREAM("Parallel region with " << omp_get_num_threads() << " threads");
                     }
                 }
                 

@@ -75,7 +75,7 @@ namespace egocylindrical
           
           sensor_msgs::PointCloud2::ConstPtr msg = utils::generate_point_cloud(ec_pts);
           
-          ROS_INFO_STREAM("Generating point cloud took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+          ROS_DEBUG_STREAM("Generating point cloud took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
           
 
           ROS_DEBUG("publish egocylindrical pointcloud");
