@@ -66,12 +66,12 @@ namespace egocylindrical
             float abs_y = fabs(y) + 1e-10f;      // kludge to prevent 0/0 condition
             if ( x < 0.0f )
             {
-                r = (x + abs_y) * inverse_approximation(abs_y - x);
+                r = (x + abs_y) / (abs_y - x);
                 angle = THRQTR_PI;
             }
             else
             {
-                r = (x - abs_y) * inverse_approximation(x + abs_y);
+                r = (x - abs_y) / (x + abs_y);
                 angle = ONEQTR_PI;
             }
             angle += (0.1963f * r * r - 0.9817f) * r;
@@ -88,7 +88,7 @@ namespace egocylindrical
         float inv_sqrt_approximation(float x)
         {
             float b, c;
-            int m;
+            
             union {
                 float 	f;
                 int 	i;
@@ -115,7 +115,7 @@ namespace egocylindrical
         inline
         cv::Point3_<T> projectWorldToCylinder(const cv::Point3_<T>& point)
         {
-          cv::Point3_<T> Pcyl_t = point * inv_sqrt_approximation(point.x * point.x + point.z * point.z);
+          cv::Point3_<T> Pcyl_t = point / std::sqrt(point.x * point.x + point.z * point.z);
           return Pcyl_t;
         }
         
@@ -215,7 +215,6 @@ namespace egocylindrical
             vfov_ = msg->fov_v;
             
             const std::vector<std_msgs::MultiArrayDimension>& dims = msg->points.layout.dim;
-            int components = dims[0].size;
             height_ = dims[1].size;
             width_ = dims[2].size;
             hscale_ = width_/(2*M_PI);
@@ -355,18 +354,11 @@ namespace egocylindrical
                 vfov_ = const_msg_->fov_v;
                 
                 const std::vector<std_msgs::MultiArrayDimension>& dims = const_msg_->points.layout.dim;
-                int components = dims[0].size;
                 height_ = dims[1].size;
                 width_ = dims[2].size;
                 
-                int step = dims[1].stride * sizeof(float);
-                
-                //points_ = cv::Mat(components, height_ * width_, CV_32FC1, const_cast<float*>(const_msg_->points.data.data()), step);
-                
                 points_ = (float*) const_msg_->points.data.data() + (const_msg_->points.layout.data_offset) / sizeof(float);
-                
-                //std::cout << "Address: " << std::hex  << const_msg_->points.data.data() << std::dec << ", height=" << height_ << ", width=" << width_ << ", step=" << step << std::endl;
-                
+                                
                 msg_locked_ = true;
                 
             }

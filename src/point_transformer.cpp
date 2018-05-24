@@ -41,12 +41,7 @@ namespace egocylindrical
             const float t1 = T[1];
             const float t2 = T[2];
                         
-            //const float* const R = (float*)__builtin_assume_aligned(R, __BIGGEST_ALIGNMENT__);
-            //const float* const T = (float*)__builtin_assume_aligned(_T, __BIGGEST_ALIGNMENT__);
-
             const int num_cols = points.getCols();
-            const int width = points.getWidth();
-            const int height = points.getHeight();
             
             float* x = points.getX();
             float* y = points.getY();
@@ -55,9 +50,7 @@ namespace egocylindrical
             float* ranges = points.getRanges();
             long int* inds = points.getInds();
             
-            
-            //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-            
+
                         
             if (omp_get_dynamic())
                 omp_set_dynamic(0);
@@ -67,7 +60,7 @@ namespace egocylindrical
             
             omp_p = std::min(omp_p-1, 1);
             
-            
+            //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
             #pragma omp parallel num_threads(omp_p)
             {
                 
@@ -130,9 +123,6 @@ namespace egocylindrical
             const float t0 = _T[0];
             const float t1 = _T[1];
             const float t2 = _T[2];
-                        
-            const float* const R = (float*)__builtin_assume_aligned(_R, __BIGGEST_ALIGNMENT__);
-            const float* const T = (float*)__builtin_assume_aligned(_T, __BIGGEST_ALIGNMENT__);
             
             const int num_cols = points.getCols();
             const int max_ind = new_points.getCols();
@@ -145,15 +135,11 @@ namespace egocylindrical
             float* y_n = (float*)__builtin_assume_aligned(transformed_points.getY(), __BIGGEST_ALIGNMENT__);
             float* z_n = (float*)__builtin_assume_aligned(transformed_points.getZ(), __BIGGEST_ALIGNMENT__);
             
-            //float* ranges = transformed_points.getRanges();
-            //long int* inds = transformed_points.getInds();
-            
             float* ranges = (float*)__builtin_assume_aligned(transformed_points.getRanges(), __BIGGEST_ALIGNMENT__);
             long int* inds = (long int*)__builtin_assume_aligned(transformed_points.getInds(), __BIGGEST_ALIGNMENT__);
             
+
             
-            
-                        
             if (omp_get_dynamic())
                 omp_set_dynamic(0);
             omp_set_nested(1);

@@ -21,9 +21,7 @@ namespace egocylindrical
             cv::Size image_size = cam_model.reducedResolution();
             int image_width = image_size.width;
             int image_height = image_size.height;
-            
-            int num_pixels = image_width * image_height;
-            
+                        
             for(int i = 0; i < image_height; ++i)
             {
                 for(int j = 0; j < image_width; ++j)

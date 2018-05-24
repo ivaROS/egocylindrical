@@ -27,7 +27,6 @@ namespace utils
     inline
     void addPoints(utils::ECWrapper& cylindrical_history, const utils::ECWrapper& new_points, bool overwrite)
     {
-        cv::Rect image_roi = cylindrical_history.getImageRoi();
         
         float* x = cylindrical_history.getX();
         float* y = cylindrical_history.getY();
