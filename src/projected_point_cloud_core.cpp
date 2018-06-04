@@ -1,0 +1,61 @@
+#include <egocylindrical/ecwrapper.h>
+
+#include <ros/ros.h>
+#include <opencv2/core.hpp>
+
+#include <omp.h>
+#include <pcl_ros/point_cloud.h>
+#include <sensor_msgs/PointCloud2.h>
+
+
+namespace egocylindrical
+{
+    
+    namespace utils
+    {
+        /* TODO: ensure that the right size 'ints' are used everywhere. On my current system, the size of int = minimum size of long int, so 32 bit system might fail */
+        sensor_msgs::PointCloud2::ConstPtr generate_projected_point_cloud(const utils::ECWrapper& points)
+        {
+            const int num_cols = points.getCols();
+            
+            pcl::PointCloud<pcl::PointXYZI> pcloud;
+            
+            
+            sensor_msgs::PointCloud2::Ptr pcloud_msg = boost::make_shared<sensor_msgs::PointCloud2>();
+            
+            pcl::toROSMsg(pcloud, *pcloud_msg);
+            
+            pcloud_msg->data.resize(sizeof(pcl::PointXYZI) * num_cols);
+            
+            pcloud_msg->width = num_cols;
+            pcloud_msg->height = 1;
+            
+            const float* x = points.getX();
+            const float* y = points.getY();
+            const float* z = points.getZ();
+            
+            float* data = (float*) pcloud_msg->data.data();
+
+            
+            #pragma omp parallel for num_threads(4)
+            for(int j = 0; j < num_cols; ++j)
+            {   
+                cv::Point3f point(x[j],y[j],z[j]);
+                
+                cv::Point3f Pcyl_t = egocylindrical::utils::projectWorldToCylinder(point);
+                float range = egocylindrical::utils::worldToRange(point);
+
+                data[8*j] =   Pcyl_t.x;
+                data[8*j+1] = Pcyl_t.y;
+                data[8*j+2] = Pcyl_t.z;
+                data[8*j+4] = range;
+            }
+
+            pcloud_msg->header = points.getHeader();
+            
+            return pcloud_msg;
+        
+        }
+        
+    }   
+}

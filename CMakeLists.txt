@@ -181,6 +181,24 @@ target_compile_options(point_cloud_core PRIVATE -g -std=c++11 -Wall -ftree-vecto
 add_dependencies(point_cloud_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
+
+add_library(projected_point_cloud_core src/projected_point_cloud_core.cpp)
+target_link_libraries(projected_point_cloud_core
+   ${catkin_LIBRARIES}
+   #${OpenCV_LIBRARIES}
+   #${PCL_LIBRARIES}
+   #${OpenMP_CXX_FLAGS}
+   )
+
+target_compile_options(projected_point_cloud_core PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} ${OpenMP_CXX_FLAGS} #-funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
+  ${OpenMP_CXX_FLAGS}
+  )
+  
+add_dependencies(projected_point_cloud_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+
+
+
 add_library(point_transformer src/point_transformer.cpp)
 target_link_libraries(point_transformer
    ${catkin_LIBRARIES}
@@ -303,6 +321,54 @@ target_compile_options(point_cloud_nodelet PRIVATE -std=c++11 -Wall #${OpenMP_CX
 
 target_link_libraries(point_cloud_nodelet
    point_cloud_generator
+   ${catkin_LIBRARIES}
+   )
+
+#PROJECTED_POINT_CLOUD_GENERATOR
+add_library(projected_point_cloud_generator src/projected_point_cloud_generator.cpp)
+
+#TODO: Add dependencies as needed
+add_dependencies(projected_point_cloud_generator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(projected_point_cloud_generator
+   projected_point_cloud_core
+   ${catkin_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
+
+target_compile_options(projected_point_cloud_generator PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+  #${OpenMP_CXX_FLAGS}
+  )
+
+
+#POINT_CLOUD_NODE
+add_executable(projected_point_cloud_node src/projected_point_cloud_node.cpp)
+
+#TODO: Add only necessary dependencies
+add_dependencies(projected_point_cloud_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(projected_point_cloud_node
+   projected_point_cloud_generator
+   ${catkin_LIBRARIES}
+   ${OpenCV_LIBRARIES}
+   ${PCL_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
+
+target_compile_options(projected_point_cloud_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+  #${OpenMP_CXX_FLAGS}
+  )
+  
+  
+#POINT_CLOUD_NODELET
+add_library(projected_point_cloud_nodelet MODULE src/projected_point_cloud_nodelet.cpp)
+
+target_compile_options(projected_point_cloud_nodelet PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+  #${OpenMP_CXX_FLAGS}
+  )
+
+target_link_libraries(projected_point_cloud_nodelet
+   projected_point_cloud_generator
    ${catkin_LIBRARIES}
    )
 

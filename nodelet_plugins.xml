@@ -21,3 +21,11 @@
     </description>
   </class>
 </library>
+
+<library path="lib/libprojected_point_cloud_nodelet">
+  <class name="egocylindrical/projected_point_cloud_nodelet" type="egocylindrical::ProjectedPointCloudNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet for projected egocylindrical point cloud generation
+    </description>
+  </class>
+</library>

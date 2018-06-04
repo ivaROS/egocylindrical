@@ -13,11 +13,6 @@
 namespace egocylindrical
 {
 
-    namespace utils
-    {
-        sensor_msgs::PointCloud2::ConstPtr generate_point_cloud(const utils::ECWrapper& points);
-    }
-
 
     EgoCylinderPointCloudGenerator::EgoCylinderPointCloudGenerator(ros::NodeHandle& nh, ros::NodeHandle& pnh) :
         nh_(nh),
