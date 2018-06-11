@@ -412,7 +412,39 @@ target_link_libraries(range_image_nodelet
    range_image_generator
    ${catkin_LIBRARIES}
    )
+
+   
+   
+#RANGE_IMAGE_CONVERTER
+add_library(range_image_converter src/range_image_converter.cpp)
+
+#TODO: Add dependencies as needed
+add_dependencies(range_image_converter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(range_image_converter
+   ${catkin_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
+
+target_compile_options(range_image_converter PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+  #${OpenMP_CXX_FLAGS}
+  )
   
+  
+#RANGE_IMAGE_CONVERTER_NODE
+add_executable(range_image_converter_node src/range_image_converter_node.cpp)
+
+#TODO: Add dependencies as needed
+add_dependencies(range_image_converter_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(range_image_converter_node
+   range_image_converter
+   ${catkin_LIBRARIES}
+   )
+
+target_compile_options(range_image_converter_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+  #${OpenMP_CXX_FLAGS}
+  )
   
 #############
 ## Install ##

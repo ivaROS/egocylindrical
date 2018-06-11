@@ -194,6 +194,24 @@ namespace egocylindrical
         
         
         
+        
+        
+        
+        struct ECParams
+        {
+          int height, width;
+          float vfov;
+          
+          bool operator==(const ECParams &other) const 
+          {
+            return (height==other.height && width==other.width && vfov==other.vfov);
+          }
+        };
+        
+        
+        
+        
+        
         // TODO: pull the relevant egocylindrical 'camera' info into separate message and use this class as the interpreter of it
         // ECWrapper would also use this class
         class ECConverter
@@ -208,6 +226,15 @@ namespace egocylindrical
           {
           }
           
+          
+          inline
+          void update()
+          {
+            hscale_ = width_/(2*M_PI);
+            vscale_ = height_/vfov_;
+          }
+          
+          inline
           void fromCameraInfo(const ECMsgConstPtr& msg)
           {
             
@@ -217,8 +244,18 @@ namespace egocylindrical
             const std::vector<std_msgs::MultiArrayDimension>& dims = msg->points.layout.dim;
             height_ = dims[1].size;
             width_ = dims[2].size;
-            hscale_ = width_/(2*M_PI);
-            vscale_ = height_/vfov_;
+            
+            update();
+          }
+          
+          inline
+          void fromParams(const ECParams& params)
+          {
+            vfov_ = params.vfov;
+            height_ = params.height;
+            width_ = params.width;
+            
+            update();
           }
           
           inline
@@ -228,20 +265,26 @@ namespace egocylindrical
           }
           
           inline
-          int getHeight()
+          int getHeight() const
           {
             return height_;
           }
           
           inline
-          int getWidth()
+          int getWidth() const
           {
             return width_;
+          }
+          
+          inline
+          int getNumPts() const
+          {
+            return height_*width_;
           }
 
           template <typename S, typename T>
           inline 
-          void project3dToPixel(const cv::Point3_<S> point, cv::Point_<T>& pixel)
+          void project3dToPixel(const cv::Point3_<S> point, cv::Point_<T>& pixel) const
           {
             utils::worldToCylindricalImage(point, pixel, width_, height_, hscale_, vscale_, 0, 0);
           }
@@ -249,7 +292,7 @@ namespace egocylindrical
           
           template <typename T>
           inline 
-          cv::Point_<T> project3dToPixel(const cv::Point3_<T> point)
+          cv::Point_<T> project3dToPixel(const cv::Point3_<T> point) const
           {
             return utils::worldToCylindricalImage(point, width_, height_, hscale_, vscale_, 0, 0);
           }
@@ -274,16 +317,7 @@ namespace egocylindrical
         
         
         
-        struct ECParams
-        {
-            int height, width;
-            float vfov;
-            
-            bool operator==(const ECParams &other) const 
-            {
-                return (height==other.height && width==other.width && vfov==other.vfov);
-            }
-        };
+
         
         /*
          * This class is intended to act as an abstraction of the egocylindrical representation
@@ -582,14 +616,28 @@ namespace egocylindrical
             }
             
         };
-        
+      
         typedef std::shared_ptr<ECWrapper> ECWrapperPtr;
         
         inline
         ECWrapperPtr getECWrapper(int height, int width, float vfov, bool allocate_arrays=false)
         {
-            return std::make_shared<ECWrapper>(height,width,vfov,allocate_arrays);
+          return std::make_shared<ECWrapper>(height,width,vfov,allocate_arrays);
         }
+        
+        inline
+        ECWrapperPtr getECWrapper(const ECParams& params)
+        {
+          return getECWrapper(params.height,params.width,params.vfov);
+        }
+        
+        inline
+        ECWrapperPtr getECWrapper(const ECWrapper& wrapper)
+        {
+          return getECWrapper(wrapper.getParams());
+        }
+        
+
         
     }
     
