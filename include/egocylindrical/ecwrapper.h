@@ -309,7 +309,7 @@ namespace egocylindrical
             
             ray.y = (point.y - (height_/2))/vscale_;
             
-            ray /= (ray.x*ray.x + ray.y * ray.y + ray.z*ray.z);
+            ray /= (ray.x*ray.x + ray.z*ray.z);
             return ray;
           }
           
