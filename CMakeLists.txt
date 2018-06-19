@@ -446,6 +446,13 @@ target_link_libraries(range_image_converter_node
 target_compile_options(range_image_converter_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
   #${OpenMP_CXX_FLAGS}
   )
+
+  
+#APPROXIMATION_VALIDATION
+add_executable(approximation_validation src/approximation_validation.cpp)
+target_link_libraries(approximation_validation
+   ${catkin_LIBRARIES}
+   )
   
 #############
 ## Install ##
