@@ -114,6 +114,7 @@ generate_messages(
 
 generate_dynamic_reconfigure_options(
   cfg/Propagator.cfg
+  cfg/RangeImageGenerator.cfg
   )
 
 ###################################

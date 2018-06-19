@@ -108,7 +108,7 @@ namespace egocylindrical
         
         
         inline
-        void transform_impl(const utils::ECWrapper& points, utils::ECWrapper& transformed_points, const utils::ECWrapper& new_points, const float*  const _R, const float*  const _T)
+        void transform_impl(const utils::ECWrapper& points, utils::ECWrapper& transformed_points, const utils::ECWrapper& new_points, const float*  const _R, const float*  const _T, int num_threads)
         {            
             const float r0 = _R[0];
             const float r1 = _R[1];
@@ -145,7 +145,7 @@ namespace egocylindrical
             omp_set_nested(1);
             int omp_p = omp_get_max_threads();
             
-            omp_p = std::min(omp_p-1, 1);
+            omp_p = std::min(omp_p-1, num_threads);
             
             
             #pragma omp parallel num_threads(omp_p)
@@ -230,7 +230,7 @@ namespace egocylindrical
         }
         
         // TODO: This functionality could be moved into a tf2_ros implementation
-        void transformPoints(const utils::ECWrapper& points, utils::ECWrapper& transformed_points, const utils::ECWrapper& new_points, const geometry_msgs::TransformStamped& trans)
+        void transformPoints(const utils::ECWrapper& points, utils::ECWrapper& transformed_points, const utils::ECWrapper& new_points, const geometry_msgs::TransformStamped& trans, int num_threads)
         {
   
             tf::Quaternion rotationQuaternion = tf::Quaternion(trans.transform.rotation.x,
@@ -265,7 +265,7 @@ namespace egocylindrical
           //  {
           //      ROS_INFO("Out of place");
                 transformed_points.init(points);    //This ensures that 'transformed_points' is big enough
-                transform_impl(points, transformed_points, new_points, rotationArray, translationArray);
+                transform_impl(points, transformed_points, new_points, rotationArray, translationArray, num_threads);
         /*
             }
             else

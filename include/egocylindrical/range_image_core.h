@@ -11,9 +11,9 @@ namespace egocylindrical
     
     namespace utils
     {
-        sensor_msgs::ImagePtr getRawRangeImageMsg(const utils::ECWrapper& cylindrical_history);
+        sensor_msgs::ImagePtr getRawRangeImageMsg(const utils::ECWrapper& cylindrical_history, int num_threads);
 
-        sensor_msgs::ImagePtr getRangeImageMsg(const utils::ECWrapper& cylindrical_history);
+        sensor_msgs::ImagePtr getRangeImageMsg(const utils::ECWrapper& cylindrical_history, int num_threads);
         
     }
 }

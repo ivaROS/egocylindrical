@@ -24,7 +24,8 @@ namespace egocylindrical
     {
         std::cout<<"Egocylindrical Range Image Node Initialized"<<std::endl;
 
-
+        reconfigure_server_ = std::make_shared<ReconfigureServer>(pnh_);
+        
     }
     
     bool EgoCylinderRangeImageGenerator::init()
@@ -35,11 +36,23 @@ namespace egocylindrical
         pnh_.getParam("use_raw", use_raw_ );
         
         pnh_.getParam("image_topic", image_topic );
+        
+        reconfigure_server_->setCallback(boost::bind(&EgoCylinderRangeImageGenerator::configCB, this, _1, _2));
+        
 
         image_transport::SubscriberStatusCallback image_cb = boost::bind(&EgoCylinderRangeImageGenerator::ssCB, this);
         im_pub_ = it_.advertise(image_topic, 2, image_cb, image_cb);
         
         return true;
+    }
+    
+    void EgoCylinderRangeImageGenerator::configCB(const ConfigType &config, uint32_t level)
+    {
+      //Atomic operation, so no need for mutex this time
+      //WriteLock lock(config_mutex_);
+      
+      ROS_INFO_STREAM("Updating propagator config: num_threads=" << config.num_threads);
+      num_threads_ = config.num_threads;
     }
     
     void EgoCylinderRangeImageGenerator::ssCB()
@@ -82,7 +95,7 @@ namespace egocylindrical
           
           utils::ECWrapper ec_pts(ec_msg);
                 
-          sensor_msgs::Image::ConstPtr image_ptr = use_raw_ ? utils::getRawRangeImageMsg(ec_pts) : utils::getRangeImageMsg(ec_pts);
+          sensor_msgs::Image::ConstPtr image_ptr = use_raw_ ? utils::getRawRangeImageMsg(ec_pts, num_threads_) : utils::getRangeImageMsg(ec_pts, num_threads_);
 
           ROS_DEBUG_STREAM("Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
           

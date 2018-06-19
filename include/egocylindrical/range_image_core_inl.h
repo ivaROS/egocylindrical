@@ -16,7 +16,7 @@ namespace egocylindrical
     namespace utils
     {
         template <typename T,uint scale>
-        void generateRangeImage(const utils::ECWrapper& cylindrical_history, T* r, const T unknown_val)
+        void generateRangeImage(const utils::ECWrapper& cylindrical_history, T* r, const T unknown_val, int num_threads)
         {
             //cv::Rect image_roi = cylindrical_history.getImageRoi();
             
@@ -44,7 +44,7 @@ namespace egocylindrical
         
         
         template <typename T, uint scale>
-        sensor_msgs::ImagePtr generateRangeImageMsg(const utils::ECWrapper& cylindrical_history, const std::string& encoding, const T unknown_val)
+        sensor_msgs::ImagePtr generateRangeImageMsg(const utils::ECWrapper& cylindrical_history, const std::string& encoding, const T unknown_val, int num_threads)
         {
             sensor_msgs::ImagePtr new_msg_ptr = boost::make_shared<sensor_msgs::Image>();
             
@@ -61,26 +61,26 @@ namespace egocylindrical
             
             T* data = (T*)new_msg.data.data();
             
-            generateRangeImage<T, scale>(cylindrical_history, data, unknown_val);
+            generateRangeImage<T, scale>(cylindrical_history, data, unknown_val, num_threads);
             
             return new_msg_ptr;
         }
         
         
         template <typename T>
-        sensor_msgs::ImagePtr generateRangeImageMsg(const utils::ECWrapper& cylindrical_history);
+        sensor_msgs::ImagePtr generateRangeImageMsg(const utils::ECWrapper& cylindrical_history, int num_threads);
 
         
         template <> 
-        sensor_msgs::ImagePtr generateRangeImageMsg<float>(const utils::ECWrapper& cylindrical_history)
+        sensor_msgs::ImagePtr generateRangeImageMsg<float>(const utils::ECWrapper& cylindrical_history, int num_threads)
         {
-            return generateRangeImageMsg<float, 1>(cylindrical_history, sensor_msgs::image_encodings::TYPE_32FC1, dNaN);
+            return generateRangeImageMsg<float, 1>(cylindrical_history, sensor_msgs::image_encodings::TYPE_32FC1, dNaN, num_threads);
         }
         
         template <>
-        sensor_msgs::ImagePtr generateRangeImageMsg<uint16_t>(const utils::ECWrapper& cylindrical_history)
+        sensor_msgs::ImagePtr generateRangeImageMsg<uint16_t>(const utils::ECWrapper& cylindrical_history, int num_threads)
         {
-            return generateRangeImageMsg<uint16_t, 1000>(cylindrical_history, sensor_msgs::image_encodings::TYPE_16UC1, 0);
+            return generateRangeImageMsg<uint16_t, 1000>(cylindrical_history, sensor_msgs::image_encodings::TYPE_16UC1, 0, num_threads);
         }
 
         

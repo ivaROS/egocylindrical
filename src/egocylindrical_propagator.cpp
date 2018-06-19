@@ -40,7 +40,7 @@ namespace egocylindrical
                 
         
         start = ros::WallTime::now();    
-        utils::transformPoints(old_pnts, *transformed_pts_, new_pnts, trans);
+        utils::transformPoints(old_pnts, *transformed_pts_, new_pnts, trans, config_.num_threads);
         ROS_DEBUG_STREAM_NAMED("timing", "Transform points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
         start = ros::WallTime::now();

@@ -4,8 +4,20 @@
 
 //#include <egocylindrical/ecwrapper.h>
 #include <egocylindrical/EgoCylinderPoints.h>
+#include <egocylindrical/RangeImageGeneratorConfig.h>
 #include <image_transport/image_transport.h>
 #include <ros/ros.h>
+
+#include <dynamic_reconfigure/server.h>
+
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/locks.hpp>
+
+typedef boost::shared_mutex Mutex;
+typedef boost::unique_lock< Mutex > WriteLock;
+typedef boost::shared_lock< Mutex > ReadLock;
+
+
 
 namespace egocylindrical
 {
@@ -18,12 +30,22 @@ namespace egocylindrical
         image_transport::Publisher im_pub_;
         ros::Subscriber ec_sub_;
         bool use_raw_;
+        
+        //Mutex config_mutex_;
+        int num_threads_;
+        
+        typedef egocylindrical::RangeImageGeneratorConfig ConfigType;
+        ConfigType config_;
+        typedef dynamic_reconfigure::Server<ConfigType> ReconfigureServer;
+        std::shared_ptr<ReconfigureServer> reconfigure_server_;
 
     public:
 
         EgoCylinderRangeImageGenerator(ros::NodeHandle& nh, ros::NodeHandle& pnh);
         
         bool init();
+        
+        void configCB(const ConfigType &config, uint32_t level);
         
         void ssCB();
 
