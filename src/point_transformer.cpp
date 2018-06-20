@@ -136,8 +136,12 @@ namespace egocylindrical
             float* z_n = (float*)__builtin_assume_aligned(transformed_points.getZ(), __BIGGEST_ALIGNMENT__);
             
             float* ranges = (float*)__builtin_assume_aligned(transformed_points.getRanges(), __BIGGEST_ALIGNMENT__);
-            long int* inds = (long int*)__builtin_assume_aligned(transformed_points.getInds(), __BIGGEST_ALIGNMENT__);
             
+            
+            //#ifndef BOOST_ARCH_ARM_AVAILABLE
+            
+              long int* inds = (long int*)__builtin_assume_aligned(transformed_points.getInds(), __BIGGEST_ALIGNMENT__);
+            //#endif
 
             
             if (omp_get_dynamic())
@@ -173,19 +177,30 @@ namespace egocylindrical
                     y_n[p] = r3 * x_p + r4 * y_p + r5 * z_p + t1;
                     z_n[p] = r6 * x_p + r7 * y_p + r8 * z_p + t2;
                      
-                    float depth=dNaN;
+                    float range_squared=dNaN;
                     
-                    int idx = -1;
                                     
-                    depth= worldToRangeSquared(x_n[p],z_n[p]);
+                    range_squared= worldToRangeSquared(x_n[p],z_n[p]);
                 
-                    int tidx = new_points.worldToCylindricalIdx(x_n[p],y_n[p],z_n[p]);
+                    #ifndef BOOST_ARCH_ARM_AVAILABLE
+                    {
+                      int idx = -1;
+                      
+                      int tidx = new_points.worldToCylindricalIdx(x_n[p],y_n[p],z_n[p]);
+                      
+                      if(tidx < max_ind)
+                          idx = tidx;
+                      
+                      inds[p] = idx;
                     
-                    if(tidx < max_ind)
-                        idx = tidx;
-                    
-                    inds[p] = idx;
-                    ranges[p] = depth;
+                    }
+                    #else
+                    {
+                      inds[p] = new_points.worldToCylindricalYIdx(y_n[p], range_squared);
+                    }
+                    #endif
+
+                    ranges[p] = range_squared;
                     
                 }
                 

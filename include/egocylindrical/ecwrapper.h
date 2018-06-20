@@ -492,6 +492,20 @@ namespace egocylindrical
                 return tidx;
             }
             
+            inline
+            int worldToCylindricalXIdx(float x, float z)
+            {
+                int xind = atan2_approximation1(x,z)*hscale_ + width_/2;
+                return xind;
+            }
+            
+            inline
+            int worldToCylindricalYIdx(float y, float range_squared)
+            {
+                int yind = y * inv_sqrt_approximation(range_squared)*vscale_ + hscale_/2;
+                return yind;
+            }
+            
             
             inline
             ECMsgConstPtr getEgoCylinderPointsMsg()

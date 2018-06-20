@@ -45,7 +45,15 @@ namespace utils
         for(int i = 0; i < new_points.getCols(); ++i)
         {
             
-            int idx = inds[i];
+            int idx;
+            
+            #ifndef BOOST_ARCH_ARM_AVAILABLE
+              idx= inds[i];
+            #else
+              int yidx = inds[i];
+              int xidx = new_points.worldToCylindricalXIdx(n_x[i],n_z[i]);
+              idx = yidx * new_points.getWidth() + xidx;
+            #endif
             
             if(idx >=0)
             {
@@ -57,6 +65,10 @@ namespace utils
                 
                 if(!(prev_depth >= depth)) //overwrite || 
                 {   
+                    /*TODO: Check if this gets compiled out or not. If not, remove this object, 
+                     * or perhaps use basic templated custom point class to combine benefits of
+                     * readability and efficiency
+                     */
                     cv::Point3f world_pnt(n_x[i],n_y[i],n_z[i]);
                     
                     x[idx] = world_pnt.x;
