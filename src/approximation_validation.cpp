@@ -55,7 +55,7 @@ float testInvSqrt()
 }
 
 
-// Max error: 0.00896996 radians, or 1/700 of a circle. If width about that big, probably shouldn't use this
+// Max error: 0.0101497 radians, or 1/620 of a circle. If width about that big, probably shouldn't use this
 float testAtan2()
 {
   float max_error = 0;
@@ -76,7 +76,7 @@ float testAtan2()
     //std::cout << "Truth: " << truth << ", Approx: " << approx << ", Error: " << error << ", %Error: " << percent_error << " @ " << x << std::endl;
     
     
-    if(percent_error > max_error)
+    if(error > max_error)
     {
       max_error = error;
       max_value = t;
@@ -87,11 +87,53 @@ float testAtan2()
   std::cout << "Atan2: Max error: " << max_error << " @ th=" << max_value <<std::endl;
 }
 
+// Max error: 0.0101497 radians, or 1/620 of a circle. If width about that big, probably shouldn't use this
+float testAtan22()
+{
+  float max_error = 0;
+  float max_value = -1;
+  float max_y = -1;
+  
+  
+  for(float x = -20; x<20; x+=.01)
+  {
+    for(float y=-20; y<20; y+=.01)
+    {
+      if(x==0 && y==0)
+        continue;
+      
+      float truth = std::atan2(y,x);
+      float approx = egocylindrical::utils::atan2_approximation1(y,x);
+      float error = std::abs(truth - approx);
+      
+      //std::cout << "Truth: " << truth << ", Approx: " << approx << ", Error: " << error << ", %Error: " << percent_error << " @ " << x << std::endl;
+    
+    
+      if(error > max_error)
+      {
+        max_error = error;
+        max_value = x;
+        max_y = y;
+      }
+    }
+    
+  }
+  
+  std::cout << "Atan22: Max error: " << max_error << " @ th=" << max_value <<std::endl;
+}
+
 
 
 int main()
 {
+  #ifndef BOOST_ARCH_ARM_AVAILABLE
+    std::cout << "Not ARM!" << std::endl;
+  #else
+    std::cout << "On ARM!" << std::endl;
+  #endif
+    
   testInverse();
   testInvSqrt();
   testAtan2();
+  testAtan22();
 }
