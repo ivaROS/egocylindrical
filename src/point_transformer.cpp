@@ -138,7 +138,7 @@ namespace egocylindrical
             float* ranges = (float*)__builtin_assume_aligned(transformed_points.getRanges(), __BIGGEST_ALIGNMENT__);
             
             
-            //#ifndef BOOST_ARCH_ARM_AVAILABLE
+            //#ifndef PIPS_ON_ARM
             
               long int* inds = (long int*)__builtin_assume_aligned(transformed_points.getInds(), __BIGGEST_ALIGNMENT__);
             //#endif
@@ -152,10 +152,10 @@ namespace egocylindrical
             omp_p = std::min(omp_p-1, num_threads);
             
             
-            #pragma omp parallel num_threads(omp_p)
+            //#pragma omp parallel num_threads(omp_p)
             {
                 
-                #pragma omp single nowait
+                //#pragma omp single nowait
                 {
                     if(omp_in_parallel())
                     {
@@ -165,7 +165,7 @@ namespace egocylindrical
                 
                 
                 //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-                #pragma omp for simd schedule(static)
+                //#pragma omp for simd schedule(static)
                 for(long int p = 0; p < num_cols; ++p)
                 {
 
@@ -182,7 +182,7 @@ namespace egocylindrical
                                     
                     range_squared= worldToRangeSquared(x_n[p],z_n[p]);
                 
-                    #ifndef BOOST_ARCH_ARM_AVAILABLE
+                    #ifndef PIPS_ON_ARM
                     {
                       int idx = -1;
                       
@@ -196,7 +196,13 @@ namespace egocylindrical
                     }
                     #else
                     {
-                      inds[p] = new_points.worldToCylindricalYIdx(y_n[p], range_squared);
+                      int idx = -1;
+                      int tidx = new_points.worldToCylindricalYIdx(y_n[p], range_squared);
+                      
+                      if(tidx < new_points.getHeight())
+                        idx = tidx;
+                      
+                      inds[p] = idx;
                     }
                     #endif
 

@@ -3,7 +3,7 @@
   
   <arg name="profile_args" default="valgrind --tool=callgrind"/>
   
-  <arg name="prefix" default="" />
+  <arg name="prefix" default="xterm -e gdb --args" />
   
   <group ns="egocylinder">
 

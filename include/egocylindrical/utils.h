@@ -45,14 +45,18 @@ namespace utils
         for(int i = 0; i < new_points.getCols(); ++i)
         {
             
-            int idx;
+            int idx=-1;
+            int xidx =-1;
             
-            #ifndef BOOST_ARCH_ARM_AVAILABLE
+            #ifndef PIPS_ON_ARM
               idx= inds[i];
             #else
               int yidx = inds[i];
-              int xidx = new_points.worldToCylindricalXIdx(n_x[i],n_z[i]);
-              idx = yidx * new_points.getWidth() + xidx;
+              if(yidx >= 0)
+              {
+                xidx = new_points.worldToCylindricalXIdx(n_x[i],n_z[i]);
+                idx = yidx * new_points.getWidth() + xidx;
+              }
             #endif
             
             if(idx >=0)
