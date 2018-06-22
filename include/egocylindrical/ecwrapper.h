@@ -24,6 +24,7 @@
 
 #include <cstddef>
 #include <cstdalign>
+#include <cstdint>
 
 //#include <iomanip> // for debug printing
 
@@ -330,22 +331,13 @@ namespace egocylindrical
         class ECWrapper
         {
         private:
-            
-            //cv::Mat points_;
-            
+                        
             float* points_;
             
-            //void* ranges_=nullptr;
             AlignedVector<float> ranges_;
-            
-            //long int* inds_=nullptr; // Note: on 32/64 bit systems, int almost always has the same size as long, but just to be safe...
-            
-            AlignedVector<long int> inds_;
+                        
+            AlignedVector<int32_t> inds_;
 
-            
-            float* aligned_ranges_ = nullptr;
-            long int* aligned_inds_ = nullptr;
-            
             int height_, width_;
             float vfov_;
             float hscale_, vscale_;
@@ -425,8 +417,8 @@ namespace egocylindrical
             inline float* getRanges()                   { return (float*) ranges_.data(); }
             inline const float* getRanges()     const   { return (const float*) ranges_.data(); }
             
-            inline long int* getInds()                  { return inds_.data(); }
-            inline const long int* getInds()    const   { return (const long int*) inds_.data(); }
+            inline int32_t* getInds()                  { return inds_.data(); }
+            inline const int32_t* getInds()    const   { return (const int32_t*) inds_.data(); }
             
             inline bool isLocked()              const   { return msg_locked_; }
 

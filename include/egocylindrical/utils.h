@@ -37,7 +37,7 @@ namespace utils
         const float* n_z = new_points.getZ();
         
         const float* ranges = new_points.getRanges();
-        const long int* inds = new_points.getInds();
+        const int32_t* inds = new_points.getInds();
         
 
         ROS_DEBUG("Relocated the propagated image");

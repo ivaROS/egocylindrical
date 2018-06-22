@@ -48,7 +48,7 @@ namespace egocylindrical
             float* z = points.getZ();
             
             float* ranges = points.getRanges();
-            long int* inds = points.getInds();
+            int32_t* inds = points.getInds();
             
 
                         
@@ -140,7 +140,7 @@ namespace egocylindrical
             
             //#ifndef PIPS_ON_ARM
             
-              long int* inds = (long int*)__builtin_assume_aligned(transformed_points.getInds(), __BIGGEST_ALIGNMENT__);
+            int32_t* inds = (int32_t*)__builtin_assume_aligned(transformed_points.getInds(), __BIGGEST_ALIGNMENT__);
             //#endif
 
             
@@ -168,7 +168,6 @@ namespace egocylindrical
                 //#pragma omp for simd schedule(static)
                 for(long int p = 0; p < num_cols; ++p)
                 {
-
                     float x_p = x[p];
                     float y_p = y[p];
                     float z_p = z[p];
@@ -207,6 +206,11 @@ namespace egocylindrical
                     #endif
 
                     ranges[p] = range_squared;
+                    
+                    if(p == num_cols/2)
+                    {
+                      ROS_INFO_STREAM("In=["<< x_p << "," << y_p << "," << z_p << "] Out=[" << x_n[p] << "," << y_n[p] << "," << z_n[p] << " Ind=" << inds[p] << " Range=" << range_squared);
+                    }
                     
                 }
                 
