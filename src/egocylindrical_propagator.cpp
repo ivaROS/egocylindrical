@@ -52,8 +52,17 @@ namespace egocylindrical
 
     void EgoCylindricalPropagator::addDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
     {
-        depth_remapper_.update(cylindrical_points, image, cam_info);
-        
+        if(pc_pub_.getNumSubscribers()>0)
+        {
+          ReadLock lock(config_mutex_);
+          sensor_msgs::PointCloud2::Ptr pcloud_msg;
+          depth_remapper_.update(cylindrical_points, image, cam_info, pcloud_msg, config_.filter_y_min, config_.filter_y_max);
+          pc_pub_.publish(pcloud_msg);
+        }
+        else
+        {
+            depth_remapper_.update(cylindrical_points, image, cam_info);
+        }
     }
 
 
@@ -93,7 +102,6 @@ namespace egocylindrical
             
             {
                 ros::WallTime temp = ros::WallTime::now();
-                
                 EgoCylindricalPropagator::addDepthImage(*new_pts_, image, cam_info);
                 ROS_DEBUG_STREAM("Adding depth image took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
             }
@@ -179,15 +187,19 @@ namespace egocylindrical
                 
         
         // Get topic names
-        std::string depth_topic="/camera/depth/image_raw", info_topic= "/camera/depth/camera_info", pub_topic="egocylindrical_points";
+        std::string depth_topic="/camera/depth/image_raw", info_topic= "/camera/depth/camera_info", points_topic="egocylindrical_points", filtered_pc_topic="filtered_points";
         
         pnh_.getParam("image_in", depth_topic );
         pnh_.getParam("info_in", info_topic );
-        pnh_.getParam("points_out", pub_topic );
+        pnh_.getParam("points_out", points_topic );
+        pnh_.getParam("filtered_points", filtered_pc_topic);
         
         // Setup publishers
         ros::SubscriberStatusCallback image_cb = boost::bind(&EgoCylindricalPropagator::connectCB, this);        
-        ec_pub_ = nh_.advertise<egocylindrical::EgoCylinderPoints>(pub_topic, 1, image_cb, image_cb);
+        ec_pub_ = nh_.advertise<egocylindrical::EgoCylinderPoints>(points_topic, 1, image_cb, image_cb);
+        
+        //ros::SubscriberStatusCallback pc_cb = boost::bind(&EgoCylindricalPropagator::connectCB, this);        
+        pc_pub_ = nh_.advertise<sensor_msgs::PointCloud2>(filtered_pc_topic, 3);
         
         
         // Setup subscribers

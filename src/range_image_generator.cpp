@@ -51,7 +51,7 @@ namespace egocylindrical
       //Atomic operation, so no need for mutex this time
       //WriteLock lock(config_mutex_);
       
-      ROS_INFO_STREAM("Updating propagator config: num_threads=" << config.num_threads);
+      ROS_INFO_STREAM("Updating Range Image Generator config: num_threads=" << config.num_threads);
       num_threads_ = config.num_threads;
     }
     

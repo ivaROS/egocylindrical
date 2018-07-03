@@ -207,10 +207,10 @@ namespace egocylindrical
 
                     ranges[p] = range_squared;
                     
-                    if(p == num_cols/2)
-                    {
-                      ROS_INFO_STREAM("In=["<< x_p << "," << y_p << "," << z_p << "] Out=[" << x_n[p] << "," << y_n[p] << "," << z_n[p] << " Ind=" << inds[p] << " Range=" << range_squared);
-                    }
+//                     if(p == num_cols/2)
+//                     {
+//                       ROS_INFO_STREAM("In=["<< x_p << "," << y_p << "," << z_p << "] Out=[" << x_n[p] << "," << y_n[p] << "," << z_n[p] << " Ind=" << inds[p] << " Range=" << range_squared);
+//                     }
                     
                 }
                 

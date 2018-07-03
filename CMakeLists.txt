@@ -34,7 +34,14 @@ find_package(OpenMP)
 if(1)
     set(SHOW_VECTORIZE_INFO "-fopt-info-vec-optimized")
 else()
-     set(SHOW_VECTORIZE_INFO "")
+    set(SHOW_VECTORIZE_INFO "")
+endif()
+
+
+if(1) #if on arm...
+    set(PLATFORM_FLAGS "PIPS_ON_ARM=arm")
+else()
+    set(PLATFORM_FLAGS "")
 endif()
 
 ## System dependencies are found with CMake's conventions
@@ -211,7 +218,7 @@ target_link_libraries(point_transformer
 target_compile_options(point_transformer PRIVATE -g -std=c++11 -Wall -ftree-vectorize   ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno   ${OpenMP_CXX_FLAGS}#-finite-math-only and -fno-trapping-math. -ffinite-math-only 
 
   )
-target_compile_definitions(point_transformer PRIVATE PIPS_ON_ARM=arm)
+target_compile_definitions(point_transformer PRIVATE ${PLATFORM_FLAGS})
 
 add_dependencies(point_transformer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
@@ -247,7 +254,7 @@ add_dependencies(egocylindrical_propagator ${${PROJECT_NAME}_EXPORTED_TARGETS} $
 
 target_compile_options(egocylindrical_propagator PRIVATE -g -std=c++11 -Wall ${SHOW_VECTORIZE_INFO} -ftree-vectorize -funsafe-math-optimizations ${OpenMP_CXX_FLAGS} 
   )
-target_compile_definitions(egocylindrical_propagator PRIVATE PIPS_ON_ARM=arm)
+target_compile_definitions(egocylindrical_propagator PRIVATE ${PLATFORM_FLAGS})
 
   
   

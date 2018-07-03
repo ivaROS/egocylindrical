@@ -3,13 +3,22 @@
   
   <arg name="profile_args" default="valgrind --tool=callgrind"/>
   
-  <arg name="prefix" default="xterm -e gdb --args" />
+  <arg name="debug" default="false"/>
+  
+  <arg name="prefix" default="xterm -e gdb --args" if="$(arg debug)" />
+  <arg name="prefix" default="" unless="$(arg debug)" />
+
   
   <group ns="egocylinder">
 
-    <node name="depth_to_egocylindrical_node" pkg="egocylindrical" type="egocylindrical_propagator_node" output="screen" launch-prefix="$(arg prefix)">
-        <remap from="/camera/depth/image_raw" to="$(arg depth_image)"/>
+  <!--
+    <node name="depth_to_egocylindrical_node" pkg="egocylindrical" type="egocylindrical_propagator_node" output="screen" launch-prefix="$(arg prefix)">        
+      <param name="image_in" value="$(arg depth_image)"/>
+      <param name="info_in" value="/camera/depth/camera_info"/>
+      <param name="points_out" value="egocylindrical_points"/>
+      <param name="filtered_points" value="filtered_points"/>
     </node>
+    -->
 
     <node name="egocylindrical_to_pointcloud" pkg="egocylindrical" type="point_cloud_node" output="screen"/>
 

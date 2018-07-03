@@ -72,7 +72,7 @@ private:
     typedef message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::CameraInfo> synchronizer;
     boost::shared_ptr<synchronizer> timeSynchronizer;
     
-    ros::Publisher ec_pub_;
+    ros::Publisher ec_pub_, pc_pub_;
     
     egocylindrical::PropagatorConfig config_;
     typedef dynamic_reconfigure::Server<egocylindrical::PropagatorConfig> ReconfigureServer;

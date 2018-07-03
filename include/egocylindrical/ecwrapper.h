@@ -310,7 +310,7 @@ namespace egocylindrical
             
             ray.y = (point.y - (height_/2))/vscale_;
             
-            ray /= (ray.x*ray.x + ray.z*ray.z);
+            ray /= (ray.x*ray.x + ray.z*ray.z); //NOTE: This appears redundant
             return ray;
           }
           
@@ -494,7 +494,7 @@ namespace egocylindrical
             inline
             int worldToCylindricalYIdx(float y, float range_squared) const
             {
-                int yind = y * inv_sqrt_approximation(range_squared)*vscale_ + hscale_/2;
+                int yind = y * inv_sqrt_approximation(range_squared)*vscale_ + height_/2;
                 return yind;
             }
             
