@@ -17,20 +17,25 @@
      <!-- <remap from="/camera/depth/image_raw" to="$(arg depth_image)"/> -->
       <param name="image_in" value="$(arg depth_image)"/>
       <param name="info_in" value="/camera/depth/camera_info"/>
-      <param name="points_out" value="egocylindrical_points"/>
+      <param name="points_out" value="data"/>
       <param name="filtered_points" value="filtered_points"/>
     </node>
     
-    <node name="egocylindrical_to_pointcloud_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/point_cloud_nodelet $(arg nodelet_manager)" />
+    <node name="egocylindrical_to_pointcloud_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/point_cloud_nodelet $(arg nodelet_manager)" >
+      <remap from="egocylindrical_points" to="data"/>
+      <remap from="cylindrical" to="points"/>
+    </node>
 
     <node name="egocylindrical_to_projected_pointcloud_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/projected_point_cloud_nodelet $(arg nodelet_manager)" />
     
     <node name="egocylindrical_to_range_image_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_nodelet $(arg nodelet_manager)" >
+      <remap from="egocylindrical_points" to="data"/>
       <param name="use_raw" value="False"/>
       <param name="image_topic" value="image"/>
     </node>
   
     <node name="egocylindrical_to_raw_range_image_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_nodelet $(arg nodelet_manager)" >
+      <remap from="egocylindrical_points" to="data"/>
       <param name="use_raw" value="True"/>
       <param name="image_topic" value="image_raw"/>
     </node>

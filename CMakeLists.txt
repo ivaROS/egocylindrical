@@ -38,7 +38,7 @@ else()
 endif()
 
 
-if(1) #if on arm...
+if(0) #if on arm...
     set(PLATFORM_FLAGS "PIPS_ON_ARM=arm")
 else()
     set(PLATFORM_FLAGS "")
@@ -136,7 +136,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES egocylindrical
-#  CATKIN_DEPENDS cv_bridge geometry_msgs image_geometry image_transport roscpp rospy sensor_msgs std_msgs tf tf2 tf_msgs tf_ros
+  CATKIN_DEPENDS cv_bridge geometry_msgs image_geometry image_transport roscpp rospy sensor_msgs std_msgs tf tf2 tf2_ros
 #  DEPENDS system_lib
 )
 

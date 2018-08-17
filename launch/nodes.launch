@@ -11,23 +11,22 @@
   
   <group ns="egocylinder">
 
-  <!--
-    <node name="depth_to_egocylindrical_node" pkg="egocylindrical" type="egocylindrical_propagator_node" output="screen" launch-prefix="$(arg prefix)">        
+
+    <node name="depth_to_egocylindrical_node" pkg="egocylindrical" type="egocylindrical_propagator_node" output="log" launch-prefix="$(arg prefix)">        
       <param name="image_in" value="$(arg depth_image)"/>
       <param name="info_in" value="/camera/depth/camera_info"/>
       <param name="points_out" value="egocylindrical_points"/>
       <param name="filtered_points" value="filtered_points"/>
     </node>
-    -->
 
-    <node name="egocylindrical_to_pointcloud" pkg="egocylindrical" type="point_cloud_node" output="screen"/>
+    <node name="egocylindrical_to_pointcloud" pkg="egocylindrical" type="point_cloud_node" output="log"/>
 
-    <node name="egocylindrical_to_range_image" pkg="egocylindrical" type="range_image_node" output="screen" >
+    <node name="egocylindrical_to_range_image" pkg="egocylindrical" type="range_image_node" output="log" >
         <param name="use_raw" value="False"/>
         <param name="image_topic" value="image"/>
     </node>
     
-    <node name="egocylindrical_to_raw_range_image" pkg="egocylindrical" type="range_image_node" output="screen" >
+    <node name="egocylindrical_to_raw_range_image" pkg="egocylindrical" type="range_image_node" output="log" >
         <param name="use_raw" value="True"/>
         <param name="image_topic" value="image_raw"/>
     </node>

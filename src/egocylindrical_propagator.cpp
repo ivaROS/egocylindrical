@@ -41,7 +41,7 @@ namespace egocylindrical
         
         start = ros::WallTime::now();    
         utils::transformPoints(old_pnts, *transformed_pts_, new_pnts, trans, config_.num_threads);
-        ROS_DEBUG_STREAM_NAMED("timing", "Transform points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+        ROS_DEBUG_STREAM_NAMED("timing", "Transforming points took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
         start = ros::WallTime::now();
         utils::addPoints(new_pnts, *transformed_pts_, false);
@@ -68,6 +68,10 @@ namespace egocylindrical
 
     void EgoCylindricalPropagator::update(const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
     {
+        if(old_pts_ && old_pts_->getHeader().stamp >= cam_info->header.stamp)
+        {
+          old_pts_ = nullptr;
+        }
         ros::WallTime start = ros::WallTime::now();
         
         //new_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
