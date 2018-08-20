@@ -24,7 +24,7 @@ namespace egocylindrical
     {
         std::cout<<"Egocylindrical Range Image Node Initialized"<<std::endl;
 
-        reconfigure_server_ = std::make_shared<ReconfigureServer>(pnh_);
+        
         
     }
     
@@ -37,6 +37,7 @@ namespace egocylindrical
         
         pnh_.getParam("image_topic", image_topic );
         
+        reconfigure_server_ = std::make_shared<ReconfigureServer>(pnh_);
         reconfigure_server_->setCallback(boost::bind(&EgoCylinderRangeImageGenerator::configCB, this, _1, _2));
         
 

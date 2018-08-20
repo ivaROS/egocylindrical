@@ -122,6 +122,7 @@ generate_messages(
 generate_dynamic_reconfigure_options(
   cfg/Propagator.cfg
   cfg/RangeImageGenerator.cfg
+  cfg/Filter.cfg
   )
 
 ###################################
@@ -463,6 +464,17 @@ target_link_libraries(approximation_validation
    ${catkin_LIBRARIES}
    )
   
+  
+  
+  
+  
+add_executable(filter_node src/depth_image_filter.cpp)
+target_link_libraries(filter_node
+   ${catkin_LIBRARIES}
+   )
+add_dependencies(filter_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+   
 #############
 ## Install ##
 #############
