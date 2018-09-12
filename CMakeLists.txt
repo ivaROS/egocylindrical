@@ -463,7 +463,8 @@ add_executable(approximation_validation src/approximation_validation.cpp)
 target_link_libraries(approximation_validation
    ${catkin_LIBRARIES}
    )
-  
+add_dependencies(approximation_validation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
   
   
   
