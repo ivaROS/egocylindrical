@@ -34,7 +34,7 @@ namespace egocylindrical
         ROS_DEBUG("Getting Transformation details");
                 geometry_msgs::TransformStamped trans = buffer_.lookupTransform(new_header.frame_id, new_header.stamp,
                                 old_header.frame_id, old_header.stamp,
-                                "odom");
+                                fixed_frame_id_);
         
         ROS_DEBUG_STREAM_NAMED("timing", "Finding transform took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
                 
@@ -192,11 +192,14 @@ namespace egocylindrical
         
         // Get topic names
         std::string depth_topic="/camera/depth/image_raw", info_topic= "/camera/depth/camera_info", points_topic="egocylindrical_points", filtered_pc_topic="filtered_points";
+        fixed_frame_id_ = "odom";
         
         pnh_.getParam("image_in", depth_topic );
         pnh_.getParam("info_in", info_topic );
         pnh_.getParam("points_out", points_topic );
         pnh_.getParam("filtered_points", filtered_pc_topic);
+        
+        pnh_.getParam("fixed_frame_id", fixed_frame_id_);
         
         // Setup publishers
         ros::SubscriberStatusCallback image_cb = boost::bind(&EgoCylindricalPropagator::connectCB, this);        
@@ -211,7 +214,7 @@ namespace egocylindrical
         depthInfoSub.subscribe(nh_, info_topic, 3);
         
         // Ensure that CameraInfo is transformable
-        info_tf_filter = boost::make_shared<tf_filter>(depthInfoSub, buffer_, "odom", 2,nh_);
+        info_tf_filter = boost::make_shared<tf_filter>(depthInfoSub, buffer_, fixed_frame_id_, 2,nh_);
         
         // Synchronize Image and CameraInfo callbacks
         timeSynchronizer = boost::make_shared<synchronizer>(depthSub, *info_tf_filter, 2);

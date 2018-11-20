@@ -77,6 +77,8 @@ private:
     egocylindrical::PropagatorConfig config_;
     typedef dynamic_reconfigure::Server<egocylindrical::PropagatorConfig> ReconfigureServer;
     std::shared_ptr<ReconfigureServer> reconfigure_server_;
+    
+    std::string fixed_frame_id_;
 
 
     void propagateHistory(utils::ECWrapper& old_pnts, utils::ECWrapper& new_pnts, std_msgs::Header new_header);
