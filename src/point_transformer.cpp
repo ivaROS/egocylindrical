@@ -152,10 +152,10 @@ namespace egocylindrical
             omp_p = std::min(omp_p-1, num_threads);
             
             
-            //#pragma omp parallel num_threads(omp_p)
+            #pragma omp parallel num_threads(omp_p)
             {
                 
-                //#pragma omp single nowait
+                #pragma omp single nowait
                 {
                     if(omp_in_parallel())
                     {
@@ -165,7 +165,7 @@ namespace egocylindrical
                 
                 
                 //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-                //#pragma omp for simd schedule(static)
+                #pragma omp for simd schedule(static)
                 for(long int p = 0; p < num_cols; ++p)
                 {
                     float x_p = x[p];
