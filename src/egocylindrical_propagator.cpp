@@ -107,17 +107,13 @@ namespace egocylindrical
             {
                 ros::WallTime temp = ros::WallTime::now();
                 EgoCylindricalPropagator::addDepthImage(*new_pts_, image, cam_info);
-                ROS_DEBUG_STREAM("Adding depth image took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
+                ROS_DEBUG_STREAM_NAMED("timing","Adding depth image took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
             }
             
             if(ec_pub_.getNumSubscribers() > 0)
             {
                 // TODO: if no one is subscribing, we can propagate the points in place next time (if that turns out to be faster)
-                ros::WallTime temp = ros::WallTime::now();
-                
-                //TODO: this function call should trigger the ecwrapper to mark its message as locked
                 utils::ECMsgConstPtr msg = new_pts_->getEgoCylinderPointsMsg();
-                ROS_DEBUG_STREAM("Copying EgoCylinderPoints took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
                 
                 ec_pub_.publish(msg);
             }

@@ -232,7 +232,7 @@ namespace egocylindrical
           void update()
           {
             hscale_ = width_/(2*M_PI);
-            vscale_ = height_/vfov_;
+            vscale_ = height_/vfov_;  //NOTE: In the paper, vscale=hscale. If keeping them separate does not prove useful, they should be merged
           }
           
           inline
