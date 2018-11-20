@@ -46,7 +46,6 @@ namespace utils
         {
             
             int idx=-1;
-            int xidx =-1;
             
             #ifndef PIPS_ON_ARM
               idx= inds[i];
@@ -54,7 +53,7 @@ namespace utils
               int yidx = inds[i];
               if(yidx >= 0)
               {
-                xidx = new_points.worldToCylindricalXIdx(n_x[i],n_z[i]);
+                int xidx = new_points.worldToCylindricalXIdx(n_x[i],n_z[i]);
                 idx = yidx * new_points.getWidth() + xidx;
               }
             #endif
@@ -67,7 +66,7 @@ namespace utils
                 
                 float prev_depth = worldToRangeSquared(prev_point);
                 
-                if(!(prev_depth >= depth)) //overwrite || 
+                if(!(prev_depth <= depth)) //overwrite || 
                 {   
                     /*TODO: Check if this gets compiled out or not. If not, remove this object, 
                      * or perhaps use basic templated custom point class to combine benefits of
