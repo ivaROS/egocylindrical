@@ -1,0 +1,27 @@
+<launch>
+  <arg name="use_provided_manager" default="false" />
+  <arg name="provided_manager" default="camera/camera_nodelet_manager"/>
+  <arg name="nodelet_manager" default="egocylindrical_nodelet_manager" unless="$(arg use_provided_manager)" />
+  <arg name="nodelet_manager" default="$(arg provided_manager)" if="$(arg use_provided_manager)" />
+
+  <arg name="depth_image" default="/camera/depth/image_raw"/>
+
+
+  
+  <group ns="egocylinder">
+    <!--
+    <node name="$(arg nodelet_manager)" pkg="nodelet" type="nodelet" args="manager" unless="$(arg use_provided_manager)" output="log">
+
+    </node>
+    -->
+  
+  <!-- xterm -e gdb - -args -->
+    <node name="depth_to_egocylindrical_image_nodelet" pkg="nodelet" type="nodelet" args="standalone egocylindrical/dedicated_egocylindrical_propagator_nodelet $(arg nodelet_manager)" launch-prefix="" >
+      <param name="image_in" value="$(arg depth_image)"/>
+      <param name="info_in" value="/camera/depth/camera_info"/>
+      <param name="image_out" value="image_out"/>
+      <param name="filtered_points" value="filtered_points"/>
+    </node>
+    
+  </group>
+</launch>

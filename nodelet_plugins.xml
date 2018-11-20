@@ -29,3 +29,11 @@
     </description>
   </class>
 </library>
+
+<library path="lib/libdedicated_egocylindrical_propagator_nodelet">
+  <class name="egocylindrical/dedicated_egocylindrical_propagator_nodelet" type="egocylindrical::DedicatedEgocylindricalPropagatorNodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet for egocylindrical propagation
+    </description>
+  </class>
+</library>

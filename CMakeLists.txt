@@ -426,6 +426,29 @@ target_link_libraries(range_image_nodelet
 
    
    
+   
+   
+
+add_library(dedicated_egocylindrical_propagator_nodelet src/dedicated_egocylindrical_propagator.cpp src/dedicated_egocylindrical_propagator_nodelet.cpp) #src/range_image_core.cpp
+
+target_link_libraries(dedicated_egocylindrical_propagator_nodelet
+   range_image_core
+   point_transformer
+   ${catkin_LIBRARIES}
+   ${OpenCV_LIBRARIES}
+   #${PCL_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
+add_dependencies(dedicated_egocylindrical_propagator_nodelet ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_compile_options(dedicated_egocylindrical_propagator_nodelet PRIVATE -g -std=c++11 -Wall ${SHOW_VECTORIZE_INFO} -ftree-vectorize -funsafe-math-optimizations ${OpenMP_CXX_FLAGS} 
+  )
+target_compile_definitions(dedicated_egocylindrical_propagator_nodelet PRIVATE ${PLATFORM_FLAGS})
+
+   
+   
+   
+   
 #RANGE_IMAGE_CONVERTER
 add_library(range_image_converter src/range_image_converter.cpp)
 
@@ -463,8 +486,7 @@ add_executable(approximation_validation src/approximation_validation.cpp)
 target_link_libraries(approximation_validation
    ${catkin_LIBRARIES}
    )
-add_dependencies(approximation_validation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+add_dependencies(approximation_validation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})  
   
   
   
