@@ -145,11 +145,11 @@ namespace egocylindrical
                 ROS_DEBUG_STREAM("Adding depth image took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
             }
             
-            if(im_pub_.getNumSubscribers() > 0)
-            {
-                sensor_msgs::Image::ConstPtr image_ptr = use_raw_ ? utils::getRawRangeImageMsg(*new_pts_, 1) : utils::getRangeImageMsg(*new_pts_, 1);
-                im_pub_.publish(image_ptr);
-            }
+//             if(im_pub_.getNumSubscribers() > 0)
+//             {
+//                 sensor_msgs::Image::ConstPtr image_ptr = use_raw_ ? utils::getRawRangeImageMsg(*new_pts_, 1) : utils::getRangeImageMsg(*new_pts_, 1);
+//                 im_pub_.publish(image_ptr);
+//             }
           }
           
           {
@@ -168,7 +168,7 @@ namespace egocylindrical
               next_pts_->init(config_.height, config_.width, config_.vfov, true);
             }
             
-            ROS_DEBUG_STREAM_NAMED("timing", "Reinitting data structure took" <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+            ROS_DEBUG_STREAM_NAMED("timing", "Reinitting data structure took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
           }
           
         
@@ -178,6 +178,12 @@ namespace egocylindrical
         
         ROS_DEBUG_STREAM_NAMED("timing", "Total time: " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
         
+        //Temporarily putting this here so that it doesn't affect reported times
+        if(im_pub_.getNumSubscribers() > 0)
+        {
+          sensor_msgs::Image::ConstPtr image_ptr = use_raw_ ? utils::getRawRangeImageMsg(*old_pts_, 1) : utils::getRangeImageMsg(*old_pts_, 1);
+          im_pub_.publish(image_ptr);
+        }
         
     }
     
