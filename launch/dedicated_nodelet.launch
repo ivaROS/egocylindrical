@@ -15,7 +15,7 @@
     </node>
     -->
   
-  <!-- xterm -e gdb - -args -->
+  <!-- xterm -e gdb -ex run - -args -->
     <node name="depth_to_egocylindrical_image_nodelet" pkg="nodelet" type="nodelet" args="standalone egocylindrical/dedicated_egocylindrical_propagator_nodelet $(arg nodelet_manager)" launch-prefix="" >
       <param name="image_in" value="$(arg depth_image)"/>
       <param name="info_in" value="/camera/depth/camera_info"/>

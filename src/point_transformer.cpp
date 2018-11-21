@@ -25,7 +25,7 @@ namespace egocylindrical
         * 
         */
         inline
-        void transform_impl(utils::ECWrapper& points, const float*  const R, const float*  const T)
+        void transform_impl(utils::ECWrapper& points,  const utils::ECWrapper& new_points, const float*  const R, const float*  const T)
         {            
             const float r0 = R[0];
             const float r1 = R[1];
@@ -42,6 +42,7 @@ namespace egocylindrical
             const float t2 = T[2];
                         
             const int num_cols = points.getCols();
+            const int max_ind = new_points.getCols();
             
             float* x = points.getX();
             float* y = points.getY();
@@ -60,11 +61,10 @@ namespace egocylindrical
             
             omp_p = std::min(omp_p-1, 1);
             
-            //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-            #pragma omp parallel num_threads(omp_p)
+            //#pragma omp parallel num_threads(omp_p)
             {
                 
-                #pragma omp single nowait
+                //#pragma omp single nowait
                 {
                     if(omp_in_parallel())
                     {
@@ -73,8 +73,8 @@ namespace egocylindrical
                 }
                 
                 
-                //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-                #pragma omp for simd schedule(static) //aligned(x, y, z, ranges, inds: __BIGGEST_ALIGNMENT__)
+                #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
+                //pragma omp for simd schedule(static) //aligned(x, y, z, ranges, inds: __BIGGEST_ALIGNMENT__)
                 for(long int p = 0; p < num_cols; ++p)
                 {
 
@@ -86,7 +86,7 @@ namespace egocylindrical
                     y[p] = r3 * x_p + r4 * y_p + r5 * z_p + t1;
                     z[p] = r6 * x_p + r7 * y_p + r8 * z_p + t2;
 
-                    float depth=dNaN;
+                    float depth=dNaN; //there doesn't seem to be any point to initializing like this
                     
                     int idx = -1;
                             
@@ -94,7 +94,7 @@ namespace egocylindrical
                     
                     int tidx = points.worldToCylindricalIdx(x[p],y[p],z[p]);
 
-                    if(tidx < num_cols)
+                    if(tidx < max_ind)
                         idx = tidx;
     
                     inds[p] = idx;
@@ -219,7 +219,7 @@ namespace egocylindrical
         
         
         // TODO: This functionality could be moved into a tf2_ros implementation
-        void transformPoints(utils::ECWrapper& points, const geometry_msgs::TransformStamped& trans)
+        void transformPoints(utils::ECWrapper& points, const utils::ECWrapper& new_points, const geometry_msgs::TransformStamped& trans, int num_threads)
         {
             
   
@@ -250,7 +250,7 @@ namespace egocylindrical
             translationArray[1] = trans.transform.translation.y;
             translationArray[2] = trans.transform.translation.z;
             
-            transform_impl(points, rotationArray, translationArray);
+            transform_impl(points, new_points, rotationArray, translationArray);
 
         }
         

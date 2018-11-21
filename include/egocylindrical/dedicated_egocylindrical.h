@@ -79,7 +79,8 @@ private:
     typedef dynamic_reconfigure::Server<egocylindrical::PropagatorConfig> ReconfigureServer;
     std::shared_ptr<ReconfigureServer> reconfigure_server_;
 
-
+    void propagateHistoryInplace(utils::ECWrapper& old_pnts, utils::ECWrapper& new_pnts, std_msgs::Header new_header);
+    
     void propagateHistory(utils::ECWrapper& old_pnts, utils::ECWrapper& new_pnts, std_msgs::Header new_header);
     void addDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info);
     

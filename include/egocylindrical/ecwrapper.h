@@ -607,6 +607,13 @@ namespace egocylindrical
                             
                         init();
                     }
+                    else
+                    {
+                      if(clear)
+                      {
+                        std::fill(msg_->points.data.begin(), msg_->points.data.end(), dNaN);
+                      }
+                    }
                     return true;
                 }
                 return false;
