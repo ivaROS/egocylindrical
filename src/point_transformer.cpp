@@ -44,9 +44,9 @@ namespace egocylindrical
             const int num_cols = points.getCols();
             const int max_ind = new_points.getCols();
             
-            float* x = points.getX();
-            float* y = points.getY();
-            float* z = points.getZ();
+            float* x = (float*)__builtin_assume_aligned(points.getX(), __BIGGEST_ALIGNMENT__);
+            float* y = (float*)__builtin_assume_aligned(points.getY(), __BIGGEST_ALIGNMENT__);
+            float* z = (float*)__builtin_assume_aligned(points.getZ(), __BIGGEST_ALIGNMENT__);
             
             float* ranges = points.getRanges();
             int32_t* inds = points.getInds();

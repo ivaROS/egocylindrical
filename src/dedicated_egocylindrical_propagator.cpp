@@ -123,7 +123,7 @@ namespace egocylindrical
                 {
                     ros::WallTime start = ros::WallTime::now();
                     
-                    DedicatedEgoCylindricalPropagator::propagateHistory(*old_pts_, *new_pts_, image->header);
+                    DedicatedEgoCylindricalPropagator::propagateHistoryInplace(*old_pts_, *new_pts_, image->header);
                     //ROS_INFO_STREAM("Propagation took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
                 }
                 else
