@@ -48,8 +48,8 @@ namespace egocylindrical
             float* y = (float*)__builtin_assume_aligned(points.getY(), __BIGGEST_ALIGNMENT__);
             float* z = (float*)__builtin_assume_aligned(points.getZ(), __BIGGEST_ALIGNMENT__);
             
-            float* ranges = points.getRanges();
-            int32_t* inds = points.getInds();
+            float* ranges = (float*)__builtin_assume_aligned(points.getRanges(), __BIGGEST_ALIGNMENT__);
+            int32_t* inds = (int32_t*)__builtin_assume_aligned(points.getInds(), __BIGGEST_ALIGNMENT__);
             
 
                         
@@ -61,10 +61,10 @@ namespace egocylindrical
             
             omp_p = std::min(omp_p-1, 1);
             
-            //#pragma omp parallel num_threads(omp_p)
+            #pragma omp parallel num_threads(omp_p)
             {
                 
-                //#pragma omp single nowait
+                #pragma omp single nowait
                 {
                     if(omp_in_parallel())
                     {
@@ -73,8 +73,8 @@ namespace egocylindrical
                 }
                 
                 
-                #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-                //pragma omp for simd schedule(static) //aligned(x, y, z, ranges, inds: __BIGGEST_ALIGNMENT__)
+                //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
+                #pragma omp for simd schedule(static) //aligned(x, y, z, ranges, inds: __BIGGEST_ALIGNMENT__)
                 for(long int p = 0; p < num_cols; ++p)
                 {
 
