@@ -97,7 +97,7 @@ namespace egocylindrical
                 
                 T depth = depths[i];
                 
-                if(depth == depth)
+                if(depth>0)
                 {
                     // NOTE: Currently, no check that index is in bounds. As long as the camera's fov fits inside the egocylindrical fov, this is safe
                     U idx = inds[i];
