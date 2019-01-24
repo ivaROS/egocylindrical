@@ -25,7 +25,7 @@ namespace egocylindrical
         * 
         */
         inline
-        void transform_impl(utils::ECWrapper& points,  const utils::ECWrapper& new_points, const float*  const R, const float*  const T)
+        void __attribute__((optimize ("-fno-math-errno"))) transform_impl(utils::ECWrapper& points,  const utils::ECWrapper& new_points, const float*  const R, const float*  const T) 
         {            
             const float r0 = R[0];
             const float r1 = R[1];
@@ -73,8 +73,8 @@ namespace egocylindrical
                 }
                 
                 
-                //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-                #pragma omp for simd schedule(static) //aligned(x, y, z, ranges, inds: __BIGGEST_ALIGNMENT__)
+                #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
+                //#pragma omp for simd schedule(static) //aligned(x, y, z, ranges, inds: __BIGGEST_ALIGNMENT__)
                 for(long int p = 0; p < num_cols; ++p)
                 {
 

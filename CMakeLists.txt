@@ -433,7 +433,7 @@ add_library(dedicated_egocylindrical_propagator_nodelet src/dedicated_egocylindr
 
 target_link_libraries(dedicated_egocylindrical_propagator_nodelet
    range_image_core
-   point_transformer
+   #point_transformer
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    #${PCL_LIBRARIES}

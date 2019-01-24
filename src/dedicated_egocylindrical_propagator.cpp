@@ -2,6 +2,8 @@
 // Created by root on 2/5/18.
 //
 
+#include "point_transformer.cpp"
+
 #include <egocylindrical/dedicated_egocylindrical.h>
 #include <egocylindrical/point_transformer.h>
 #include <egocylindrical/depth_image_core.h>
@@ -205,7 +207,6 @@ namespace egocylindrical
     }
     
     
-    // TODO: add dynamic reconfigure for cylinder height/width, vfov, etc
     bool DedicatedEgoCylindricalPropagator::init()
     {
         reconfigure_server_->setCallback(boost::bind(&DedicatedEgoCylindricalPropagator::configCB, this, _1, _2));
