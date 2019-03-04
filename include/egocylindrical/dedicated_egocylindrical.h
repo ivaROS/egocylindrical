@@ -50,7 +50,7 @@ private:
     int cylinder_width_;
     double hfov_, vfov_;
     
-    bool use_raw_ = false;
+    bool use_raw_ = true;
 
     utils::ECWrapperPtr new_pts_, old_pts_, transformed_pts_, next_pts_;
 

@@ -94,10 +94,10 @@ namespace egocylindrical
                     
                     int tidx = points.worldToCylindricalIdx(x[p],y[p],z[p]);
 
-                    if(tidx < max_ind)
-                        idx = tidx;
+                    //if(tidx < max_ind)
+                    //    idx = tidx;
     
-                    inds[p] = idx;
+                    inds[p] = (tidx < max_ind) ? tidx : -1;
                     ranges[p] = depth;
                     
                 }
@@ -195,11 +195,12 @@ namespace egocylindrical
                     }
                     #else
                     {
-                      int idx = -1;
+                      //int idx = -1;
                       int tidx = new_points.worldToCylindricalYIdx(y_n[p], range_squared);
                       
-                      if(tidx < new_points.getHeight())
-                        idx = tidx;
+                      //if(tidx < new_points.getHeight())
+                      //  idx = tidx;
+                      int idx = (tidx < new_points.getHeight()) ? tidx : -1;
                       
                       inds[p] = idx;
                     }
