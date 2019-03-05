@@ -20,7 +20,15 @@ namespace egocylindrical
     
     namespace utils
     {
-
+        float RangeConverter(float range)
+        {
+          return range;
+        }
+        
+        float RangeConverter(uint16_t range)
+        {
+          return (range>0) ? (float)range : dNaN;
+        }
 
         template <uint scale, typename S, typename T, typename U>
         inline
@@ -42,7 +50,7 @@ namespace egocylindrical
                     pt.x = j;
                     pt.y = i;
                     
-                    float range = ranges[image_idx];
+                    float range = RangeConverter(ranges[image_idx]);
 
                     cv::Point3f world_pnt = info.projectPixelTo3dRay(pt)*range;
 

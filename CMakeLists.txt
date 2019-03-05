@@ -31,7 +31,7 @@ find_package(OpenCV REQUIRED)
 find_package(PCL    REQUIRED)
 find_package(OpenMP)
 
-if(0)
+if(1)
     set(SHOW_VECTORIZE_INFO "-fopt-info-vec-optimized")
 else()
     set(SHOW_VECTORIZE_INFO "")
@@ -164,7 +164,7 @@ target_link_libraries(range_image_core
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(range_image_core PRIVATE -g -std=c++11 -Wall -ftree-vectorize -fopt-info-vec-optimized ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations  -fno-math-errno #-finite-math-only and -fno-trapping-math.
+target_compile_options(range_image_core PRIVATE -g -std=c++11 -Wall -ftree-vectorize -fopt-info-vec-optimized ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno -ffinite-math-only #-ffinite-math-only and -fno-trapping-math.
   #${OpenMP_CXX_FLAGS}
   )
   

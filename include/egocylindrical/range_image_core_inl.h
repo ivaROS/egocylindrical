@@ -37,31 +37,34 @@ namespace egocylindrical
             ROS_DEBUG("Generating image of cylindrical memory");
             
             
-            const float* const cyl_ptr = (float *)__builtin_assume_aligned(cylindrical_history.getPoints(), 16);
+            const float* const cyl_ptr = (float *)__builtin_assume_aligned(cylindrical_history.getPoints(), __BIGGEST_ALIGNMENT__);
             int num_cols = cylindrical_history.getCols();
-int k = 0;
+ int k = 0;
             #pragma GCC ivdep
             for(int j = 0; j < num_cols; ++j)
             {
                 T temp = unknown_val;
                 
-                //if(cyl_ptr[j]==cyl_ptr[j])
-                if(!isNan(cyl_ptr[j]))
+//                 if(cyl_ptr[j]==cyl_ptr[j] && isNan(cyl_ptr[j]))
+//                 {
+//                   ROS_WARN_STREAM("Bad answer!: " << cyl_ptr[j]);
+//                 }
+                if(cyl_ptr[j]==cyl_ptr[j])
                 {
-                  k++;
+                   //k++;
                     temp = std::sqrt(cyl_ptr[j]*cyl_ptr[j] + cyl_ptr[num_cols*2 + j]*cyl_ptr[num_cols*2 + j]) * scale;
                     
-                    if(j==0)
-                    {
-                      ROS_INFO_STREAM("first value: " << cyl_ptr[j] << "; unknown=" << unknown_val);
-                    }
+//                     if(j==0)
+//                     {
+//                       ROS_INFO_STREAM("first value: " << cyl_ptr[j] << "; unknown=" << unknown_val);
+//                     }
                 }
 
                 r[j] = temp;
                 
             }
             
-            ROS_INFO_STREAM("Num unknown: " << k);
+             ROS_INFO_STREAM("Num unknown: " << k);
                     
         }
         

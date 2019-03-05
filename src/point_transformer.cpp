@@ -88,7 +88,7 @@ namespace egocylindrical
 
                     float depth=dNaN; //there doesn't seem to be any point to initializing like this
                     
-                    int idx = -1;
+                    //int idx = -1;
                             
                     depth= worldToRangeSquared(x[p],z[p]);
                     
