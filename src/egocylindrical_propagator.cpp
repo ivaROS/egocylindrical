@@ -110,12 +110,13 @@ namespace egocylindrical
                 ROS_DEBUG_STREAM_NAMED("timing","Adding depth image took " <<  (ros::WallTime::now() - temp).toSec() * 1e3 << "ms");
             }
             
-            if(ec_pub_.getNumSubscribers() > 0)
+            if(ec_pub_.getNumSubscribers() > 0 && shouldPublish(new_pts_))
             {
                 // TODO: if no one is subscribing, we can propagate the points in place next time (if that turns out to be faster)
                 utils::ECMsgConstPtr msg = new_pts_->getEgoCylinderPointsMsg();
                 
                 ec_pub_.publish(msg);
+                published(new_pts_);
             }
           }
           

@@ -58,7 +58,6 @@ private:
     utils::DepthImageRemapper depth_remapper_;
 
     ros::NodeHandle nh_, pnh_;
-    tf2_ros::Buffer buffer_;
     tf2_ros::TransformListener tf_listener_;
 
     
@@ -78,7 +77,6 @@ private:
     typedef dynamic_reconfigure::Server<egocylindrical::PropagatorConfig> ReconfigureServer;
     std::shared_ptr<ReconfigureServer> reconfigure_server_;
     
-    std::string fixed_frame_id_;
 
 
     void propagateHistory(utils::ECWrapper& old_pnts, utils::ECWrapper& new_pnts, std_msgs::Header new_header);
@@ -88,6 +86,12 @@ private:
     
     void configCB(const egocylindrical::PropagatorConfig &config, uint32_t level);
     
+    virtual bool shouldPublish(const utils::ECWrapperPtr& points) { return true;}
+    virtual void published(utils::ECWrapperPtr& points) { }
+
+protected:
+    tf2_ros::Buffer buffer_;
+    std::string fixed_frame_id_;
     
     
 public:
@@ -98,7 +102,7 @@ public:
     sensor_msgs::PointCloud2  getPropagatedPointCloud();
     sensor_msgs::Image::ConstPtr getRawRangeImage();
 
-    bool init();
+    virtual bool init();
 
     //pcl::PointCloud<pcl::PointXYZI> getCylindricalPointCloud();
     //pcl::PointCloud<pcl::PointXYZ> getWorldPointCloud();
