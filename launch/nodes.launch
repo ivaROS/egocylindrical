@@ -22,7 +22,7 @@
       <param name="fixed_frame_id" value="$(arg fixed_frame_id)"/>
     </node>
 
-    <node name="egocylindrical_to_pointcloud" pkg="egocylindrical" type="point_cloud_node" output="log"  launch-prefix="xterm -e gdb --args">
+    <node name="egocylindrical_to_pointcloud" pkg="egocylindrical" type="point_cloud_node" output="log">
       <remap from="egocylindrical_points" to="data"/>
       <remap from="cylindrical" to="points"/>
     </node>

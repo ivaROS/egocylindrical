@@ -403,8 +403,8 @@ namespace egocylindrical
             }
 
             
-            inline float* getPoints()                   { return (float*) __builtin_assume_aligned(points_, __BIGGEST_ALIGNMENT__); }
-            inline const float* getPoints() const       { return (const float*) __builtin_assume_aligned(points_, __BIGGEST_ALIGNMENT__); }
+            inline float* getPoints()                   { return (float*) points_; } //__builtin_assume_aligned(points_, __BIGGEST_ALIGNMENT__)
+            inline const float* getPoints() const       { return (const float*) points_; } //__builtin_assume_aligned(points_, __BIGGEST_ALIGNMENT__)
             
             inline float* getX()                        { return getPoints(); }
             inline const float* getX()          const   { return (const float*) getPoints(); }

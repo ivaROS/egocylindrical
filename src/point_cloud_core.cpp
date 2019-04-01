@@ -44,7 +44,7 @@ namespace egocylindrical
             
             float* data = (float*) pcloud_msg->data.data();
         
-            //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
+            #pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
             //#pragma omp simd // schedule(static) num_threads(2)
             for(int j = 0; j < num_cols; ++j)
             {   
@@ -52,7 +52,6 @@ namespace egocylindrical
                 data[4*j+1] = y[j];
                 data[4*j+2] = z[j];
                 data[4*j+3] = 1;
-                data[4*j+3] = data[(4*((j+1)%(num_cols)))+3];
             }
 
             pcloud_msg->header = points.getHeader();

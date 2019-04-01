@@ -128,12 +128,12 @@ namespace egocylindrical
             const int max_ind = new_points.getCols();
             
             const float* x = (const float*)__builtin_assume_aligned(points.getX(), __BIGGEST_ALIGNMENT__);
-            const float* y = (const float*)__builtin_assume_aligned(points.getY(), __BIGGEST_ALIGNMENT__);
-            const float* z = (const float*)__builtin_assume_aligned(points.getZ(), __BIGGEST_ALIGNMENT__);
+            const float* y = (const float*)points.getY();
+            const float* z = (const float*)points.getZ();
             
             float* x_n = (float*)__builtin_assume_aligned(transformed_points.getX(), __BIGGEST_ALIGNMENT__);
-            float* y_n = (float*)__builtin_assume_aligned(transformed_points.getY(), __BIGGEST_ALIGNMENT__);
-            float* z_n = (float*)__builtin_assume_aligned(transformed_points.getZ(), __BIGGEST_ALIGNMENT__);
+            float* y_n = (float*)transformed_points.getY();
+            float* z_n = (float*)transformed_points.getZ();
             
             float* ranges = transformed_points.getRanges();
             
@@ -165,7 +165,7 @@ namespace egocylindrical
                 
                 
                 //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-                #pragma omp for simd schedule(static) aligned(x:__BIGGEST_ALIGNMENT__) aligned(y:__BIGGEST_ALIGNMENT__) aligned(z:__BIGGEST_ALIGNMENT__) aligned(x_n:__BIGGEST_ALIGNMENT__) aligned(y_n:__BIGGEST_ALIGNMENT__) aligned(z_n:__BIGGEST_ALIGNMENT__) aligned(ranges:__BIGGEST_ALIGNMENT__) aligned(inds:__BIGGEST_ALIGNMENT__)
+                #pragma omp for simd schedule(static) aligned(x:__BIGGEST_ALIGNMENT__) aligned(x_n:__BIGGEST_ALIGNMENT__) aligned(ranges:__BIGGEST_ALIGNMENT__) aligned(inds:__BIGGEST_ALIGNMENT__)
                 for(long int p = 0; p < num_cols; ++p)
                 {
                     float x_p = x[p];
