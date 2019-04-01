@@ -25,7 +25,7 @@ namespace egocylindrical
         * 
         */
         inline
-        void __attribute__((optimize ("-fno-math-errno"))) transform_impl(utils::ECWrapper& points,  const utils::ECWrapper& new_points, const float*  const R, const float*  const T) 
+        void transform_impl(utils::ECWrapper& points,  const utils::ECWrapper& new_points, const float*  const R, const float*  const T) 
         {            
             const float r0 = R[0];
             const float r1 = R[1];
@@ -135,7 +135,7 @@ namespace egocylindrical
             float* y_n = (float*)__builtin_assume_aligned(transformed_points.getY(), __BIGGEST_ALIGNMENT__);
             float* z_n = (float*)__builtin_assume_aligned(transformed_points.getZ(), __BIGGEST_ALIGNMENT__);
             
-            float* ranges = (float*)__builtin_assume_aligned(transformed_points.getRanges(), __BIGGEST_ALIGNMENT__);
+            float* ranges = transformed_points.getRanges();
             
             
             //#ifndef PIPS_ON_ARM
@@ -165,7 +165,7 @@ namespace egocylindrical
                 
                 
                 //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
-                #pragma omp for simd schedule(static)
+                #pragma omp for simd schedule(static) aligned(x:__BIGGEST_ALIGNMENT__) aligned(y:__BIGGEST_ALIGNMENT__) aligned(z:__BIGGEST_ALIGNMENT__) aligned(x_n:__BIGGEST_ALIGNMENT__) aligned(y_n:__BIGGEST_ALIGNMENT__) aligned(z_n:__BIGGEST_ALIGNMENT__) aligned(ranges:__BIGGEST_ALIGNMENT__) aligned(inds:__BIGGEST_ALIGNMENT__)
                 for(long int p = 0; p < num_cols; ++p)
                 {
                     float x_p = x[p];

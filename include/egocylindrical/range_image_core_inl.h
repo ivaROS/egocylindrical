@@ -30,14 +30,11 @@ namespace egocylindrical
         
         template <typename T,uint scale>
         void generateRangeImage(const utils::ECWrapper& cylindrical_history, T* r, const T unknown_val, int num_threads)
-        {
-            //cv::Rect image_roi = cylindrical_history.getImageRoi();
-            
-                
+        {            
             ROS_DEBUG("Generating image of cylindrical memory");
             
-            
-            const float* const cyl_ptr = (float *)__builtin_assume_aligned(cylindrical_history.getPoints(), __BIGGEST_ALIGNMENT__);
+            const float* const cyl_ptr = cylindrical_history.getPoints();
+
             int num_cols = cylindrical_history.getCols();
  int k = 0;
             #pragma GCC ivdep
@@ -52,6 +49,10 @@ namespace egocylindrical
                 if(cyl_ptr[j]==cyl_ptr[j])
                 {
                    //k++;
+                    /* NOTE: It appears that the conversion from float to uint16 is what is preventing this from vectorizing for the uint16 case,
+                     * which actually makes sense: the datatypes have different widths, so how could the conversions be vectorized?
+                     * It should be possible to vectorize the calculation and have the conversion separate, though unclear whether that would be faster.
+                     */
                     temp = std::sqrt(cyl_ptr[j]*cyl_ptr[j] + cyl_ptr[num_cols*2 + j]*cyl_ptr[num_cols*2 + j]) * scale;
                     
 //                     if(j==0)
@@ -64,7 +65,7 @@ namespace egocylindrical
                 
             }
             
-             ROS_INFO_STREAM("Num unknown: " << k);
+            // ROS_INFO_STREAM("Num unknown: " << k);
                     
         }
         

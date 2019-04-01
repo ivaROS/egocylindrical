@@ -402,8 +402,9 @@ namespace egocylindrical
                    */
             }
 
-            inline float* getPoints()                   { return (float*) points_; }
-            inline const float* getPoints()     const   { return (const float*) points_; }
+            
+            inline float* getPoints()                   { return (float*) __builtin_assume_aligned(points_, __BIGGEST_ALIGNMENT__); }
+            inline const float* getPoints() const       { return (const float*) __builtin_assume_aligned(points_, __BIGGEST_ALIGNMENT__); }
             
             inline float* getX()                        { return getPoints(); }
             inline const float* getX()          const   { return (const float*) getPoints(); }
@@ -414,11 +415,11 @@ namespace egocylindrical
             inline float* getZ()                        { return getPoints() + 2*(height_ * width_); }
             inline const float* getZ()          const   { return (const float*) getPoints() + 2*(height_ * width_); }
             
-            inline float* getRanges()                   { return (float*) ranges_.data(); }
-            inline const float* getRanges()     const   { return (const float*) ranges_.data(); }
+            inline float* getRanges()                   { return (float*) __builtin_assume_aligned(ranges_.data(), __BIGGEST_ALIGNMENT__); }
+            inline const float* getRanges()     const   { return (const float*) __builtin_assume_aligned(ranges_.data(), __BIGGEST_ALIGNMENT__); }
             
-            inline int32_t* getInds()                  { return inds_.data(); }
-            inline const int32_t* getInds()    const   { return (const int32_t*) inds_.data(); }
+            inline int32_t* getInds()                  { return (int32_t*) __builtin_assume_aligned(inds_.data(), __BIGGEST_ALIGNMENT__); }
+            inline const int32_t* getInds()    const   { return (const int32_t*) __builtin_assume_aligned(inds_.data(), __BIGGEST_ALIGNMENT__); }
             
             inline bool isLocked()              const   { return msg_locked_; }
 
