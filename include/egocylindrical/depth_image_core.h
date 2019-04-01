@@ -15,16 +15,32 @@ namespace egocylindrical
     namespace utils
     {
 
+      template<typename T> struct DepthScale {};
+      
+      template<>
+      struct DepthScale<uint16_t>
+      {
+        static inline uint scale() { return 1000;}
+      };
+      
+      template<>
+      struct DepthScale<float>
+      {
+        static inline uint scale() { return 1;}
+      };
+      
+      
         // TODO: use coordinate converter instead, since we don't need the actual data here
-        template <uint scale, typename U, typename S>
+        template <typename T, typename U, typename S>
         inline
         void initializeDepthMapping(const utils::ECWrapper& cylindrical_history, const image_geometry::PinholeCameraModel& cam_model, U* inds, S* x, S* y, S* z)
         {
-            
             cv::Size image_size = cam_model.reducedResolution();
             int image_width = image_size.width;
             int image_height = image_size.height;
-                        
+            
+            uint scale = DepthScale<T>::scale();
+                                    
             for(int i = 0; i < image_height; ++i)
             {
                 for(int j = 0; j < image_width; ++j)
@@ -43,8 +59,6 @@ namespace egocylindrical
                     
                     x[image_idx] = world_pnt.x/scale;
                     y[image_idx] = world_pnt.y/scale;
-                    z[image_idx] = world_pnt.z/scale;
-
                 }
             }
             
@@ -59,16 +73,16 @@ namespace egocylindrical
             
             if(image.depth() == CV_32FC1)
             {
-                initializeDepthMapping<1>(cylindrical_points, cam_model, inds, x, y, z);
+                initializeDepthMapping<float>(cylindrical_points, cam_model, inds, x, y, z);
             }
             else if (image.depth() == CV_16UC1)
             {
-                initializeDepthMapping<1000>(cylindrical_points, cam_model, inds, x, y, z);
+                initializeDepthMapping<uint16_t>(cylindrical_points, cam_model, inds, x, y, z);
             }
         }
 
         
-        template <bool fill_cloud, typename T, typename U, typename S>
+        template <typename T, bool fill_cloud, typename U, typename S>
         inline
         void remapDepthImage(utils::ECWrapper& cylindrical_points, const T* depths, const U* inds, const S* n_x, const S* n_y, const S* n_z, int num_pixels, sensor_msgs::PointCloud2::Ptr& pcloud_msg, S thresh_min, S thresh_max)
         {
@@ -104,7 +118,7 @@ namespace egocylindrical
                     
                     S x_val = n_x[i]*depth;
                     S y_val = n_y[i]*depth;
-                    S z_val =  n_z[i]*depth;  //TODO: Wouldn't z just = depth? At least if depth is in units of meters? If so, it would be nice to code this so that the z array was reduced to a compile time constant
+                    S z_val =  (1/DepthScale<T>::scale())*depth;  //NOTE: This should result in simply z_val=depth (for float) and z_val=depth/1000 (for uint16)
                     
                     if(fill_cloud && (y_val > thresh_min) && (y_val < thresh_max))
                     {
@@ -145,11 +159,11 @@ namespace egocylindrical
         {
             if(image.depth() == CV_32FC1)
             {
-                remapDepthImage<fill_cloud>(cylindrical_points, (const float*)image.data, inds, n_x, n_y, n_z, num_pixels, pcloud_msg, thresh_min, thresh_max);
+                remapDepthImage<float,fill_cloud>(cylindrical_points, (const float*)image.data, inds, n_x, n_y, n_z, num_pixels, pcloud_msg, thresh_min, thresh_max);
             }
             else if (image.depth() == CV_16UC1)
             {
-                remapDepthImage<fill_cloud>(cylindrical_points, (const uint16_t*)image.data, inds, n_x, n_y, n_z, num_pixels, pcloud_msg, thresh_min, thresh_max);
+                remapDepthImage<uint16_t,fill_cloud>(cylindrical_points, (const uint16_t*)image.data, inds, n_x, n_y, n_z, num_pixels, pcloud_msg, thresh_min, thresh_max);
             }
         }
         
@@ -208,7 +222,7 @@ namespace egocylindrical
                     inds_.resize(num_pixels_);
                     x_.resize(num_pixels_);
                     y_.resize(num_pixels_);
-                    z_.resize(num_pixels_);
+                    //z_.resize(num_pixels_);
                     
                     ROS_INFO("Camera parameters changed");
                     

@@ -310,22 +310,12 @@ namespace egocylindrical
             
             ray.y = (point.y - (height_/2))/vscale_;
             
-            ray /= (ray.x*ray.x + ray.z*ray.z); //NOTE: This appears redundant
+            //ray /= (ray.x*ray.x + ray.z*ray.z); //NOTE: This was redundant
             return ray;
           }
           
         };
         
-        
-        
-
-        
-        /*
-         * This class is intended to act as an abstraction of the egocylindrical representation
-         * to enable other functions to operate on it without requiring knowledge of the implementation.
-         * Functionality will be moved incrementally.
-         * It is hoped that it will be extended to simplify other egocylindrical versions, ex. stixel
-         */
         
         // TODO: create an abstract class to serve as interface so that different storage mechanisms can be used on the backend
         class ECWrapper
@@ -345,7 +335,7 @@ namespace egocylindrical
             bool allocate_arrays_;
             
             std_msgs::Header header_;
-            ECMsgPtr msg_; // The idea would be to store everything in the message's allocated storage to prevent copies
+            ECMsgPtr msg_; // The idea is to store everything in the message's allocated storage to prevent copies
             
             ECMsgConstPtr const_msg_;
             
