@@ -1,5 +1,7 @@
 <launch>
   <arg name="depth_image" default="/camera/depth/image_raw"/>
+  <arg name="depth_info" default="/camera/depth/camera_info"/>
+  <arg name="fixed_frame_id" default="odom"/>
   
   <arg name="profile_args" default="valgrind --tool=callgrind"/>
   
@@ -14,21 +16,31 @@
 
     <node name="depth_to_egocylindrical_node" pkg="egocylindrical" type="egocylindrical_propagator_node" output="log" launch-prefix="$(arg prefix)">        
       <param name="image_in" value="$(arg depth_image)"/>
-      <param name="info_in" value="/camera/depth/camera_info"/>
-      <param name="points_out" value="egocylindrical_points"/>
+      <param name="info_in" value="$(arg depth_info)"/>
+      <param name="points_out" value="data"/>
       <param name="filtered_points" value="filtered_points"/>
+      <param name="fixed_frame_id" value="$(arg fixed_frame_id)"/>
     </node>
 
-    <node name="egocylindrical_to_pointcloud" pkg="egocylindrical" type="point_cloud_node" output="log"/>
-
+    <node name="egocylindrical_to_pointcloud" pkg="egocylindrical" type="point_cloud_node" output="log"  launch-prefix="xterm -e gdb --args">
+      <remap from="egocylindrical_points" to="data"/>
+      <remap from="cylindrical" to="points"/>
+    </node>
+    
+    <node name="egocylindrical_to_projected_pointcloud" pkg="egocylindrical" type="projected_point_cloud_node" output="log">
+      <remap from="egocylindrical_points" to="data"/>
+    </node>
+    
     <node name="egocylindrical_to_range_image" pkg="egocylindrical" type="range_image_node" output="log" >
-        <param name="use_raw" value="False"/>
-        <param name="image_topic" value="image"/>
+      <remap from="egocylindrical_points" to="data"/>
+      <param name="use_raw" value="False"/>
+      <param name="image_topic" value="image"/>
     </node>
     
     <node name="egocylindrical_to_raw_range_image" pkg="egocylindrical" type="range_image_node" output="log" >
-        <param name="use_raw" value="True"/>
-        <param name="image_topic" value="image_raw"/>
+      <remap from="egocylindrical_points" to="data"/>
+      <param name="use_raw" value="True"/>
+      <param name="image_topic" value="image_raw"/>
     </node>
   
   </group>
