@@ -118,7 +118,7 @@ namespace egocylindrical
                     
                     S x_val = n_x[i]*depth;
                     S y_val = n_y[i]*depth;
-                    S z_val =  (1/DepthScale<T>::scale())*depth;  //NOTE: This should result in simply z_val=depth (for float) and z_val=depth/1000 (for uint16)
+                    S z_val =  ((S) depth)/DepthScale<T>::scale();  //NOTE: This should result in simply z_val=depth (for float) and z_val=depth/1000 (for uint16)
                     
                     if(fill_cloud && (y_val > thresh_min) && (y_val < thresh_max))
                     {
