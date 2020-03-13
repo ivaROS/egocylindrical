@@ -223,6 +223,7 @@ namespace egocylindrical
     EgoCylindricalPropagator::EgoCylindricalPropagator(ros::NodeHandle& nh, ros::NodeHandle& pnh):
         nh_(nh),
         pnh_(pnh),
+        buffer_(),
         tf_listener_(buffer_),
         it_(nh)
     {

@@ -41,6 +41,11 @@ namespace egocylindrical
 {
 
 class EgoCylindricalPropagator{
+
+protected:
+  tf2_ros::Buffer buffer_;
+  std::string fixed_frame_id_;
+  
 private:
 
     
@@ -59,7 +64,6 @@ private:
 
     ros::NodeHandle nh_, pnh_;
     tf2_ros::TransformListener tf_listener_;
-
     
     image_transport::ImageTransport it_;
     image_transport::SubscriberFilter depthSub;
@@ -89,10 +93,7 @@ private:
     virtual bool shouldPublish(const utils::ECWrapperPtr& points) { return true;}
     virtual void published(utils::ECWrapperPtr& points) { }
 
-protected:
-    tf2_ros::Buffer buffer_;
-    std::string fixed_frame_id_;
-    
+
     
 public:
     EgoCylindricalPropagator(ros::NodeHandle& nh, ros::NodeHandle& pnh);
@@ -103,10 +104,6 @@ public:
     sensor_msgs::Image::ConstPtr getRawRangeImage();
 
     virtual bool init();
-
-    //pcl::PointCloud<pcl::PointXYZI> getCylindricalPointCloud();
-    //pcl::PointCloud<pcl::PointXYZ> getWorldPointCloud();
-
 
 };
 
