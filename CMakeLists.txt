@@ -81,6 +81,7 @@ endif()
 add_message_files(
   FILES
   EgoCylinderPoints.msg
+  #EgoCylinderInfo.msg
 )
 
 ## Generate services in the 'srv' folder

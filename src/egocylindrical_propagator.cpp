@@ -72,6 +72,14 @@ namespace egocylindrical
         {
           old_pts_ = nullptr;
         }
+        else if(old_pts_ && old_pts_->getHeader().stamp == cam_info->header.stamp)
+        {
+          ROS_WARN_STREAM("Repeat stamps received! " << cam_info->header.stamp);
+          return;
+        }
+        ROS_WARN_STREAM("Current stamp: " << cam_info->header.stamp);
+        if(old_pts_)
+             ROS_WARN_STREAM("Previous stamp " << old_pts_->getHeader().stamp);
         ros::WallTime start = ros::WallTime::now();
         
         //new_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
@@ -117,6 +125,10 @@ namespace egocylindrical
                 
                 ec_pub_.publish(msg);
                 published(new_pts_);
+            }
+            if(info_pub_.getNumSubscribers() > 0)
+            {
+              info_pub_.publish(new_pts_->getEgoCylinderInfoMsg());
             }
           }
           
@@ -188,7 +200,7 @@ namespace egocylindrical
                 
         
         // Get topic names
-        std::string depth_topic="/camera/depth/image_raw", info_topic= "/camera/depth/camera_info", points_topic="egocylindrical_points", filtered_pc_topic="filtered_points";
+        std::string depth_topic="/camera/depth/image_raw", info_topic= "/camera/depth/camera_info", points_topic="egocylindrical_points", filtered_pc_topic="filtered_points", egocylinder_info_topic="egocylinder_info";
         fixed_frame_id_ = "odom";
         
         pnh_.getParam("image_in", depth_topic );
@@ -204,7 +216,7 @@ namespace egocylindrical
         
         //ros::SubscriberStatusCallback pc_cb = boost::bind(&EgoCylindricalPropagator::connectCB, this);        
         pc_pub_ = nh_.advertise<sensor_msgs::PointCloud2>(filtered_pc_topic, 3);
-        
+        info_pub_ = nh_.advertise<egocylindrical::EgoCylinderPoints>(egocylinder_info_topic, 1);
         
         // Setup subscribers
         depthSub.subscribe(it_, depth_topic, 3);
