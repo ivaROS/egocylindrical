@@ -127,6 +127,9 @@ namespace egocylindrical
             const int num_cols = points.getCols();
             const int max_ind = new_points.getCols();
             
+            const int num_pts = points.getNumPts();
+            const int new_num_pts = new_points.getNumPts();
+            
             const float* x = (const float*)__builtin_assume_aligned(points.getX(), __BIGGEST_ALIGNMENT__);
             const float* y = (const float*)points.getY();
             const float* z = (const float*)points.getZ();
@@ -166,7 +169,7 @@ namespace egocylindrical
                 
                 //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
                 #pragma omp for simd schedule(static) aligned(x:__BIGGEST_ALIGNMENT__) aligned(x_n:__BIGGEST_ALIGNMENT__) aligned(ranges:__BIGGEST_ALIGNMENT__) aligned(inds:__BIGGEST_ALIGNMENT__)
-                for(long int p = 0; p < num_cols; ++p)
+                for(long int p = 0; p < num_pts; ++p)
                 {
                     float x_p = x[p];
                     float y_p = y[p];
@@ -181,31 +184,26 @@ namespace egocylindrical
                                     
                     range_squared= worldToRangeSquared(x_n[p],z_n[p]);
                 
-                    #ifndef PIPS_ON_ARM
+                  
+                    int idx = -1;
+                    if(x_n[p]==x_n[p])
                     {
-                      int idx = -1;
-                      
                       int tidx = new_points.worldToCylindricalIdx(x_n[p],y_n[p],z_n[p]);
                       
-                      if(tidx < max_ind)
+                      if(tidx < max_ind && tidx>=0)
+                      {
                           idx = tidx;
-                      
-                      inds[p] = idx;
+                      }
+                      else
+                      {
+                          idx = new_points.worldToCanIdx(x_n[p],y_n[p],z_n[p]);
+                          range_squared = y_n[p]*y_n[p];
+                      }
+                    }
                     
-                    }
-                    #else
-                    {
-                      //int idx = -1;
-                      int tidx = new_points.worldToCylindricalYIdx(y_n[p], range_squared);
-                      
-                      //if(tidx < new_points.getHeight())
-                      //  idx = tidx;
-                      int idx = (tidx < new_points.getHeight()) ? tidx : -1;
-                      
-                      inds[p] = idx;
-                    }
-                    #endif
-
+                    inds[p] = idx;
+                    
+                    
                     ranges[p] = range_squared;
                     
 //                     if(p == num_cols/2)

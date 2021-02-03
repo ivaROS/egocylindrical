@@ -141,14 +141,15 @@ namespace egocylindrical
             
             if(allocate_next)
             {
-                next_pts_ = utils::getECWrapper(config_.height, config_.width,config_.vfov);
+                //TODO: get params from config and use those
+                next_pts_ = utils::getECWrapper(config_.height, config_.width,config_.vfov,config_.can_width);
                 
             }
             else
             {
                 std::swap(next_pts_,old_pts_);
 
-                next_pts_->init(config_.height, config_.width, config_.vfov, true);
+                next_pts_->init(config_.height, config_.width, config_.vfov, config_.can_width, true);
             }
             
             ROS_DEBUG_STREAM_NAMED("timing", "Creating new datastructure took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
@@ -177,7 +178,7 @@ namespace egocylindrical
     {
         WriteLock lock(config_mutex_);
      
-        ROS_INFO_STREAM("Updating propagator config: height=" << config.height << ", width=" << config.width << ", vfov=" << config.vfov);
+        ROS_INFO_STREAM("Updating propagator config: height=" << config.height << ", width=" << config.width << ", vfov=" << config.vfov << ", can_width=" << config.can_width);
         config_ = config;
     }
     
@@ -194,9 +195,9 @@ namespace egocylindrical
         cylinder_width_ = 2048;
         cylinder_height_ = 320;
         
-        transformed_pts_ = utils::getECWrapper(config_.height, config_.width,config_.vfov,true);
+        transformed_pts_ = utils::getECWrapper(config_.height, config_.width,config_.vfov, config_.can_width, true);
         
-        next_pts_ = utils::getECWrapper(config_.height, config_.width,config_.vfov);
+        next_pts_ = utils::getECWrapper(config_.height, config_.width,config_.vfov, config_.can_width);
                 
         
         // Get topic names

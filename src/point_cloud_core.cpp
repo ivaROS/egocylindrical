@@ -22,7 +22,7 @@ namespace egocylindrical
         /* TODO: ensure that the right size 'ints' are used everywhere. On my current system, the size of int = minimum size of long int, so 32 bit system might fail */
         sensor_msgs::PointCloud2::ConstPtr generate_point_cloud(const utils::ECWrapper& points)
         {
-            const int num_cols = points.getCols();
+            const int num_cols = points.getNumPts();
             
             pcl::PointCloud<pcl::PointXYZ> pcloud;
             
@@ -33,10 +33,10 @@ namespace egocylindrical
             
             pcloud_msg->data.resize(sizeof(pcl::PointXYZ) * num_cols);
             
-            pcloud_msg->width = points.getWidth();
-            pcloud_msg->height = points.getHeight();
+            pcloud_msg->width = num_cols; //points.getWidth();
+            pcloud_msg->height = 1;//points.getHeight();
             pcloud_msg->row_step = static_cast<uint32_t> (sizeof (pcl::PointXYZ) * pcloud_msg->width);
-            pcloud_msg->is_dense = true;  //should be false, but seems to work with true
+            pcloud_msg->is_dense = false;  //should be false, but seems to work with true
             
             const float* x = points.getX();
             const float* y = points.getY();

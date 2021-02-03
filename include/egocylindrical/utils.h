@@ -42,21 +42,11 @@ namespace utils
 
         ROS_DEBUG("Relocated the propagated image");
         //#pragma omp parallel for
-        for(int i = 0; i < new_points.getCols(); ++i)
+        for(int i = 0; i < new_points.getNumPts(); ++i)
         {
             
             int idx=-1;
-            
-            #ifndef PIPS_ON_ARM
-              idx= inds[i];
-            #else
-              int yidx = inds[i];
-              if(yidx >= 0)
-              {
-                int xidx = new_points.worldToCylindricalXIdx(n_x[i],n_z[i]);
-                idx = yidx * new_points.getWidth() + xidx;
-              }
-            #endif
+            idx= inds[i];
             
             if(idx >=0)
             {
@@ -64,7 +54,7 @@ namespace utils
                 
                 cv::Point3f prev_point(x[idx], y[idx], z[idx]);
                 
-                float prev_depth = worldToRangeSquared(prev_point);
+                float prev_depth = (i < cylindrical_history.getCols()) ? worldToRangeSquared(prev_point) : prev_point.y*prev_point.y;
                 
                 if(!(prev_depth <= depth)) //overwrite || 
                 {   
@@ -80,6 +70,10 @@ namespace utils
                     
                 }
                 
+            }
+            else
+            {
+                //ROS_ERROR_STREAM("got idx < 0!");
             }
             
             

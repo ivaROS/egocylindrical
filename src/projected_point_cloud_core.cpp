@@ -36,7 +36,7 @@ namespace egocylindrical
             
             float* data = (float*) pcloud_msg->data.data();
 
-            
+            //TODO: Project top/bottom of egocan
             #pragma omp parallel for num_threads(4)
             for(int j = 0; j < num_cols; ++j)
             {   
