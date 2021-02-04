@@ -497,7 +497,40 @@ target_link_libraries(range_image_converter_node
 target_compile_options(range_image_converter_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
   #${OpenMP_CXX_FLAGS}
   )
+  
 
+#RANGE_IMAGE_INFLATOR
+add_library(range_image_inflator src/range_image_inflator_generator.cpp)
+
+#TODO: Add dependencies as needed
+add_dependencies(range_image_inflator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(range_image_inflator
+   ${catkin_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
+
+target_compile_options(range_image_inflator PRIVATE -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+  #${OpenMP_CXX_FLAGS}
+  )
+  
+  
+##RANGE_IMAGE_INFLATOR_NODE
+add_executable(range_image_inflator_node src/range_image_inflator_node.cpp)
+
+#TODO: Add dependencies as needed
+add_dependencies(range_image_inflator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(range_image_inflator_node
+   range_image_inflator
+   ${catkin_LIBRARIES}
+   )
+
+target_compile_options(range_image_inflator_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+  #${OpenMP_CXX_FLAGS}
+  )
+  
+  
   
 #APPROXIMATION_VALIDATION
 add_executable(approximation_validation src/approximation_validation.cpp)
