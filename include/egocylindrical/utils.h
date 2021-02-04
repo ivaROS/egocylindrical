@@ -54,7 +54,7 @@ namespace utils
                 
                 cv::Point3f prev_point(x[idx], y[idx], z[idx]);
                 
-                float prev_depth = (i < cylindrical_history.getCols()) ? worldToRangeSquared(prev_point) : prev_point.y*prev_point.y;
+                float prev_depth = worldToRangeSquared(prev_point);
                 
                 if(!(prev_depth <= depth)) //overwrite || 
                 {   
@@ -73,7 +73,35 @@ namespace utils
             }
             else
             {
-                //ROS_ERROR_STREAM("got idx < 0!");
+                if(n_x[i]==n_x[i])  //Skip NaNs
+                {
+                    cv::Point3f world_pnt(n_x[i],n_y[i],n_z[i]);
+                  
+                    idx = new_points.worldToCanIdx(n_x[i],n_y[i],n_z[i]);
+                    
+                    if(idx >=0 && idx < new_points.getNumPts())
+                    {
+                        float depth = worldToCanDepth(world_pnt);
+                          
+                        
+                        cv::Point3f prev_point(x[idx], y[idx], z[idx]);
+                        
+                        float prev_depth = worldToCanDepth(prev_point);
+                        
+                        if(!(prev_depth <= depth)) //overwrite || 
+                        {   
+                            
+                            x[idx] = world_pnt.x;
+                            y[idx] = world_pnt.y;
+                            z[idx] = world_pnt.z;
+                        }
+                    }
+                    else
+                    {
+                        ROS_WARN_STREAM("Invalid index [" << idx << "] for point (" << world_pnt.x << "," << world_pnt.y << "," << world_pnt.z << ")");
+                    }
+                  
+                }
             }
             
             

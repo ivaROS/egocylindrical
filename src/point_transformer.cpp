@@ -186,18 +186,31 @@ namespace egocylindrical
                 
                   
                     int idx = -1;
-                    if(x_n[p]==x_n[p])
+                    
+                    if(false)
+                    {
+                      if(x_n[p]==x_n[p])
+                      {
+                        int tidx = new_points.worldToCylindricalIdx(x_n[p],y_n[p],z_n[p]);
+                        
+                        if(tidx < max_ind && tidx>=0)
+                        {
+                            idx = tidx;
+                        }
+                        else
+                        {
+                            idx = new_points.worldToCanIdx(x_n[p],y_n[p],z_n[p]);
+                            range_squared = y_n[p]*y_n[p];
+                        }
+                      }
+                    }
+                    else
                     {
                       int tidx = new_points.worldToCylindricalIdx(x_n[p],y_n[p],z_n[p]);
                       
-                      if(tidx < max_ind && tidx>=0)
+                      if(tidx < max_ind)
                       {
-                          idx = tidx;
-                      }
-                      else
-                      {
-                          idx = new_points.worldToCanIdx(x_n[p],y_n[p],z_n[p]);
-                          range_squared = y_n[p]*y_n[p];
+                        idx = tidx;
                       }
                     }
                     

@@ -16,18 +16,22 @@ namespace egocylindrical
         /* TODO: ensure that the right size 'ints' are used everywhere. On my current system, the size of int = minimum size of long int, so 32 bit system might fail */
         sensor_msgs::PointCloud2::ConstPtr generate_projected_point_cloud(const utils::ECWrapper& points)
         {
+            const int num_pts = points.getNumPts();
+          
             const int num_cols = points.getCols();
             
             pcl::PointCloud<pcl::PointXYZI> pcloud;
+            
+            float vfov = points.getParams().vfov;
             
             
             sensor_msgs::PointCloud2::Ptr pcloud_msg = boost::make_shared<sensor_msgs::PointCloud2>();
             
             pcl::toROSMsg(pcloud, *pcloud_msg);
             
-            pcloud_msg->data.resize(sizeof(pcl::PointXYZI) * num_cols);
+            pcloud_msg->data.resize(sizeof(pcl::PointXYZI) * num_pts);
             
-            pcloud_msg->width = num_cols;
+            pcloud_msg->width = num_pts;
             pcloud_msg->height = 1;
             
             const float* x = points.getX();
@@ -37,13 +41,13 @@ namespace egocylindrical
             float* data = (float*) pcloud_msg->data.data();
 
             //TODO: Project top/bottom of egocan
-            #pragma omp parallel for num_threads(4)
-            for(int j = 0; j < num_cols; ++j)
+            //#pragma omp parallel for num_threads(4)
+            for(int j = 0; j < num_pts; ++j)
             {   
                 cv::Point3f point(x[j],y[j],z[j]);
                 
-                cv::Point3f Pcyl_t = egocylindrical::utils::projectWorldToCylinder(point);
-                float range = egocylindrical::utils::worldToRange(point);
+                cv::Point3f Pcyl_t = (j<num_cols) ? egocylindrical::utils::projectWorldToCylinder(point) : egocylindrical::utils::projectWorldToCan(point, vfov);
+                float range = (j<num_cols) ? egocylindrical::utils::worldToRange(point) : egocylindrical::utils::worldToCanDepth(point);
 
                 data[8*j] =   Pcyl_t.x;
                 data[8*j+1] = Pcyl_t.y;

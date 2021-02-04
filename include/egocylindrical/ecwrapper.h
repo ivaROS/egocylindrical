@@ -128,6 +128,12 @@ namespace egocylindrical
           return std::sqrt(worldToRangeSquared(point));
         }
         
+        inline
+        float worldToCanDepth(const cv::Point3f& point)
+        {
+          return std::fabs(point.y);
+        }
+        
         /* Note: functions using 'std::sqrt' must be compiled with '-fno-math-errno' in order to be vectorized.
          * See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=51890 for explanation.
          */
@@ -135,7 +141,15 @@ namespace egocylindrical
         inline
         cv::Point3_<T> projectWorldToCylinder(const cv::Point3_<T>& point)
         {
-          cv::Point3_<T> Pcyl_t = point / std::sqrt(point.x * point.x + point.z * point.z);
+          cv::Point3_<T> Pcyl_t = point / worldToRange(point);
+          return Pcyl_t;
+        }
+        
+        template <typename T>
+        inline
+        cv::Point3_<T> projectWorldToCan(const cv::Point3_<T>& point, float vfov)
+        {
+          cv::Point3_<T> Pcyl_t = point * (vfov/2) / worldToCanDepth(point);
           return Pcyl_t;
         }
         
@@ -201,7 +215,7 @@ namespace egocylindrical
         inline
         T worldToCanXIdx(const cv::Point3_<T>& point, int can_width, float scale)
         {
-          T absy = std::fabs(point.y);
+          T absy = worldToCanDepth(point);
           T xind = point.x/absy * scale + can_width/2;
           return xind;
         }
@@ -210,8 +224,8 @@ namespace egocylindrical
         inline
         T worldToCanZIdx(const cv::Point3_<T>& point, int can_width, float scale)
         {
-          T absy = std::fabs(point.y);
-          T zind = point.x/absy * scale + can_width/2;
+          T absy = worldToCanDepth(point);
+          T zind = point.z/absy * scale + can_width/2;
           return zind;
         }
         
@@ -498,11 +512,11 @@ namespace egocylindrical
             inline float* getX()                        { return getPoints(); }
             inline const float* getX()          const   { return (const float*) getPoints(); }
             
-            inline float* getY()                        { return getPoints() + (height_ * width_); }
-            inline const float* getY()          const   { return (const float*) getPoints() + (height_ * width_); }
+            inline float* getY()                        { return getPoints() + getNumPts(); }
+            inline const float* getY()          const   { return (const float*) getPoints() + getNumPts(); }
             
-            inline float* getZ()                        { return getPoints() + 2*(height_ * width_); }
-            inline const float* getZ()          const   { return (const float*) getPoints() + 2*(height_ * width_); }
+            inline float* getZ()                        { return getPoints() + 2*getNumPts(); }
+            inline const float* getZ()          const   { return (const float*) getPoints() + 2*getNumPts(); }
             
             inline float* getRanges()                   { return (float*) __builtin_assume_aligned(ranges_.data(), __BIGGEST_ALIGNMENT__); }
             inline const float* getRanges()     const   { return (const float*) __builtin_assume_aligned(ranges_.data(), __BIGGEST_ALIGNMENT__); }
@@ -672,7 +686,7 @@ namespace egocylindrical
                 
                 hscale_ = width_/(2*M_PI);
                 vscale_ = height_/vfov_;
-                canscale_ = can_width_/(M_PI-std::atan2(vfov_,1));
+                canscale_ = can_width_*vfov_/4;
                 
                 
                 std::vector<std_msgs::MultiArrayDimension>& dims = msg_->points.layout.dim;
