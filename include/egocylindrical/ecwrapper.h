@@ -388,8 +388,24 @@ namespace egocylindrical
             return width_;
           }
           
+          float getHScale() const
+          {
+            return hscale_;
+          }
+          
+          float getVScale() const
+          {
+            return vscale_;
+          }
+          
           inline
           int getNumPts() const
+          {
+            return height_*width_;
+          }
+          
+          inline
+          int getCols() const
           {
             return height_*width_;
           }
