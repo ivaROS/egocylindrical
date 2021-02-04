@@ -118,10 +118,7 @@ namespace egocylindrical
       for(int i = 0; i < width; i++)
       {
         T range = ranges[i];
-        
-        inflated[i] = range;
-        continue;
-        
+
         if(range!=range)
         {
           continue;
