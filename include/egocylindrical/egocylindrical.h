@@ -42,13 +42,9 @@ namespace egocylindrical
 
 class EgoCylindricalPropagator{
 
-protected:
-  tf2_ros::Buffer buffer_;
-  std::string fixed_frame_id_;
+
   
 private:
-
-    
     Mutex config_mutex_;
     
     int cylinder_height_;
@@ -63,6 +59,12 @@ private:
     utils::DepthImageRemapper depth_remapper_;
 
     ros::NodeHandle nh_, pnh_;
+    
+protected:
+  tf2_ros::Buffer buffer_;
+  std::string fixed_frame_id_;
+  
+private:
     tf2_ros::TransformListener tf_listener_;
     
     image_transport::ImageTransport it_;
