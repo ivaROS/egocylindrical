@@ -62,7 +62,18 @@
       <remap from="egocylindrical_points" to="inflated_data"/>
       <remap from="cylindrical" to="inflated_points"/>
     </node>
-  
+      
+    <node name="sanity_check_range_converter" pkg="egocylindrical" type="range_image_converter_node" output="log">
+      <remap from="data_out" to="sanity_data"/>
+      <remap from="image_in" to="image"/>
+      <remap from="info_in" to="data"/>
+    </node>
+    
+    <node name="sanity_check_ec_ppoint_publisher" pkg="egocylindrical" type="point_cloud_node" output="log">
+      <remap from="egocylindrical_points" to="sanity_data"/>
+      <remap from="cylindrical" to="sanity_points"/>
+    </node>
+    
   </group>
   
 </launch>

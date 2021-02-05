@@ -329,7 +329,7 @@ namespace egocylindrical
         class ECConverter
         {
         private:
-          int height_, width_;
+          int height_, width_, can_width_;
           float vfov_;
           float hscale_, vscale_;
           
@@ -356,6 +356,7 @@ namespace egocylindrical
             const std::vector<std_msgs::MultiArrayDimension>& dims = msg->points.layout.dim;
             height_ = dims[1].size;
             width_ = dims[2].size;
+            can_width_ = dims[3].size;
             
             update();
           }
@@ -366,7 +367,7 @@ namespace egocylindrical
             vfov_ = params.vfov;
             height_ = params.height;
             width_ = params.width;
-            
+            can_width_ = params.can_width;
             update();
           }
           
