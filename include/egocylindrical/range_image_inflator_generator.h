@@ -4,7 +4,7 @@
 
 //#include <egocylindrical/ecwrapper.h>
 #include <egocylindrical/EgoCylinderPoints.h>
-#include <egocylindrical/RangeImageGeneratorConfig.h>
+#include <egocylindrical/RangeImageInflatorGeneratorConfig.h>
 #include <image_transport/image_transport.h>
 #include <ros/ros.h>
 
@@ -42,14 +42,14 @@ namespace egocylindrical
         boost::shared_ptr<synchronizer> timeSynchronizer_;
         
         
-        bool use_raw_;
+        //bool use_raw_;
         
-        //Mutex config_mutex_;
-        int num_threads_;
+        Mutex config_mutex_;
+        //int num_threads_;
         
         sensor_msgs::Image::Ptr preallocated_msg_;
         
-        typedef egocylindrical::RangeImageGeneratorConfig ConfigType;
+        typedef egocylindrical::RangeImageInflatorGeneratorConfig ConfigType;
         ConfigType config_;
         typedef dynamic_reconfigure::Server<ConfigType> ReconfigureServer;
         std::shared_ptr<ReconfigureServer> reconfigure_server_;

@@ -51,11 +51,10 @@ namespace egocylindrical
     
     void RangeImageInflatorGenerator::configCB(const ConfigType &config, uint32_t level)
     {
-      //Num_threads not actually used right now, so not important to lock
-      //WriteLock lock(config_mutex_);
+      WriteLock lock(config_mutex_);
       
-      ROS_INFO_STREAM("Updating Range Image Generator config: num_threads=" << config.num_threads);
-      num_threads_ = config.num_threads;
+      ROS_INFO_STREAM("Updating Range Image Inflator config: num_threads=" << config.num_threads << ", inflation_radius=" << config.inflation_radius);
+      config_ = config;
     }
     
     void RangeImageInflatorGenerator::ssCB()
@@ -126,7 +125,7 @@ namespace egocylindrical
         int inflation_size = getNumInflationIndices(range, scale, inflation_radius);
         
         int start_ind = i - inflation_size;
-        int end_ind = i + inflation_size;
+        int end_ind = i + inflation_size + 1;
         
         T modified_range = range - inflation_radius;
         
@@ -148,27 +147,63 @@ namespace egocylindrical
     }
     
     template<typename T>
-    void inflateHorizontally(const T* ranges, int height, int width, float scale, float inflation_radius, T* inflated)
+    void inflateHorizontally(const T* ranges, int height, int width, float scale, float inflation_radius, int num_threads, T* inflated)
     {
-      const T* range_row_ptr = ranges;
-      T* inflated_row_ptr = inflated;
       for(int j = 0; j < height; j++)
       {
-        inflateRow(range_row_ptr, width, scale, inflation_radius, inflated_row_ptr);
-        range_row_ptr += width;
-        inflated_row_ptr += width;
+        inflateRow(ranges+j*width, width, scale, inflation_radius, inflated+j*width);
       }
     }
     
     template<typename T>
-    void inflateRangeImage(const T* ranges, const utils::ECConverter& converter, float inflation_radius, T* inflated)
+    void inflateColumn(int height, int width, float scale, float inflation_radius, T* inflated)
+    {
+      for(int j = 0; j < height; j++)
+      {
+        T range = inflated[j*width];
+        
+        if(range!=range)
+        {
+          continue;
+        }
+        int inflation_size = getNumInflationIndices(range, scale, inflation_radius);
+        
+        int start_ind = std::max(j - inflation_size, 0);
+        int end_ind = std::min(j + inflation_size + 1, height);
+                
+        for(int k = start_ind; k < end_ind; k++)
+        {
+          if(inflated[k*width]< range)
+          {
+          }
+          else
+          {
+            inflated[k*width] = range;
+          }
+        }
+      }
+    }
+    
+    template<typename T>
+    void inflateVertically(int height, int width, float scale, float inflation_radius, int num_threads, T* inflated)
+    {
+      for(int i = 0; i < width; i++)
+      {
+        inflateColumn(height, width, scale, inflation_radius, inflated+i);
+      }
+    }
+    
+    template<typename T>
+    void inflateRangeImage(const T* ranges, const utils::ECConverter& converter, float inflation_radius, int num_threads, T* inflated)
     {
       int height = converter.getHeight();
       int width = converter.getWidth();
       
       float hscale = converter.getHScale();
+      float vscale = converter.getVScale();
       
-      inflateHorizontally(ranges, height, width, hscale, inflation_radius, inflated);
+      inflateHorizontally(ranges, height, width, hscale, inflation_radius, num_threads, inflated);
+      inflateVertically(height, width, vscale, inflation_radius, num_threads, inflated);
     }
     
     sensor_msgs::Image::ConstPtr getInflatedRangeImageMsg(const EgoCylinderPoints::ConstPtr& ec_msg, const sensor_msgs::Image::ConstPtr& range_msg, float inflation_radius, int num_threads, sensor_msgs::ImagePtr preallocated_msg)
@@ -202,7 +237,7 @@ namespace egocylindrical
       
       const float* ranges = (float*)range_msg->data.data();
       
-      inflateRangeImage<float>(ranges, converter, inflation_radius, inflated_ranges);
+      inflateRangeImage<float>(ranges, converter, inflation_radius, num_threads, inflated_ranges);
       
       return new_msg_ptr;
     }
@@ -220,10 +255,14 @@ namespace egocylindrical
           
           utils::ECWrapper ec_pts(ec_msg);
                 
-          float inflation_radius = 0.4;
-          sensor_msgs::Image::ConstPtr image_ptr = getInflatedRangeImageMsg(ec_msg, range_msg, inflation_radius, num_threads_, preallocated_msg_);
+          ConfigType config;
+          {
+            ReadLock lock(config_mutex_);
+            config = config_;
+          }
+          sensor_msgs::Image::ConstPtr image_ptr = getInflatedRangeImageMsg(ec_msg, range_msg, config.inflation_radius, config.num_threads, preallocated_msg_);
 
-          ROS_DEBUG_STREAM_NAMED("timing","Generating egocylindrical image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+          ROS_DEBUG_STREAM_NAMED("timing","Inflating range image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
           
 
           ROS_DEBUG("publish egocylindrical image");

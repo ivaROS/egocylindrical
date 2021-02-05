@@ -124,6 +124,7 @@ generate_dynamic_reconfigure_options(
   cfg/Propagator.cfg
   cfg/RangeImageGenerator.cfg
   cfg/Filter.cfg
+  cfg/RangeImageInflatorGenerator.cfg
   )
 
 ###################################
@@ -510,9 +511,7 @@ target_link_libraries(range_image_inflator
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(range_image_inflator PRIVATE -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
-  #${OpenMP_CXX_FLAGS}
-  )
+target_compile_options(range_image_inflator PRIVATE -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations)
   
   
 ##RANGE_IMAGE_INFLATOR_NODE
