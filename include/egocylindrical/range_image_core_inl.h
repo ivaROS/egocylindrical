@@ -33,7 +33,8 @@ namespace egocylindrical
         {            
             ROS_DEBUG("Generating image of cylindrical memory");
             
-            const float* const cyl_ptr = cylindrical_history.getPoints();
+            const float* const x = cylindrical_history.getX();
+            const float* const z = cylindrical_history.getZ();
 
             int num_cols = cylindrical_history.getCols();
  int k = 0;
@@ -46,15 +47,14 @@ namespace egocylindrical
 //                 {
 //                   ROS_WARN_STREAM("Bad answer!: " << cyl_ptr[j]);
 //                 }
-                if(cyl_ptr[j]==cyl_ptr[j])
+                if(x[j]==x[j])
                 {
                    //k++;
                     /* NOTE: It appears that the conversion from float to uint16 is what is preventing this from vectorizing for the uint16 case,
                      * which actually makes sense: the datatypes have different widths, so how could the conversions be vectorized?
                      * It should be possible to vectorize the calculation and have the conversion separate, though unclear whether that would be faster.
                      */
-                    temp = std::sqrt(cyl_ptr[j]*cyl_ptr[j] + cyl_ptr[num_cols*2 + j]*cyl_ptr[num_cols*2 + j]) * scale;
-                    
+                    temp = std::sqrt(x[j]*x[j] + z[j]*z[j]) * scale;                    
 //                     if(j==0)
 //                     {
 //                       ROS_INFO_STREAM("first value: " << cyl_ptr[j] << "; unknown=" << unknown_val);
