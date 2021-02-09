@@ -86,6 +86,16 @@ namespace egocylindrical
         }
     }
     
+    bool isknown(uint16_t range)
+    {
+      return range>0;
+    }
+    
+    bool isknown(float range)
+    {
+      return range==range;
+    }
+    
     template<typename T>
     float getInflationAngle(T range, T inflation_radius)
     {
@@ -103,25 +113,24 @@ namespace egocylindrical
     {
       for(int ind = start_ind; ind < end_ind; ind++)
       {
-        if(inflated[ind]< range)
+        T& val = inflated[ind];
+        
+        if(!isknown(val) || range < val)
         {
+          val = range;
         }
-        else
-        {
-          inflated[ind] = range;
-        }
+        
+//         if(inflated[ind]< range)
+//         {
+//         }
+//         else
+//         {
+//           inflated[ind] = range;
+//         }
       }
     }
     
-    bool isknown(uint16_t range)
-    {
-      return range>0;
-    }
-    
-    bool isknown(float range)
-    {
-      return range==range;
-    }
+
     
 //     float convertRange(float range)
 //     {
