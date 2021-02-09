@@ -331,7 +331,7 @@ namespace egocylindrical
         private:
           int height_, width_, can_width_;
           float vfov_;
-          float hscale_, vscale_;
+          float hscale_, vscale_, canscale_;
           
         public:
           ECConverter()
@@ -344,6 +344,7 @@ namespace egocylindrical
           {
             hscale_ = width_/(2*M_PI);
             vscale_ = height_/vfov_;  //NOTE: In the paper, vscale=hscale. If keeping them separate does not prove useful, they should be merged
+            canscale_ = can_width_*vfov_/4;
           }
           
           inline
@@ -389,6 +390,12 @@ namespace egocylindrical
             return width_;
           }
           
+          inline
+          int getCanWidth() const
+          {
+            return can_width_;
+          }
+          
           float getHScale() const
           {
             return hscale_;
@@ -399,10 +406,15 @@ namespace egocylindrical
             return vscale_;
           }
           
+          float getCanScale() const
+          {
+            return canscale_;
+          }
+          
           inline
           int getNumPts() const
           {
-            return height_*width_;
+            return height_*width_ + 2*can_width_*can_width_;
           }
           
           inline
@@ -426,6 +438,12 @@ namespace egocylindrical
             return utils::worldToCylindricalImage(point, width_, height_, hscale_, vscale_, 0, 0);
           }
           
+          inline
+          int worldToCanIdx(float x, float y, float z) const
+          {
+            cv::Point3_<float> point(x,y,z);
+            return utils::worldToCanIdx(point, can_width_, canscale_) + getCols();
+          }
           
           inline
           cv::Point3d projectPixelTo3dRay(const cv::Point2d& point) const
@@ -619,14 +637,12 @@ namespace egocylindrical
               return utils::worldToCylindricalYIdxFast(point, range_squared, width_, height_, hscale_, vscale_, 0, 0);
             }
             
-            //worldToCanIdx
             inline
             int worldToCanIdx(float x, float y, float z) const
             {
               cv::Point3_<float> point(x,y,z);
               return utils::worldToCanIdx(point, can_width_, canscale_) + getCols();
             }
-            
             
             inline
             ECMsgConstPtr getEgoCylinderPointsMsg()

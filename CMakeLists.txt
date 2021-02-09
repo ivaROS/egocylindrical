@@ -558,6 +558,37 @@ target_link_libraries(egocylindrical_range_image_inflator_nodelet
 target_compile_options(egocylindrical_range_image_inflator_nodelet PRIVATE -std=c++11 -Wall)
 
 
+#CAN_IMAGE_INFLATOR
+add_library(can_image_inflator src/can_image_inflator_generator.cpp)
+
+#TODO: Add dependencies as needed
+add_dependencies(can_image_inflator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(can_image_inflator
+   ${catkin_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
+
+target_compile_options(can_image_inflator PRIVATE -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations)
+
+
+
+##RANGE_IMAGE_INFLATOR_NODE
+add_executable(can_image_inflator_node src/can_image_inflator_node.cpp)
+
+#TODO: Add dependencies as needed
+add_dependencies(can_image_inflator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(can_image_inflator_node
+   can_image_inflator
+   ${catkin_LIBRARIES}
+   )
+
+target_compile_options(can_image_inflator_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
+  #${OpenMP_CXX_FLAGS}
+  )
+
+
 #RANGE_IMAGE_CONVERTER_NODELET
 add_library(egocylindrical_range_image_converter_nodelet MODULE src/range_image_converter_nodelet.cpp)
 

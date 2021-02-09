@@ -60,6 +60,12 @@
       <param name="image_topic" value="inflated_image_raw"/>
     </node>
     
+    <node name="can_image_inflator" pkg="egocylindrical" type="can_image_inflator_node" output="log" launch-prefix="xterm -e gdb -ex run --args">
+      <remap from="egocylindrical_points" to="data"/>
+      <remap from="range_image" to="can_image"/>
+      <param name="image_topic" value="inflated_can_image"/>
+    </node>
+    
     <node name="inflated_range_converter" pkg="egocylindrical" type="range_image_converter_node" output="log">
       <remap from="data_out" to="inflated_data"/>
       <remap from="image_in" to="inflated_image"/>
