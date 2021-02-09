@@ -46,10 +46,16 @@
       <param name="image_topic" value="image_raw"/>
     </node>
     
-    <node name="range_image_inflator" pkg="egocylindrical" type="range_image_inflator_node" output="log" launch-prefix="xterm -e gdb -ex run --args">
+    <node name="range_image_inflator" pkg="egocylindrical" type="range_image_inflator_node" output="log" launch-prefix="">
       <remap from="egocylindrical_points" to="data"/>
       <remap from="range_image" to="image"/>
       <param name="image_topic" value="inflated_image"/>
+    </node>
+    
+    <node name="raw_range_image_inflator" pkg="egocylindrical" type="range_image_inflator_node" output="log" launch-prefix="xterm -e gdb -ex run --args">
+      <remap from="egocylindrical_points" to="data"/>
+      <remap from="range_image" to="image_raw"/>
+      <param name="image_topic" value="inflated_image_raw"/>
     </node>
     
     <node name="inflated_range_converter" pkg="egocylindrical" type="range_image_converter_node" output="log">
