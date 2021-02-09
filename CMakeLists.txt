@@ -528,8 +528,33 @@ target_link_libraries(range_image_inflator_node
 target_compile_options(range_image_inflator_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
   #${OpenMP_CXX_FLAGS}
   )
-  
-  
+
+#RANGE_IMAGE_INFLATOR_NODELET
+add_library(egocylindrical_range_image_inflator_nodelet MODULE src/range_image_inflator_nodelet.cpp)
+
+add_dependencies(egocylindrical_range_image_inflator_nodelet ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(egocylindrical_range_image_inflator_nodelet
+   range_image_inflator
+   ${catkin_LIBRARIES}
+   )
+
+target_compile_options(egocylindrical_range_image_inflator_nodelet PRIVATE -std=c++11 -Wall)
+
+
+#RANGE_IMAGE_CONVERTER_NODELET
+add_library(egocylindrical_range_image_converter_nodelet MODULE src/range_image_converter_nodelet.cpp)
+
+add_dependencies(egocylindrical_range_image_converter_nodelet ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(egocylindrical_range_image_converter_nodelet
+   range_image_converter
+   ${catkin_LIBRARIES}
+   )
+
+target_compile_options(egocylindrical_range_image_converter_nodelet PRIVATE -std=c++11 -Wall)
+
+
   
 #APPROXIMATION_VALIDATION
 add_executable(approximation_validation src/approximation_validation.cpp)

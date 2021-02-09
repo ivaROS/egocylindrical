@@ -69,7 +69,7 @@
       <remap from="info_in" to="data"/>
     </node>
     
-    <node name="sanity_check_ec_ppoint_publisher" pkg="egocylindrical" type="point_cloud_node" output="log">
+    <node name="sanity_check_ec_point_publisher" pkg="egocylindrical" type="point_cloud_node" output="log">
       <remap from="egocylindrical_points" to="sanity_data"/>
       <remap from="cylindrical" to="sanity_points"/>
     </node>
