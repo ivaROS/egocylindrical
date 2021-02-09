@@ -34,7 +34,7 @@ namespace egocylindrical
         ec_pub_ = nh_.advertise<egocylindrical::EgoCylinderPoints>("data_out", 2, info_cb, info_cb);
         
         // Synchronize Image and CameraInfo callbacks
-        timeSynchronizer = boost::make_shared<synchronizer>(im_sub_, ec_sub_, 2);
+        timeSynchronizer = boost::make_shared<synchronizer>(im_sub_, ec_sub_, 20);
         timeSynchronizer->registerCallback(boost::bind(&RangeImageConverter::imageCB, this, _1, _2));
         
         
