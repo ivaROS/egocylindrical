@@ -217,12 +217,10 @@ namespace egocylindrical
                 
         for(int k = start_ind; k < end_ind; k++)
         {
-          if(inflated[k*width]< range)
+          T& val = inflated[k*width];
+          if(!isknown(val) || range < val)
           {
-          }
-          else
-          {
-            inflated[k*width] = range;
+            val = range;
           }
         }
       }
