@@ -173,6 +173,21 @@ target_compile_options(range_image_core PRIVATE -g -std=c++11 -Wall -ftree-vecto
 add_dependencies(range_image_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
+# This is a separate library partly to reduce compile times, but mostly because it needs to be compiled with certain 'fast-math' optimization options
+add_library(can_image_core src/can_image_core.cpp)
+target_link_libraries(can_image_core
+   ${catkin_LIBRARIES}
+   ${OpenCV_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
+
+target_compile_options(can_image_core PRIVATE -g -std=c++11 -Wall -ftree-vectorize -fopt-info-vec-optimized ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno -ffinite-math-only #-ffinite-math-only and -fno-trapping-math.
+  #${OpenMP_CXX_FLAGS}
+  )
+  
+add_dependencies(can_image_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+
   
 ##Verified that ${OpenMP_CXX_FLAGS} contains what it should
 #message(STATUS=WARNING ${OpenMP_CXX_FLAGS})
@@ -394,6 +409,7 @@ add_dependencies(range_image_generator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${cat
 
 target_link_libraries(range_image_generator
    range_image_core
+   can_image_core
    ${catkin_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )

@@ -27,14 +27,14 @@ namespace egocylindrical
     {
         ros::NodeHandle nh_, pnh_;
         image_transport::ImageTransport it_;
-        image_transport::Publisher im_pub_;
+        image_transport::Publisher im_pub_, can_im_pub_;
         ros::Subscriber ec_sub_;
         bool use_raw_;
         
         //Mutex config_mutex_;
         int num_threads_;
         
-        sensor_msgs::Image::Ptr preallocated_msg_;
+        sensor_msgs::Image::Ptr preallocated_msg_, preallocated_can_msg_;
         
         typedef egocylindrical::RangeImageGeneratorConfig ConfigType;
         ConfigType config_;

@@ -35,12 +35,14 @@
       <remap from="egocylindrical_points" to="data"/>
       <param name="use_raw" value="False"/>
       <param name="image_topic" value="image"/>
+      <param name="can_image_topic" value="can_image"/>
     </node>
   
     <node name="egocylindrical_to_raw_range_image_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_nodelet $(arg nodelet_manager)" >
       <remap from="egocylindrical_points" to="data"/>
       <param name="use_raw" value="True"/>
       <param name="image_topic" value="image_raw"/>
+      <param name="can_image_topic" value="can_image_raw"/>
     </node>
 
     <node name="range_image_inflator_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_inflator_nodelet $(arg nodelet_manager)" >
