@@ -109,27 +109,30 @@ namespace egocylindrical
             return a.f;
         }
         
+        template <typename T>
         inline
-        float worldToRangeSquared(const float x, const float z)
+        T worldToRangeSquared(const T x, const T z)
         {
           return x*x + z*z;
         }
         
-        
+        template <typename T>
         inline
-        float worldToRangeSquared(const cv::Point3f& point)
+        T worldToRangeSquared(const cv::Point3_<T>& point)
         {
           return worldToRangeSquared(point.x, point.z);
         }
         
+        template <typename T>
         inline
-        float worldToRange(const cv::Point3f& point)
+        T worldToRange(const cv::Point3_<T>& point)
         {
           return std::sqrt(worldToRangeSquared(point));
         }
         
+        template <typename T>
         inline
-        float worldToCanDepth(const cv::Point3f& point)
+        T worldToCanDepth(const cv::Point3_<T>& point)
         {
           return std::fabs(point.y);
         }
