@@ -3,6 +3,9 @@
   <arg name="depth_info" default="/camera/depth/camera_info"/>
   <arg name="fixed_frame_id" default="odom"/>
   
+  <arg name="viz_inflated" default="true"/>
+  <arg name="sanity_check" default="true"/>
+  
   <arg name="profile_args" default="valgrind --tool=callgrind"/>
   
   <arg name="debug" default="false"/>
@@ -49,13 +52,13 @@
     </node>
     
     <node name="range_image_inflator" pkg="egocylindrical" type="range_image_inflator_node" output="log" launch-prefix="xterm -e gdb -ex run --args">
-      <remap from="egocylindrical_points" to="data"/>
+      <remap from="egocylindrical_points" to="egocylinder_info"/>
       <remap from="range_image" to="image"/>
       <param name="image_topic" value="inflated_image"/>
     </node>
     
-    <node name="raw_range_image_inflator" pkg="egocylindrical" type="range_image_inflator_node" output="log" launch-prefix="">
-      <remap from="egocylindrical_points" to="data"/>
+    <node name="raw_range_image_inflator" pkg="egocylindrical" type="range_image_inflator_node" output="log" launch-prefix="xterm -e gdb -ex run --args">
+      <remap from="egocylindrical_points" to="egocylinder_info"/>
       <remap from="range_image" to="image_raw"/>
       <param name="image_topic" value="inflated_image_raw"/>
     </node>
@@ -66,27 +69,56 @@
       <param name="image_topic" value="inflated_can_image"/>
     </node>
     
-    <node name="inflated_range_converter" pkg="egocylindrical" type="range_image_converter_node" output="log">
-      <remap from="data_out" to="inflated_data"/>
-      <remap from="image_in" to="inflated_image"/>
-      <remap from="info_in" to="data"/>
-    </node>
+    <group if="$(arg viz_inflated)">
     
-    <node name="inflated_ec_ppoint_publisher" pkg="egocylindrical" type="point_cloud_node" output="log">
-      <remap from="egocylindrical_points" to="inflated_data"/>
-      <remap from="cylindrical" to="inflated_points"/>
-    </node>
+      <node name="inflated_range_converter" pkg="egocylindrical" type="range_image_converter_node" output="log">
+        <remap from="data_out" to="inflated_data"/>
+        <remap from="image_in" to="inflated_image"/>
+        <remap from="info_in" to="egocylinder_info"/>
+      </node>
       
-    <node name="sanity_check_range_converter" pkg="egocylindrical" type="range_image_converter_node" output="log">
-      <remap from="data_out" to="sanity_data"/>
-      <remap from="image_in" to="image"/>
-      <remap from="info_in" to="data"/>
-    </node>
+      <node name="inflated_ec_point_publisher" pkg="egocylindrical" type="point_cloud_node" output="log">
+        <remap from="egocylindrical_points" to="inflated_data"/>
+        <remap from="cylindrical" to="inflated_points"/>
+      </node>
+      
+      <node name="raw_inflated_range_image_converter_nodelet" pkg="egocylindrical" type="range_image_converter_node" output="log">
+        <remap from="data_out" to="inflated_data_raw"/>
+        <remap from="image_in" to="inflated_image_raw"/>
+        <remap from="info_in" to="data"/>
+      </node>
+      
+      <node name="raw_inflated_point_publisher_nodelet" pkg="egocylindrical" type="point_cloud_node" output="log">
+        <remap from="egocylindrical_points" to="inflated_data_raw"/>
+        <remap from="cylindrical" to="inflated_points_raw"/>
+      </node>
+      
+    </group>
     
-    <node name="sanity_check_ec_point_publisher" pkg="egocylindrical" type="point_cloud_node" output="log">
-      <remap from="egocylindrical_points" to="sanity_data"/>
-      <remap from="cylindrical" to="sanity_points"/>
-    </node>
+    <group if="$(arg sanity_check)">
+    
+      <node name="sanity_check_range_converter" pkg="egocylindrical" type="range_image_converter_node" output="log">
+        <remap from="data_out" to="sanity_data"/>
+        <remap from="image_in" to="image"/>
+        <remap from="info_in" to="egocylinder_info"/>
+      </node>
+      
+      <node name="sanity_check_ec_point_publisher" pkg="egocylindrical" type="point_cloud_node" output="log">
+        <remap from="egocylindrical_points" to="sanity_data"/>
+        <remap from="cylindrical" to="sanity_points"/>
+      </node>
+      
+      <node name="raw_sanity_check_range_converter" pkg="egocylindrical" type="range_image_converter_node" output="log">
+        <remap from="data_out" to="sanity_data_raw"/>
+        <remap from="image_in" to="image"/>
+        <remap from="info_in" to="egocylinder_info"/>
+      </node>
+      
+      <node name="raw_sanity_check_ec_point_publisher" pkg="egocylindrical" type="point_cloud_node" output="log">
+        <remap from="egocylindrical_points" to="sanity_data_raw"/>
+        <remap from="cylindrical" to="sanity_points_raw"/>
+      </node>
+    </group>
     
   </group>
   

@@ -9,6 +9,10 @@
   <arg name="fixed_frame_id" default="odom"/>
 
   
+  <arg name="viz_inflated" default="true"/>
+  <arg name="sanity_check" default="true"/>
+  
+  
   <group ns="egocylinder">
     <node name="$(arg nodelet_manager)" pkg="nodelet" type="nodelet" args="manager" unless="$(arg use_provided_manager)" output="log">
 
@@ -57,49 +61,62 @@
       <param name="image_topic" value="inflated_image_raw"/>
     </node>
     
-    <node name="range_image_converter_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_converter_nodelet $(arg nodelet_manager)" >
-      <remap from="data_out" to="inflated_data"/>
-      <remap from="image_in" to="inflated_image"/>
-      <remap from="info_in" to="data"/>
+    <node name="can_image_inflator" pkg="egocylindrical" type="can_image_inflator_node" output="log">
+      <remap from="egocylindrical_points" to="data"/>
+      <remap from="range_image" to="can_image"/>
+      <param name="image_topic" value="inflated_can_image"/>
     </node>
     
-    <node name="inflated_point_publisher_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/point_cloud_nodelet $(arg nodelet_manager)" >
-      <remap from="egocylindrical_points" to="inflated_data"/>
-      <remap from="cylindrical" to="inflated_points"/>
-    </node>
+    <group if="$(arg viz_inflated)">
+
+      <node name="inflated_range_image_converter_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_converter_nodelet $(arg nodelet_manager)" >
+        <remap from="data_out" to="inflated_data"/>
+        <remap from="image_in" to="inflated_image"/>
+        <remap from="info_in" to="data"/>
+      </node>
       
-    <node name="raw_range_image_converter_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_converter_nodelet $(arg nodelet_manager)" >
-      <remap from="data_out" to="inflated_data_raw"/>
-      <remap from="image_in" to="inflated_image_raw"/>
-      <remap from="info_in" to="data"/>
-    </node>
-    
-    <node name="raw_inflated_point_publisher_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/point_cloud_nodelet $(arg nodelet_manager)" >
-      <remap from="egocylindrical_points" to="inflated_data_raw"/>
-      <remap from="cylindrical" to="inflated_points_raw"/>
-    </node>
+      <node name="inflated_point_publisher_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/point_cloud_nodelet $(arg nodelet_manager)" >
+        <remap from="egocylindrical_points" to="inflated_data"/>
+        <remap from="cylindrical" to="inflated_points"/>
+      </node>
       
-    <node name="sanity_check_range_converter_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_converter_nodelet $(arg nodelet_manager)" >
-      <remap from="data_out" to="sanity_data"/>
-      <remap from="image_in" to="image"/>
-      <remap from="info_in" to="data"/>
-    </node>
-    
-    <node name="sanity_check_ec_point_publisher_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/point_cloud_nodelet $(arg nodelet_manager)" >
-      <remap from="egocylindrical_points" to="sanity_data"/>
-      <remap from="cylindrical" to="sanity_points"/>
-    </node>
-    
-    <node name="raw_sanity_check_range_converter_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_converter_nodelet $(arg nodelet_manager)" >
-      <remap from="data_out" to="sanity_data_raw"/>
-      <remap from="image_in" to="image_raw"/>
-      <remap from="info_in" to="data"/>
-    </node>
-    
-    <node name="raw_sanity_check_ec_point_publisher_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/point_cloud_nodelet $(arg nodelet_manager)" >
-      <remap from="egocylindrical_points" to="sanity_data_raw"/>
-      <remap from="cylindrical" to="sanity_points_raw"/>
-    </node>
+      <node name="raw_inflated_range_image_converter_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_converter_nodelet $(arg nodelet_manager)" >
+        <remap from="data_out" to="inflated_data_raw"/>
+        <remap from="image_in" to="inflated_image_raw"/>
+        <remap from="info_in" to="data"/>
+      </node>
+      
+      <node name="raw_inflated_point_publisher_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/point_cloud_nodelet $(arg nodelet_manager)" >
+        <remap from="egocylindrical_points" to="inflated_data_raw"/>
+        <remap from="cylindrical" to="inflated_points_raw"/>
+      </node>
+      
+    </group>
+
+    <group if="$(arg sanity_check)">
+
+      <node name="sanity_check_range_converter_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_converter_nodelet $(arg nodelet_manager)" >
+        <remap from="data_out" to="sanity_data"/>
+        <remap from="image_in" to="image"/>
+        <remap from="info_in" to="data"/>
+      </node>
+      
+      <node name="sanity_check_ec_point_publisher_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/point_cloud_nodelet $(arg nodelet_manager)" >
+        <remap from="egocylindrical_points" to="sanity_data"/>
+        <remap from="cylindrical" to="sanity_points"/>
+      </node>
+      
+      <node name="raw_sanity_check_range_converter_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/range_image_converter_nodelet $(arg nodelet_manager)" >
+        <remap from="data_out" to="sanity_data_raw"/>
+        <remap from="image_in" to="image_raw"/>
+        <remap from="info_in" to="data"/>
+      </node>
+      
+      <node name="raw_sanity_check_ec_point_publisher_nodelet" pkg="nodelet" type="nodelet" args="load egocylindrical/point_cloud_nodelet $(arg nodelet_manager)" >
+        <remap from="egocylindrical_points" to="sanity_data_raw"/>
+        <remap from="cylindrical" to="sanity_points_raw"/>
+      </node>
+    </group>
 
   </group>
 </launch>
