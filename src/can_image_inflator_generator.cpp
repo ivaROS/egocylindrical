@@ -171,21 +171,24 @@ namespace egocylindrical
         int start_ind = i - inflation_size;
         int end_ind = i + inflation_size + 1;
         
-        T modified_range = range - inflation_radius;
+        if(range >  inflation_radius)
+        {
+          T modified_range = range - inflation_radius;
         
-        if(start_ind < 0)
-        {
-          inflateRowRegion(modified_range, start_ind+width, width, inflated);
-          inflateRowRegion(modified_range, 0, end_ind, inflated);
-        }
-        else if(end_ind >= width)
-        {
-          inflateRowRegion(modified_range, start_ind, width, inflated);
-          inflateRowRegion(modified_range, 0, end_ind-width, inflated);
-        }
-        else
-        {
-          inflateRowRegion(modified_range, start_ind, end_ind, inflated);
+          if(start_ind < 0)
+          {
+            inflateRowRegion(modified_range, start_ind+width, width, inflated);
+            inflateRowRegion(modified_range, 0, end_ind, inflated);
+          }
+          else if(end_ind >= width)
+          {
+            inflateRowRegion(modified_range, start_ind, width, inflated);
+            inflateRowRegion(modified_range, 0, end_ind-width, inflated);
+          }
+          else
+          {
+            inflateRowRegion(modified_range, start_ind, end_ind, inflated);
+          }
         }
       }
     }
@@ -200,11 +203,11 @@ namespace egocylindrical
     }
     
     template<typename T>
-    void inflateColumn(int height, int width, float scale, T inflation_radius, T* inflated)
+    void inflateColumn(int height, int width, float scale, T inflation_radius, T* buffer, T* inflated)
     {
       for(int j = 0; j < height; j++)
       {
-        T range = inflated[j*width];
+        T range = buffer[j*width];
         
         if(!isknown(range))
         {
@@ -227,22 +230,23 @@ namespace egocylindrical
     }
     
     template<typename T>
-    void inflateVertically(int height, int width, float scale, T inflation_radius, int num_threads, T* inflated)
+    void inflateVertically(int height, int width, float scale, T inflation_radius, int num_threads, T* buffer, T* inflated)
     {
       for(int i = 0; i < width; i++)
       {
-        inflateColumn(height, width, scale, inflation_radius, inflated+i);
+        inflateColumn(height, width, scale, inflation_radius, buffer+i, inflated+i);
       }
     }
     
     template<typename T>
-    void inflateCanImage(const T* ranges, const utils::ECConverter& converter, T inflation_radius, int num_threads, T* inflated)
+    void inflateCanImage(const T* ranges, const utils::ECConverter& converter, T inflation_radius, int num_threads, T* buffer, T* inflated)
     {
       int width = converter.getCanWidth();
       float scale = converter.getCanScale();
       
-      inflateHorizontally(ranges, width, width, scale, inflation_radius, num_threads, inflated);
-      inflateVertically(width, width, scale, inflation_radius, num_threads, inflated+width*width);
+      inflateHorizontally(ranges, 2*width, width, scale, inflation_radius, num_threads, buffer);
+      inflateVertically(width, width, scale, inflation_radius, num_threads, buffer, inflated);
+      inflateVertically(width, width, scale, inflation_radius, num_threads, buffer+width*width, inflated+width*width);
     }
     
     template<typename T>
@@ -256,9 +260,12 @@ namespace egocylindrical
       T* inflated_ranges = (T*)new_msg.data.data();
       std::fill(inflated_ranges, inflated_ranges+num_pnts, unknown_value);
       
+      std::vector<T> buffer(num_pnts, unknown_value);
+      
+      
       const T* ranges = (T*)range_msg.data.data();
       
-      inflateCanImage<T>(ranges, converter, converted_inflation_radius, num_threads, inflated_ranges);
+      inflateCanImage<T>(ranges, converter, converted_inflation_radius, num_threads, buffer.data(), inflated_ranges);
     }
     
     

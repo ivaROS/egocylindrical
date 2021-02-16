@@ -64,9 +64,44 @@ namespace egocylindrical
             
         }
         
+        template <uint scale, typename S, typename T, typename U>
+        inline
+        void can_depth_to_points(const utils::ECConverter& info, U* m_ranges, T* x, T* y, T* z)
+        {
+          S* ranges = (S*) m_ranges;
+          
+          int can_width = info.getCanWidth();
+          
+          int image_idx = 0;
+          int num_cols = info.getCols();
+          
+          #pragma GCC ivdep
+          for(int i = 0; i < 2*can_width; ++i)
+          {
+            for(int j = 0; j < can_width; ++j)
+            {   
+              cv::Point2d pt;
+              pt.x = j;
+              pt.y = i;
+              
+              float range = RangeConverter(ranges[image_idx]);
+              
+              cv::Point3f world_pnt = info.projectCanPixelTo3dRay(pt)*range;
+              
+              int point_idx = image_idx + num_cols;
+              x[point_idx] = world_pnt.x/scale;
+              y[point_idx] = world_pnt.y/scale;
+              z[point_idx] = world_pnt.z/scale;
+              
+              image_idx++;
+            }
+          }
+          
+        }
         
         
-        ECWrapperPtr range_image_to_wrapper(const ECWrapper& info, const sensor_msgs::Image::ConstPtr image)
+        
+        ECWrapperPtr range_image_to_wrapper(const ECWrapper& info, const sensor_msgs::Image::ConstPtr image, const sensor_msgs::Image::ConstPtr can_image)
         {
           ECWrapperPtr wrapper = getECWrapper(info);
           ECConverter converter;
@@ -79,6 +114,18 @@ namespace egocylindrical
           else if(image->encoding == sensor_msgs::image_encodings::TYPE_32FC1)
           {
             range_to_points<1, float>(converter, image->data.data(), wrapper->getX(), wrapper->getY(), wrapper->getZ());
+          }
+          
+          if(can_image)
+          {
+            if(can_image->encoding == sensor_msgs::image_encodings::TYPE_16UC1)
+            {
+              can_depth_to_points<1000, uint16_t>(converter, can_image->data.data(), wrapper->getX(), wrapper->getY(), wrapper->getZ());
+            }
+            else if(image->encoding == sensor_msgs::image_encodings::TYPE_32FC1)
+            {
+              can_depth_to_points<1, float>(converter, can_image->data.data(), wrapper->getX(), wrapper->getY(), wrapper->getZ());
+            }
           }
           
           wrapper->setHeader(info.getHeader());

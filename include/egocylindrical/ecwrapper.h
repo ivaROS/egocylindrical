@@ -463,6 +463,27 @@ namespace egocylindrical
             return ray;
           }
           
+          inline
+          cv::Point3d projectCanPixelTo3dRay(const cv::Point2d& point) const
+          {
+            cv::Point3d ray;
+            ray.y = -1;
+            
+            double y = point.y;
+            if(point.y >= can_width_)
+            {
+              y -= can_width_;
+              ray.y = 1;
+            }
+                        
+            ray.x = (point.x - (can_width_/2))/canscale_;
+            ray.z = (y - (can_width_/2))/canscale_;
+            
+            return ray;
+          }
+          
+          
+          
         };
         
         
