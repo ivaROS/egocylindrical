@@ -105,7 +105,7 @@ namespace egocylindrical
     template<typename T>
     int getNumInflationIndices(T range, float scale, T inflation_radius)
     {
-      return getInflationAngle(range, inflation_radius) * scale;
+      return inflation_radius * scale;
     }
     
     template<typename T>
@@ -171,24 +171,14 @@ namespace egocylindrical
         int start_ind = i - inflation_size;
         int end_ind = i + inflation_size + 1;
         
-        if(range >  inflation_radius)
+        start_ind = std::max(0, start_ind);
+        end_ind = std::min(width, end_ind);
+        //if(range >  inflation_radius)
         {
-          T modified_range = range - inflation_radius;
-        
-          if(start_ind < 0)
-          {
-            inflateRowRegion(modified_range, start_ind+width, width, inflated);
-            inflateRowRegion(modified_range, 0, end_ind, inflated);
-          }
-          else if(end_ind >= width)
-          {
-            inflateRowRegion(modified_range, start_ind, width, inflated);
-            inflateRowRegion(modified_range, 0, end_ind-width, inflated);
-          }
-          else
-          {
-            inflateRowRegion(modified_range, start_ind, end_ind, inflated);
-          }
+          //T modified_range = range - inflation_radius;
+          T modified_range = range;
+
+          inflateRowRegion(modified_range, start_ind, end_ind, inflated);
         }
       }
     }

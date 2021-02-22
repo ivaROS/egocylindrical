@@ -103,9 +103,15 @@ namespace egocylindrical
     }
     
     template<typename T>
-    int getNumInflationIndices(T range, float scale, T inflation_radius)
+    int getNumRowInflationIndices(T range, float scale, T inflation_radius)
     {
       return getInflationAngle(range, inflation_radius) * scale;
+    }
+    
+    template<typename T>
+    int getNumColInflationIndices(T range, float scale, T inflation_height)
+    {
+      return inflation_height * scale / range;
     }
     
     template<typename T>
@@ -166,7 +172,7 @@ namespace egocylindrical
           continue;
         }
         
-        int inflation_size = getNumInflationIndices(range, scale, inflation_radius);
+        int inflation_size = getNumRowInflationIndices(range, scale, inflation_radius);
         
         int start_ind = i - inflation_size;
         int end_ind = i + inflation_size + 1;
@@ -213,7 +219,7 @@ namespace egocylindrical
         {
           continue;
         }
-        int inflation_size = getNumInflationIndices(range, scale, inflation_height);  //Need to think this through, might not be same equation
+        int inflation_size = getNumColInflationIndices(range, scale, inflation_height);  //Need to think this through, might not be same equation
         
         int start_ind = std::max(j - inflation_size, 0);
         int end_ind = std::min(j + inflation_size + 1, height);
@@ -338,7 +344,7 @@ namespace egocylindrical
             ReadLock lock(config_mutex_);
             config = config_;
           }
-          sensor_msgs::Image::ConstPtr image_ptr = getInflatedRangeImageMsg(ec_msg, range_msg, config.inflation_radius, config.inflation_height, config.num_threads, preallocated_msg_);
+          sensor_msgs::Image::ConstPtr image_ptr = getInflatedRangeImageMsg(ec_msg, range_msg, config.inflation_radius, config.inflation_height/2, config.num_threads, preallocated_msg_);
 
           ROS_DEBUG_STREAM_NAMED("timing","Inflating range image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
           

@@ -234,14 +234,26 @@ namespace egocylindrical
         
         template <typename T>
         inline
+        int pixToCanIdx(int xind, int zind, int can_width, T y)
+        {
+          int rel_ind = zind*can_width + xind;
+          
+          int ind = (y > 0) ? rel_ind + can_width*can_width : rel_ind;
+          return ind;
+        }
+        
+        template <typename T>
+        inline
         int worldToCanIdx(const cv::Point3_<T>& point, int can_width, float scale)
         {
           int xind = worldToCanXIdx(point, can_width, scale);
           int zind = worldToCanZIdx(point, can_width, scale);
+          return pixToCanIdx(xind, zind, can_width, point.y);
+/*          
           int rel_ind = zind*can_width + xind;
           
           int ind = (point.y > 0) ? rel_ind + can_width*can_width : rel_ind;
-          return ind;
+          return ind;*/
         }
         
         template <typename T>
@@ -441,11 +453,57 @@ namespace egocylindrical
             return utils::worldToCylindricalImage(point, width_, height_, hscale_, vscale_, 0, 0);
           }
           
+          template <typename T>
           inline
-          int worldToCanIdx(float x, float y, float z) const
+          T worldToCanXIdx(const cv::Point3_<T>& point) const
           {
-            cv::Point3_<float> point(x,y,z);
+            T absy = worldToCanDepth(point);
+            T xind = point.x/absy * canscale_ + can_width_/2;
+            return xind;
+          }
+          
+          template <typename T>
+          inline
+          T worldToCanXIdx(T x, T y, T z) const
+          {
+            return worldToCanXIdx(cv::Point3_<T>(x,y,z));
+          }
+          
+          template <typename T>
+          inline
+          T worldToCanZIdx(const cv::Point3_<T>& point) const
+          {
+            T absy = worldToCanDepth(point);
+            T zind = point.z/absy * canscale_ + can_width_/2;
+            return zind;
+          }
+          
+          template <typename T>
+          inline
+          T worldToCanZIdx(T x, T y, T z) const
+          {
+            return worldToCanZIdx(cv::Point3_<T>(x,y,z));
+          }
+          
+          template <typename T>
+          inline
+          int worldToCanIdx(cv::Point3_<T> point) const
+          {
             return utils::worldToCanIdx(point, can_width_, canscale_) + getCols();
+          }
+          
+          template <typename T>
+          inline
+          int worldToCanIdx(T x, T y, T z) const
+          {
+            return worldToCanIdx(cv::Point3_<T>(x,y,z));
+          }
+          
+          template <typename T>
+          inline
+          int pixToCanIdx(int xind, int zind, T y) const
+          {
+            return utils::pixToCanIdx(xind, zind, can_width_, y) + getCols();
           }
           
           inline
