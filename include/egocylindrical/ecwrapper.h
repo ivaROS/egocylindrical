@@ -214,6 +214,20 @@ namespace egocylindrical
           return point.y * v_scale /range + cyl_height / 2;
         }
         
+        inline
+        int pixToIdx(int xind, int yind, int width)
+        {
+          int ind = yind*width + xind;
+          
+          return ind;
+        }
+        
+        inline
+        int pixToIdx(cv::Point pix, int width)
+        {
+          return pixToIdx(pix.x, pix.y, width);
+        }
+        
         template <typename T>
         inline
         T worldToCanXIdx(const cv::Point3_<T>& point, int can_width, float scale)
@@ -300,7 +314,7 @@ namespace egocylindrical
         {
           cv::Point image_pnt = utils::worldToCylindricalImageFast(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
           
-          int tidx = image_pnt.y * cyl_width +image_pnt.x;
+          int tidx = pixToIdx(image_pnt, cyl_width); //image_pnt.y * cyl_width +image_pnt.x;
           
           return tidx;
         }
@@ -451,6 +465,18 @@ namespace egocylindrical
           cv::Point_<T> project3dToPixel(const cv::Point3_<T> point) const
           {
             return utils::worldToCylindricalImage(point, width_, height_, hscale_, vscale_, 0, 0);
+          }
+          
+          inline
+          int pixToIdx(int xind, int yind) const
+          {
+            return utils::pixToIdx(xind, yind, width_);
+          }
+          
+          inline
+          int pixToIdx(cv::Point pix) const
+          {
+            return utils::pixToIdx(pix, width_);
           }
           
           template <typename T>

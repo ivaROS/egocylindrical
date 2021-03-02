@@ -74,12 +74,12 @@ namespace egocylindrical
         }
         else if(old_pts_ && old_pts_->getHeader().stamp == cam_info->header.stamp)
         {
-          ROS_WARN_STREAM("Repeat stamps received! " << cam_info->header.stamp);
+          ROS_WARN_STREAM_NAMED("msg_timestamps","Repeat stamps received! " << cam_info->header.stamp);
           return;
         }
-        ROS_WARN_STREAM("Current stamp: " << cam_info->header.stamp);
+        ROS_DEBUG_STREAM_NAMED("msg_timestamps","Current stamp: " << cam_info->header.stamp);
         if(old_pts_)
-             ROS_WARN_STREAM("Previous stamp " << old_pts_->getHeader().stamp);
+            ROS_DEBUG_STREAM_NAMED("msg_timestamps","Previous stamp " << old_pts_->getHeader().stamp);
         ros::WallTime start = ros::WallTime::now();
         
         //new_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
