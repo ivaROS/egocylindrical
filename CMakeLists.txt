@@ -24,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_sensor_msgs
   message_generation
   dynamic_reconfigure
+  benchmarking_tools #Probably just temporary to avoid adding any custom dependencies to this package.
 )
 
 
@@ -32,7 +33,7 @@ find_package(PCL    REQUIRED)
 find_package(OpenMP)
 
 if(1)
-    set(SHOW_VECTORIZE_INFO "-fopt-info-vec-optimized")
+    set(SHOW_VECTORIZE_INFO "-fopt-info-vec-missed")
 else()
     set(SHOW_VECTORIZE_INFO "")
 endif()
@@ -527,7 +528,7 @@ target_link_libraries(range_image_inflator
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(range_image_inflator PRIVATE -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations)
+target_compile_options(range_image_inflator PRIVATE -std=c++11 -Wall ${OpenMP_CXX_FLAGS} ${SHOW_VECTORIZE_INFO} -ftree-vectorize -funsafe-math-optimizations)
   
   
 ##RANGE_IMAGE_INFLATOR_NODE
