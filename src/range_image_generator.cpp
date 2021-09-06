@@ -39,9 +39,11 @@ namespace egocylindrical
         
 
         image_transport::SubscriberStatusCallback image_cb = boost::bind(&EgoCylinderRangeImageGenerator::ssCB, this);
-        im_pub_ = it_.advertise(image_topic, 2, image_cb, image_cb);
-        
-        can_im_pub_ = it_.advertise(can_image_topic, 2, image_cb, image_cb);
+        {
+            Lock lock(connect_mutex_);
+            im_pub_ = it_.advertise(image_topic, 2, image_cb, image_cb);
+            can_im_pub_ = it_.advertise(can_image_topic, 2, image_cb, image_cb);
+        }
         
         return true;
     }
@@ -59,7 +61,7 @@ namespace egocylindrical
     {
         
         //std::cout << (void*)ec_sub_ << ": " << im_pub_.getNumSubscribers() << std::endl;
-
+        Lock lock(connect_mutex_);
         if(im_pub_.getNumSubscribers()>0 || can_im_pub_.getNumSubscribers()>0)
         {
             if((void*)ec_sub_) //if currently subscribed... no need to do anything
