@@ -68,7 +68,7 @@ namespace egocylindrical
 
     void EgoCylindricalPropagator::update(const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
     {
-        if(old_pts_ && old_pts_->getHeader().stamp >= cam_info->header.stamp)
+        if(old_pts_ && old_pts_->getHeader().stamp > cam_info->header.stamp)
         {
           old_pts_ = nullptr;
         }
@@ -77,7 +77,12 @@ namespace egocylindrical
           ROS_WARN_STREAM_NAMED("msg_timestamps","Repeat stamps received! " << cam_info->header.stamp);
           return;
         }
+        //TODO: Warn of out-of-order images
+        //TODO: If clock jumps back in time, reset egocylinder
+        
         ROS_DEBUG_STREAM_NAMED("msg_timestamps","Current stamp: " << cam_info->header.stamp);
+        ROS_DEBUG_STREAM_NAMED("msg_timestamps.detailed","[egocylinder] Received [" << cam_info->header.stamp << "] at [" << ros::WallTime::now() << "]");
+        
         if(old_pts_)
             ROS_DEBUG_STREAM_NAMED("msg_timestamps","Previous stamp " << old_pts_->getHeader().stamp);
         ros::WallTime start = ros::WallTime::now();
@@ -124,6 +129,7 @@ namespace egocylindrical
                 utils::ECMsgConstPtr msg = new_pts_->getEgoCylinderPointsMsg();
                 
                 ec_pub_.publish(msg);
+                ROS_DEBUG_STREAM_NAMED("msg_timestamps.detailed","[egocylinder] Sent [" << msg->header.stamp << "] at [" << ros::WallTime::now() << "]");
                 published(new_pts_);
             }
             if(info_pub_.getNumSubscribers() > 0)
