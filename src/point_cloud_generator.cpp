@@ -26,8 +26,10 @@ namespace egocylindrical
         ec_sub_.shutdown();
         
         ros::SubscriberStatusCallback info_cb = boost::bind(&EgoCylinderPointCloudGenerator::ssCB, this);
-        pc_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("cylindrical", 2, info_cb, info_cb);
-        //ssCB();
+        {
+            Lock lock(connect_mutex_);
+            pc_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("cylindrical", 2, info_cb, info_cb);
+        }
         
         return true;
     }
@@ -36,7 +38,7 @@ namespace egocylindrical
     void EgoCylinderPointCloudGenerator::ssCB()
     {
         //std::cout << (void*)ec_sub_ << ": " << pc_pub_.getNumSubscribers() << std::endl;
-        
+        Lock lock(connect_mutex_);
         if(pc_pub_.getNumSubscribers()>0)
         {
             if(ec_sub_) //if currently subscribed... no need to do anything

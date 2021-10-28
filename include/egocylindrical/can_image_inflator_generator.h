@@ -16,9 +16,9 @@
 
 #include <dynamic_reconfigure/server.h>
 
-#include <boost/thread/shared_mutex.hpp>
-#include <boost/thread/locks.hpp>
-
+// #include <boost/thread/shared_mutex.hpp>
+// #include <boost/thread/locks.hpp>
+#include <boost/thread/mutex.hpp>
 
 
 
@@ -29,9 +29,11 @@ namespace egocylindrical
 
     class CanImageInflatorGenerator
     {
-        typedef boost::shared_mutex Mutex;
-        typedef boost::unique_lock< Mutex > WriteLock;
-        typedef boost::shared_lock< Mutex > ReadLock;
+//         using Mutex = boost::mutex;
+//         Mutex connect_mutex_;
+//         using Lock = Mutex::scoped_lock;
+        using Mutex = boost::mutex;
+        using Lock = Mutex::scoped_lock;
         
         ros::NodeHandle nh_, pnh_;
         image_transport::ImageTransport it_;
@@ -43,8 +45,7 @@ namespace egocylindrical
         typedef message_filters::TimeSynchronizer<sensor_msgs::Image, egocylindrical::EgoCylinderPoints> synchronizer;
         boost::shared_ptr<synchronizer> timeSynchronizer_;
         
-                
-        Mutex config_mutex_;
+        Mutex connect_mutex_, config_mutex_;
         
         sensor_msgs::Image::Ptr preallocated_msg_;
         

@@ -24,9 +24,6 @@ namespace egocylindrical
         it_(nh_)
     {
         std::cout<<"Egocylindrical Can Image Node Initialized"<<std::endl;
-
-        
-        
     }
     
     bool CanImageInflatorGenerator::init()
@@ -38,31 +35,32 @@ namespace egocylindrical
         
         reconfigure_server_ = std::make_shared<ReconfigureServer>(pnh_);
         reconfigure_server_->setCallback(boost::bind(&CanImageInflatorGenerator::configCB, this, _1, _2));
-        
 
-        image_transport::SubscriberStatusCallback image_cb = boost::bind(&CanImageInflatorGenerator::ssCB, this);
-        im_pub_ = it_.advertise(image_topic, 2, image_cb, image_cb);
-        
         // Synchronize Image and CameraInfo callbacks
         timeSynchronizer_ = boost::make_shared<synchronizer>(im_sub_, ec_sub_, 2);
         timeSynchronizer_->registerCallback(boost::bind(&CanImageInflatorGenerator::imgCB, this, _1, _2));
         
+        image_transport::SubscriberStatusCallback image_cb = boost::bind(&CanImageInflatorGenerator::ssCB, this);
+        {
+            Lock lock(connect_mutex_);
+            im_pub_ = it_.advertise(image_topic, 2, image_cb, image_cb);
+        }
         return true;
     }
     
     void CanImageInflatorGenerator::configCB(const ConfigType &config, uint32_t level)
     {
-      WriteLock lock(config_mutex_);
-      
-      ROS_INFO_STREAM("Updating Can Image Inflator config: num_threads=" << config.num_threads << ", inflation_radius=" << config.inflation_radius);
-      config_ = config;
+        Lock lock(config_mutex_);
+        
+        ROS_INFO_STREAM("Updating Can Image Inflator config: num_threads=" << config.num_threads << ", inflation_radius=" << config.inflation_radius);
+        config_ = config;
     }
     
     void CanImageInflatorGenerator::ssCB()
     {
         
         //std::cout << (void*)ec_sub_ << ": " << im_pub_.getNumSubscribers() << std::endl;
-
+        Lock lock(connect_mutex_);
         if(im_pub_.getNumSubscribers()>0)
         {
             if((void*)im_sub_.getSubscriber()) //if currently subscribed... no need to do anything
@@ -105,7 +103,7 @@ namespace egocylindrical
     template<typename T>
     int getNumInflationIndices(T range, float scale, T inflation_radius)
     {
-      return inflation_radius * scale;
+      return inflation_radius * scale / range;
     }
     
     template<typename T>
@@ -323,7 +321,7 @@ namespace egocylindrical
                 
           ConfigType config;
           {
-            ReadLock lock(config_mutex_);
+            Lock lock(config_mutex_);
             config = config_;
           }
           sensor_msgs::Image::ConstPtr image_ptr = getInflatedCanImageMsg(ec_msg, range_msg, config.inflation_radius, config.num_threads, preallocated_msg_);

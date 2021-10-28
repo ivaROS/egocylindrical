@@ -40,20 +40,21 @@ namespace egocylindrical
         reconfigure_server_ = std::make_shared<ReconfigureServer>(pnh_);
         reconfigure_server_->setCallback(boost::bind(&RangeImageInflatorGenerator::configCB, this, _1, _2));
         
-
-        image_transport::SubscriberStatusCallback image_cb = boost::bind(&RangeImageInflatorGenerator::ssCB, this);
-        im_pub_ = it_.advertise(image_topic, 2, image_cb, image_cb);
-        
         // Synchronize Image and CameraInfo callbacks
         timeSynchronizer_ = boost::make_shared<synchronizer>(im_sub_, ec_sub_, 2);
         timeSynchronizer_->registerCallback(boost::bind(&RangeImageInflatorGenerator::imgCB, this, _1, _2));
         
+        image_transport::SubscriberStatusCallback image_cb = boost::bind(&RangeImageInflatorGenerator::ssCB, this);
+        {
+            Lock lock(connect_mutex_);
+            im_pub_ = it_.advertise(image_topic, 2, image_cb, image_cb);
+        }
         return true;
     }
     
     void RangeImageInflatorGenerator::configCB(const ConfigType &config, uint32_t level)
     {
-      WriteLock lock(config_mutex_);
+      Lock lock(config_mutex_);
       
       ROS_INFO_STREAM("Updating Range Image Inflator config: num_threads=" << config.num_threads << ", inflation_radius=" << config.inflation_radius);
       config_ = config;
@@ -63,7 +64,7 @@ namespace egocylindrical
     {
         
         //std::cout << (void*)ec_sub_ << ": " << im_pub_.getNumSubscribers() << std::endl;
-
+        Lock lock(connect_mutex_);
         if(im_pub_.getNumSubscribers()>0)
         {
             if((void*)im_sub_.getSubscriber()) //if currently subscribed... no need to do anything
@@ -119,14 +120,22 @@ namespace egocylindrical
     template<typename T>
     void inflateRowRegion(T range, int start_ind, int end_ind, T* inflated)
     {
+      #pragma GCC ivdep
       for(int ind = start_ind; ind < end_ind; ind++)
       {
-        T& val = inflated[ind];
+        T val = inflated[ind];
         
-        if(!isknown(val) || range < val)
-        {
-          val = range;
-        }
+        //inflated[ind] = (!isknown(val) || range < val) ? range : val;
+        
+        //T mod_val = isknown(val) ? val : std::numeric_limits<T>::max();
+        T mod_val = (val==val) ? val : std::numeric_limits<T>::max();
+        inflated[ind] = (range < mod_val) ? range : mod_val;
+                
+//         if(!isknown(val) || range < val)
+//         {
+//           val = range;
+//         }
+        
         
 //         if(inflated[ind]< range)
 //         {
@@ -390,7 +399,7 @@ namespace egocylindrical
           
           ConfigType config;
           {
-            ReadLock lock(config_mutex_);
+            Lock lock(config_mutex_);
             config = config_;
           }
           sensor_msgs::Image::ConstPtr image_ptr = getInflatedRangeImageMsg(ec_msg, range_msg, config.inflation_radius, config.inflation_height/2, conservative, config.num_threads, preallocated_msg_);

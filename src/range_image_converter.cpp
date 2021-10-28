@@ -29,10 +29,6 @@ namespace egocylindrical
     
     bool RangeImageConverter::init()
     {
-
-        ros::SubscriberStatusCallback info_cb = boost::bind(&RangeImageConverter::ssCB, this);
-        ec_pub_ = nh_.advertise<egocylindrical::EgoCylinderPoints>("data_out", 2, info_cb, info_cb);
-        
         use_egocan_ = false;
         pnh_.getParam("egocan_enabled", use_egocan_);
         
@@ -49,6 +45,11 @@ namespace egocylindrical
           timeSynchronizer->registerCallback(boost::bind(&RangeImageConverter::imageCB, this, _1, _2, nullptr));
         }
         
+        ros::SubscriberStatusCallback info_cb = boost::bind(&RangeImageConverter::ssCB, this);
+        {
+            Lock lock(connect_mutex_);
+            ec_pub_ = nh_.advertise<egocylindrical::EgoCylinderPoints>("data_out", 2, info_cb, info_cb);
+        }
         
         return true;
     }
@@ -57,7 +58,7 @@ namespace egocylindrical
     {
         
         //std::cout << (void*)ec_sub_ << ": " << im_pub_.getNumSubscribers() << std::endl;
-
+        Lock lock(connect_mutex_);
         if(ec_pub_.getNumSubscribers()>0)
         {
             //Note: should probably add separate checks for each

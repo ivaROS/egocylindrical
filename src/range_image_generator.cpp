@@ -89,6 +89,9 @@ namespace egocylindrical
     {
         ROS_DEBUG("Received EgoCylinderPoints msg");
         
+        ROS_DEBUG_STREAM_NAMED("msg_timestamps.detailed","[range_image_generator] Received [" << ec_msg->header.stamp << "] at [" << ros::WallTime::now() << "]");
+        
+        
         bool gen_range_image = im_pub_.getNumSubscribers() > 0;
         bool gen_can_image = can_im_pub_.getNumSubscribers() > 0;
         
@@ -105,6 +108,7 @@ namespace egocylindrical
           ROS_DEBUG("publish egocylindrical image");
           
           im_pub_.publish(image_ptr);
+          ROS_DEBUG_STREAM_NAMED("msg_timestamps.detailed","[range_image_generator] Sent [" << image_ptr->header.stamp << "] at [" << ros::WallTime::now() << "]");
           
           start = ros::WallTime::now();
           preallocated_msg_= boost::make_shared<sensor_msgs::Image>();
