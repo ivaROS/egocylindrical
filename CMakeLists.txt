@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(egocylindrical)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+add_compile_options(-Wall)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -160,55 +159,47 @@ include_directories(
 
 # This is a separate library partly to reduce compile times, but mostly because it needs to be compiled with certain 'fast-math' optimization options
 add_library(range_image_core src/range_image_core.cpp)
+add_dependencies(range_image_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_compile_features(range_image_core PUBLIC cxx_std_11)
+target_compile_options(range_image_core PRIVATE -ftree-vectorize ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno -ffinite-math-only #-ffinite-math-only and -fno-trapping-math.
+   )
 target_link_libraries(range_image_core
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(range_image_core PRIVATE -g -std=c++11 -Wall -ftree-vectorize -fopt-info-vec-optimized ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno -ffinite-math-only #-ffinite-math-only and -fno-trapping-math.
-  #${OpenMP_CXX_FLAGS}
-  )
-  
-add_dependencies(range_image_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-
-# This is a separate library partly to reduce compile times, but mostly because it needs to be compiled with certain 'fast-math' optimization options
 add_library(can_image_core src/can_image_core.cpp)
+add_dependencies(can_image_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_compile_features(can_image_core PUBLIC cxx_std_11)
+target_compile_options(can_image_core PRIVATE -ftree-vectorize ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno -ffinite-math-only #-ffinite-math-only and -fno-trapping-math.
+   )
 target_link_libraries(can_image_core
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(can_image_core PRIVATE -g -std=c++11 -Wall -ftree-vectorize -fopt-info-vec-optimized ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno -ffinite-math-only #-ffinite-math-only and -fno-trapping-math.
-  #${OpenMP_CXX_FLAGS}
-  )
-  
-add_dependencies(can_image_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-
-  
 ##Verified that ${OpenMP_CXX_FLAGS} contains what it should
 #message(STATUS=WARNING ${OpenMP_CXX_FLAGS})
   
 add_library(point_cloud_core src/point_cloud_core.cpp)
+add_dependencies(point_cloud_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_compile_features(point_cloud_core PUBLIC cxx_std_11)
+target_compile_options(point_cloud_core PRIVATE -ftree-vectorize ${SHOW_VECTORIZE_INFO} ${OpenMP_CXX_FLAGS} #-funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
+   )
 target_link_libraries(point_cloud_core
    ${catkin_LIBRARIES}
    #${OpenCV_LIBRARIES}
    #${PCL_LIBRARIES}
-   #${OpenMP_CXX_FLAGS}
+   #${OpenMP_CXX_FLAGS}    #Not currently needed
    )
 
-target_compile_options(point_cloud_core PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} ${OpenMP_CXX_FLAGS} #-funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
-  ${OpenMP_CXX_FLAGS}
-  )
-  
-add_dependencies(point_cloud_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-
-
 add_library(projected_point_cloud_core src/projected_point_cloud_core.cpp)
+add_dependencies(projected_point_cloud_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_compile_features(projected_point_cloud_core PUBLIC cxx_std_11)
+target_compile_options(projected_point_cloud_core PRIVATE -ftree-vectorize ${SHOW_VECTORIZE_INFO} ${OpenMP_CXX_FLAGS} #-funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
+   )
 target_link_libraries(projected_point_cloud_core
    ${catkin_LIBRARIES}
    #${OpenCV_LIBRARIES}
@@ -216,29 +207,18 @@ target_link_libraries(projected_point_cloud_core
    #${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(projected_point_cloud_core PRIVATE -g -std=c++11 -Wall -ftree-vectorize ${SHOW_VECTORIZE_INFO} ${OpenMP_CXX_FLAGS} #-funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
-  ${OpenMP_CXX_FLAGS}
-  )
-  
-add_dependencies(projected_point_cloud_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-
-
-
 add_library(point_transformer src/point_transformer.cpp)
+add_dependencies(point_transformer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_compile_features(point_transformer PUBLIC cxx_std_11)
+target_compile_options(point_transformer PRIVATE -ftree-vectorize   ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno ${OpenMP_CXX_FLAGS}#-finite-math-only and -fno-trapping-math. -ffinite-math-only 
+   )
+target_compile_definitions(point_transformer PRIVATE ${PLATFORM_FLAGS})
 target_link_libraries(point_transformer
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )
 
-   #-fopt-info-vec-all
-target_compile_options(point_transformer PRIVATE -g -std=c++11 -Wall -ftree-vectorize   ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno   ${OpenMP_CXX_FLAGS}#-finite-math-only and -fno-trapping-math. -ffinite-math-only 
-
-  )
-target_compile_definitions(point_transformer PRIVATE ${PLATFORM_FLAGS})
-
-add_dependencies(point_transformer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
   
 ## Declare a C++ executable
@@ -258,9 +238,12 @@ add_dependencies(point_transformer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_
 ## same as for the library above
 #add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-
+#EGOCYLINDRICAL_PROPAGATOR
 add_library(egocylindrical_propagator src/egocylindrical_propagator.cpp)
-
+add_dependencies(egocylindrical_propagator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_compile_options(egocylindrical_propagator PRIVATE ${SHOW_VECTORIZE_INFO} -ftree-vectorize -funsafe-math-optimizations ${OpenMP_CXX_FLAGS} 
+   )
+target_compile_definitions(egocylindrical_propagator PRIVATE ${PLATFORM_FLAGS})
 target_link_libraries(egocylindrical_propagator
    point_transformer
    ${catkin_LIBRARIES}
@@ -268,113 +251,53 @@ target_link_libraries(egocylindrical_propagator
    #${PCL_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )
-add_dependencies(egocylindrical_propagator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_compile_options(egocylindrical_propagator PRIVATE -g -std=c++11 -Wall ${SHOW_VECTORIZE_INFO} -ftree-vectorize -funsafe-math-optimizations ${OpenMP_CXX_FLAGS} 
-  )
-target_compile_definitions(egocylindrical_propagator PRIVATE ${PLATFORM_FLAGS})
-
-  
-  
-  
-  
-  
 #EGOCYLINDRICAL_PROPAGATOR_NODE
 add_executable(egocylindrical_propagator_node src/egocylindrical_propagator_node.cpp)
-
 target_link_libraries(egocylindrical_propagator_node
    egocylindrical_propagator
-   ${OpenMP_CXX_FLAGS}
    ${catkin_LIBRARIES}
    )
    
-target_compile_options(egocylindrical_propagator_node PRIVATE -g -std=c++11 -Wall)
-
-
+#EGOCYLINDRICAL_PROPAGATOR_NODELET
 add_library(egocylindrical_propagator_nodelet MODULE src/egocylindrical_propagator_nodelet.cpp)
-
 target_link_libraries(egocylindrical_propagator_nodelet
    egocylindrical_propagator
-   ${OpenMP_CXX_FLAGS}
    ${catkin_LIBRARIES}
    )
-
-target_compile_options(egocylindrical_propagator_nodelet PRIVATE -g -std=c++11 -Wall)
-
-
 
 
 #POINT_CLOUD_GENERATOR
 add_library(point_cloud_generator src/point_cloud_generator.cpp)
-
-#TODO: Add dependencies as needed
-add_dependencies(point_cloud_generator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(point_cloud_generator
    point_cloud_core
    ${catkin_LIBRARIES}
-   ${OpenMP_CXX_FLAGS}
    )
-
-target_compile_options(point_cloud_generator PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
-  #${OpenMP_CXX_FLAGS}
-  )
-
 
 #POINT_CLOUD_NODE
 add_executable(point_cloud_node src/point_cloud_node.cpp)
-
-#TODO: Add only necessary dependencies
-add_dependencies(point_cloud_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(point_cloud_node
    point_cloud_generator
    ${catkin_LIBRARIES}
-   ${OpenCV_LIBRARIES}
-   ${PCL_LIBRARIES}
-   ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(point_cloud_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
-  #${OpenMP_CXX_FLAGS}
-  )
-  
-  
 #POINT_CLOUD_NODELET
 add_library(point_cloud_nodelet MODULE src/point_cloud_nodelet.cpp)
-
-target_compile_options(point_cloud_nodelet PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
-  #${OpenMP_CXX_FLAGS}
-  )
-
 target_link_libraries(point_cloud_nodelet
    point_cloud_generator
    ${catkin_LIBRARIES}
    )
 
+
 #PROJECTED_POINT_CLOUD_GENERATOR
 add_library(projected_point_cloud_generator src/projected_point_cloud_generator.cpp)
-
-#TODO: Add dependencies as needed
-add_dependencies(projected_point_cloud_generator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(projected_point_cloud_generator
    projected_point_cloud_core
    ${catkin_LIBRARIES}
-   ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(projected_point_cloud_generator PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
-  #${OpenMP_CXX_FLAGS}
-  )
-
-
-#POINT_CLOUD_NODE
+#PROJECTED_POINT_CLOUD_NODE
 add_executable(projected_point_cloud_node src/projected_point_cloud_node.cpp)
-
-#TODO: Add only necessary dependencies
-add_dependencies(projected_point_cloud_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(projected_point_cloud_node
    projected_point_cloud_generator
    ${catkin_LIBRARIES}
@@ -382,19 +305,9 @@ target_link_libraries(projected_point_cloud_node
    ${PCL_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )
-
-target_compile_options(projected_point_cloud_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
-  #${OpenMP_CXX_FLAGS}
-  )
   
-  
-#POINT_CLOUD_NODELET
+#PROJECTED_POINT_CLOUD_NODELET
 add_library(projected_point_cloud_nodelet MODULE src/projected_point_cloud_nodelet.cpp)
-
-target_compile_options(projected_point_cloud_nodelet PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
-  #${OpenMP_CXX_FLAGS}
-  )
-
 target_link_libraries(projected_point_cloud_nodelet
    projected_point_cloud_generator
    ${catkin_LIBRARIES}
@@ -403,10 +316,6 @@ target_link_libraries(projected_point_cloud_nodelet
 
 #RANGE_IMAGE_GENERATOR
 add_library(range_image_generator src/range_image_generator.cpp)
-
-#TODO: Add dependencies as needed
-add_dependencies(range_image_generator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(range_image_generator
    range_image_core
    can_image_core
@@ -414,36 +323,19 @@ target_link_libraries(range_image_generator
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(range_image_generator PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
-  #${OpenMP_CXX_FLAGS}
-  )
-
 #RANGE_IMAGE_NODE
 add_executable(range_image_node src/range_image_node.cpp)
-
-#TODO: Add dependencies as needed
-add_dependencies(range_image_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(range_image_node
    range_image_generator
    ${catkin_LIBRARIES}
    )
-
-target_compile_options(range_image_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
-  #${OpenMP_CXX_FLAGS}
-  )
-  
   
 #RANGE_IMAGE_NODELET
 add_library(range_image_nodelet MODULE src/range_image_nodelet.cpp)
-
 target_link_libraries(range_image_nodelet
    range_image_generator
    ${catkin_LIBRARIES}
    )
-
-   
-   
    
    
 # 
@@ -486,138 +378,90 @@ target_link_libraries(range_image_nodelet
    
 #RANGE_IMAGE_CONVERTER
 add_library(range_image_converter src/range_image_converter.cpp)
-
-#TODO: Add dependencies as needed
 add_dependencies(range_image_converter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+target_compile_features(range_image_converter PUBLIC cxx_std_11)
 target_link_libraries(range_image_converter
    ${catkin_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )
-
-target_compile_options(range_image_converter PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
-  #${OpenMP_CXX_FLAGS}
-  )
-  
   
 #RANGE_IMAGE_CONVERTER_NODE
 add_executable(range_image_converter_node src/range_image_converter_node.cpp)
-
-#TODO: Add dependencies as needed
 add_dependencies(range_image_converter_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(range_image_converter_node
    range_image_converter
    ${catkin_LIBRARIES}
    )
 
-target_compile_options(range_image_converter_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
-  #${OpenMP_CXX_FLAGS}
-  )
-  
 
 #RANGE_IMAGE_INFLATOR
 add_library(range_image_inflator src/range_image_inflator_generator.cpp)
-
-#TODO: Add dependencies as needed
 add_dependencies(range_image_inflator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+target_compile_features(range_image_inflator PUBLIC cxx_std_11)
 target_link_libraries(range_image_inflator
    ${catkin_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )
-
-target_compile_options(range_image_inflator PRIVATE -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations)
-  
   
 ##RANGE_IMAGE_INFLATOR_NODE
 add_executable(range_image_inflator_node src/range_image_inflator_node.cpp)
-
-#TODO: Add dependencies as needed
 add_dependencies(range_image_inflator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(range_image_inflator_node
    range_image_inflator
    ${catkin_LIBRARIES}
    )
 
-target_compile_options(range_image_inflator_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
-  #${OpenMP_CXX_FLAGS}
-  )
-
 #RANGE_IMAGE_INFLATOR_NODELET
 add_library(egocylindrical_range_image_inflator_nodelet MODULE src/range_image_inflator_nodelet.cpp)
-
 add_dependencies(egocylindrical_range_image_inflator_nodelet ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+target_compile_features(egocylindrical_range_image_inflator_nodelet PUBLIC cxx_std_11)
 target_link_libraries(egocylindrical_range_image_inflator_nodelet
    range_image_inflator
    ${catkin_LIBRARIES}
    )
 
-target_compile_options(egocylindrical_range_image_inflator_nodelet PRIVATE -std=c++11 -Wall)
-
 
 #CAN_IMAGE_INFLATOR
 add_library(can_image_inflator src/can_image_inflator_generator.cpp)
-
-#TODO: Add dependencies as needed
 add_dependencies(can_image_inflator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+target_compile_features(can_image_inflator PUBLIC cxx_std_11)
 target_link_libraries(can_image_inflator
    ${catkin_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
    )
 
-target_compile_options(can_image_inflator PRIVATE -std=c++11 -Wall ${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations)
-
-
-
 ##RANGE_IMAGE_INFLATOR_NODE
 add_executable(can_image_inflator_node src/can_image_inflator_node.cpp)
-
-#TODO: Add dependencies as needed
 add_dependencies(can_image_inflator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+target_compile_features(can_image_inflator_node PUBLIC cxx_std_11)
 target_link_libraries(can_image_inflator_node
    can_image_inflator
    ${catkin_LIBRARIES}
    )
 
-target_compile_options(can_image_inflator_node PRIVATE -std=c++11 -Wall #${OpenMP_CXX_FLAGS} -ftree-vectorize -funsafe-math-optimizations 
-  #${OpenMP_CXX_FLAGS}
-  )
-
-
 #RANGE_IMAGE_CONVERTER_NODELET
 add_library(egocylindrical_range_image_converter_nodelet MODULE src/range_image_converter_nodelet.cpp)
-
 add_dependencies(egocylindrical_range_image_converter_nodelet ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(egocylindrical_range_image_converter_nodelet
    range_image_converter
    ${catkin_LIBRARIES}
    )
 
-target_compile_options(egocylindrical_range_image_converter_nodelet PRIVATE -std=c++11 -Wall)
-
-
   
 #APPROXIMATION_VALIDATION
 add_executable(approximation_validation src/approximation_validation.cpp)
+add_dependencies(approximation_validation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})  
 target_link_libraries(approximation_validation
    ${catkin_LIBRARIES}
    )
-add_dependencies(approximation_validation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})  
-  
-  
-  
-  
+
+
 add_executable(filter_node src/depth_image_filter.cpp)
+add_dependencies(filter_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(filter_node
    ${catkin_LIBRARIES}
    )
-add_dependencies(filter_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 
    
 #############
