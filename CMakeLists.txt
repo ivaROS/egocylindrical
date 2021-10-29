@@ -44,6 +44,12 @@ else()
     set(PLATFORM_FLAGS "")
 endif()
 
+set(CXX11_FEATURES
+    cxx_auto_type
+    cxx_constexpr
+    cxx_nullptr
+)
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -156,12 +162,12 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
 )
 
-
+#message(STATUS=WARNING ${CMAKE_CXX_COMPILE_FEATURES})
 
 # This is a separate library partly to reduce compile times, but mostly because it needs to be compiled with certain 'fast-math' optimization options
 add_library(range_image_core src/range_image_core.cpp)
 add_dependencies(range_image_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_compile_features(range_image_core PUBLIC cxx_std_11)
+target_compile_features(range_image_core PUBLIC ${CXX11_FEATURES})
 target_compile_options(range_image_core PRIVATE -ftree-vectorize ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno -ffinite-math-only #-ffinite-math-only and -fno-trapping-math.
    )
 target_link_libraries(range_image_core
@@ -172,7 +178,7 @@ target_link_libraries(range_image_core
 
 add_library(can_image_core src/can_image_core.cpp)
 add_dependencies(can_image_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_compile_features(can_image_core PUBLIC cxx_std_11)
+target_compile_features(can_image_core PUBLIC ${CXX11_FEATURES})
 target_compile_options(can_image_core PRIVATE -ftree-vectorize ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno -ffinite-math-only #-ffinite-math-only and -fno-trapping-math.
    )
 target_link_libraries(can_image_core
@@ -186,7 +192,7 @@ target_link_libraries(can_image_core
   
 add_library(point_cloud_core src/point_cloud_core.cpp)
 add_dependencies(point_cloud_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_compile_features(point_cloud_core PUBLIC cxx_std_11)
+target_compile_features(point_cloud_core PUBLIC ${CXX11_FEATURES})
 target_compile_options(point_cloud_core PRIVATE -ftree-vectorize ${SHOW_VECTORIZE_INFO} ${OpenMP_CXX_FLAGS} #-funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
    )
 target_link_libraries(point_cloud_core
@@ -198,7 +204,7 @@ target_link_libraries(point_cloud_core
 
 add_library(projected_point_cloud_core src/projected_point_cloud_core.cpp)
 add_dependencies(projected_point_cloud_core ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_compile_features(projected_point_cloud_core PUBLIC cxx_std_11)
+target_compile_features(projected_point_cloud_core PUBLIC ${CXX11_FEATURES})
 target_compile_options(projected_point_cloud_core PRIVATE -ftree-vectorize ${SHOW_VECTORIZE_INFO} ${OpenMP_CXX_FLAGS} #-funsafe-math-optimizations -ffinite-math-only -fno-math-errno #-finite-math-only and -fno-trapping-math.
    )
 target_link_libraries(projected_point_cloud_core
@@ -210,7 +216,7 @@ target_link_libraries(projected_point_cloud_core
 
 add_library(point_transformer src/point_transformer.cpp)
 add_dependencies(point_transformer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_compile_features(point_transformer PUBLIC cxx_std_11)
+target_compile_features(point_transformer PUBLIC ${CXX11_FEATURES})
 target_compile_options(point_transformer PRIVATE -ftree-vectorize   ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno ${OpenMP_CXX_FLAGS}#-finite-math-only and -fno-trapping-math. -ffinite-math-only 
    )
 target_compile_definitions(point_transformer PRIVATE ${PLATFORM_FLAGS})
@@ -380,7 +386,7 @@ target_link_libraries(range_image_nodelet
 #RANGE_IMAGE_CONVERTER
 add_library(range_image_converter src/range_image_converter.cpp)
 add_dependencies(range_image_converter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_compile_features(range_image_converter PUBLIC cxx_std_11)
+target_compile_features(range_image_converter PUBLIC ${CXX11_FEATURES})
 target_link_libraries(range_image_converter
    ${catkin_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
@@ -398,7 +404,7 @@ target_link_libraries(range_image_converter_node
 #RANGE_IMAGE_INFLATOR
 add_library(range_image_inflator src/range_image_inflator_generator.cpp)
 add_dependencies(range_image_inflator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_compile_features(range_image_inflator PUBLIC cxx_std_11)
+target_compile_features(range_image_inflator PUBLIC ${CXX11_FEATURES})
 target_link_libraries(range_image_inflator
    ${catkin_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
@@ -415,7 +421,7 @@ target_link_libraries(range_image_inflator_node
 #RANGE_IMAGE_INFLATOR_NODELET
 add_library(egocylindrical_range_image_inflator_nodelet MODULE src/range_image_inflator_nodelet.cpp)
 add_dependencies(egocylindrical_range_image_inflator_nodelet ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_compile_features(egocylindrical_range_image_inflator_nodelet PUBLIC cxx_std_11)
+target_compile_features(egocylindrical_range_image_inflator_nodelet PUBLIC ${CXX11_FEATURES})
 target_link_libraries(egocylindrical_range_image_inflator_nodelet
    range_image_inflator
    ${catkin_LIBRARIES}
@@ -425,7 +431,7 @@ target_link_libraries(egocylindrical_range_image_inflator_nodelet
 #CAN_IMAGE_INFLATOR
 add_library(can_image_inflator src/can_image_inflator_generator.cpp)
 add_dependencies(can_image_inflator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_compile_features(can_image_inflator PUBLIC cxx_std_11)
+target_compile_features(can_image_inflator PUBLIC ${CXX11_FEATURES})
 target_link_libraries(can_image_inflator
    ${catkin_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
@@ -434,7 +440,7 @@ target_link_libraries(can_image_inflator
 ##RANGE_IMAGE_INFLATOR_NODE
 add_executable(can_image_inflator_node src/can_image_inflator_node.cpp)
 add_dependencies(can_image_inflator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_compile_features(can_image_inflator_node PUBLIC cxx_std_11)
+target_compile_features(can_image_inflator_node PUBLIC ${CXX11_FEATURES})
 target_link_libraries(can_image_inflator_node
    can_image_inflator
    ${catkin_LIBRARIES}
@@ -451,7 +457,8 @@ target_link_libraries(egocylindrical_range_image_converter_nodelet
   
 #APPROXIMATION_VALIDATION
 add_executable(approximation_validation src/approximation_validation.cpp)
-add_dependencies(approximation_validation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})  
+add_dependencies(approximation_validation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_compile_features(approximation_validation PUBLIC ${CXX11_FEATURES})
 target_link_libraries(approximation_validation
    ${catkin_LIBRARIES}
    )
@@ -459,6 +466,7 @@ target_link_libraries(approximation_validation
 
 add_executable(filter_node src/depth_image_filter.cpp)
 add_dependencies(filter_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_compile_features(filter_node PUBLIC ${CXX11_FEATURES})
 target_link_libraries(filter_node
    ${catkin_LIBRARIES}
    )
