@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   image_geometry
   image_transport
   nodelet
+  pcl_ros
   roscpp
   rospy
   sensor_msgs
