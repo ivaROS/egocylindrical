@@ -68,15 +68,28 @@ namespace egocylindrical
 
     void EgoCylindricalPropagator::update(const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
     {
-        if(old_pts_ && old_pts_->getHeader().stamp > cam_info->header.stamp)
+        //TODO: Reset between runs so that the reset function returns once reset is complete
         {
-          old_pts_ = nullptr;
+            WriteLock lock(reset_mutex_);
+            if(should_reset_)
+            {
+                old_pts_ = nullptr;
+                should_reset_ = false;
+            }
         }
-        else if(old_pts_ && old_pts_->getHeader().stamp == cam_info->header.stamp)
+        if(old_pts_)
         {
-          ROS_WARN_STREAM_NAMED("msg_timestamps","Repeat stamps received! " << cam_info->header.stamp);
-          return;
+            if(old_pts_->getHeader().stamp > cam_info->header.stamp)
+            {
+                old_pts_ = nullptr;
+            }
+            else if(old_pts_->getHeader().stamp == cam_info->header.stamp)
+            {
+              ROS_WARN_STREAM_NAMED("msg_timestamps","Repeat stamps received! " << cam_info->header.stamp);
+              return;
+            }
         }
+
         //TODO: Warn of out-of-order images
         //TODO: If clock jumps back in time, reset egocylinder
         
@@ -84,7 +97,9 @@ namespace egocylindrical
         ROS_DEBUG_STREAM_NAMED("msg_timestamps.detailed","[egocylinder] Received [" << cam_info->header.stamp << "] at [" << ros::WallTime::now() << "]");
         
         if(old_pts_)
+        {
             ROS_DEBUG_STREAM_NAMED("msg_timestamps","Previous stamp " << old_pts_->getHeader().stamp);
+        }
         ros::WallTime start = ros::WallTime::now();
         
         //new_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
@@ -180,6 +195,12 @@ namespace egocylindrical
         }
     }
     
+    void EgoCylindricalPropagator::reset()
+    {
+        WriteLock lock(reset_mutex_);
+        should_reset_ = true;
+    }
+    
     void EgoCylindricalPropagator::configCB(const egocylindrical::PropagatorConfig &config, uint32_t level)
     {
         WriteLock lock(config_mutex_);
@@ -217,6 +238,9 @@ namespace egocylindrical
         
         pnh_.getParam("fixed_frame_id", fixed_frame_id_);
         
+        //reset_sub_ = pnh_.advertise("reset", 1, &EgoCylindricalPropagator::reset, this);      void reset(const std_msgs::Empty::ConstPtr& msg);
+        reset_sub_ = nh_.subscribe<std_msgs::Empty>("reset", 1, [this](const std_msgs::Empty::ConstPtr&) { reset(); });
+
         // Setup publishers
         ros::SubscriberStatusCallback image_cb = boost::bind(&EgoCylindricalPropagator::connectCB, this);        
         ec_pub_ = nh_.advertise<egocylindrical::EgoCylinderPoints>(points_topic, 1, image_cb, image_cb);
@@ -244,7 +268,8 @@ namespace egocylindrical
         pnh_(pnh),
         buffer_(),
         tf_listener_(buffer_),
-        it_(nh)
+        it_(nh),
+        should_reset_(false)
     {
         reconfigure_server_ = std::make_shared<ReconfigureServer>(pnh_);
         

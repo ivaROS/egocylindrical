@@ -45,12 +45,11 @@ class EgoCylindricalPropagator{
 
   
 private:
-    Mutex config_mutex_;
+    Mutex config_mutex_, reset_mutex_;
     
     int cylinder_height_;
     int cylinder_width_;
     double hfov_, vfov_;
-            
 
     utils::ECWrapperPtr new_pts_, old_pts_, transformed_pts_, next_pts_;
 
@@ -78,11 +77,13 @@ private:
     boost::shared_ptr<synchronizer> timeSynchronizer;
     
     ros::Publisher ec_pub_, pc_pub_, info_pub_;
+    ros::Subscriber reset_sub_;
     
     egocylindrical::PropagatorConfig config_;
     typedef dynamic_reconfigure::Server<egocylindrical::PropagatorConfig> ReconfigureServer;
     std::shared_ptr<ReconfigureServer> reconfigure_server_;
     
+    bool should_reset_;
 
 
     void propagateHistory(utils::ECWrapper& old_pnts, utils::ECWrapper& new_pnts, std_msgs::Header new_header);
@@ -106,6 +107,7 @@ public:
     sensor_msgs::Image::ConstPtr getRawRangeImage();
 
     virtual bool init();
+    void reset();
 
 };
 
