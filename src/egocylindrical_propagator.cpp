@@ -5,6 +5,7 @@
 #include <egocylindrical/egocylindrical.h>
 #include <egocylindrical/point_transformer.h>
 #include <egocylindrical/depth_image_core.h>
+#include <egocylindrical/depth_image_inserter.h>
 
 //#include <tf/LinearMath/Matrix3x3.h>
 //#include <cv_bridge/cv_bridge.h>
@@ -15,7 +16,6 @@
 #include <image_transport/image_transport.h>
 //#include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
-
 //#include <valgrind/callgrind.h>
 
 namespace egocylindrical
@@ -52,17 +52,19 @@ namespace egocylindrical
 
     void EgoCylindricalPropagator::addDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
     {
-        if(pc_pub_.getNumSubscribers()>0)
-        {
-          ReadLock lock(config_mutex_);
-          sensor_msgs::PointCloud2::Ptr pcloud_msg;
-          depth_remapper_.update(cylindrical_points, image, cam_info, pcloud_msg, config_.filter_y_min, config_.filter_y_max);
-          pc_pub_.publish(pcloud_msg);
-        }
-        else
-        {
-            depth_remapper_.update(cylindrical_points, image, cam_info);
-        }
+        dii_.insert(cylindrical_points, image, cam_info);
+        
+//         if(pc_pub_.getNumSubscribers()>0)
+//         {
+//           ReadLock lock(config_mutex_);
+//           sensor_msgs::PointCloud2::Ptr pcloud_msg;
+//           depth_remapper_.update(cylindrical_points, image, cam_info, pcloud_msg, config_.filter_y_min, config_.filter_y_max);
+//           pc_pub_.publish(pcloud_msg);
+//         }
+//         else
+//         {
+//             depth_remapper_.update(cylindrical_points, image, cam_info);
+//         }
     }
 
 
@@ -107,6 +109,14 @@ namespace egocylindrical
         new_pts_ = next_pts_;
         bool allocate_next = !old_pts_ || old_pts_->isLocked();
         
+        if(!cfh_.updateTransforms(image->header))
+        {
+            ROS_WARN_STREAM("Failed to update transforms!");
+            return;
+        }
+        
+        std_msgs::Header target_header = cfh_.getTargetHeader();
+        
         #pragma omp parallel sections num_threads(2) if(allocate_next)
         {
           #pragma omp section
@@ -117,12 +127,12 @@ namespace egocylindrical
                 {
                     ros::WallTime start = ros::WallTime::now();
                     
-                    EgoCylindricalPropagator::propagateHistory(*old_pts_, *new_pts_, image->header);
+                    EgoCylindricalPropagator::propagateHistory(*old_pts_, *new_pts_, target_header);
                     //ROS_INFO_STREAM("Propagation took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
                 }
                 else
                 {
-                    new_pts_->setHeader(image->header);
+                    new_pts_->setHeader(target_header);
                 }
                 
             }
@@ -130,7 +140,7 @@ namespace egocylindrical
             {
                 ROS_WARN_STREAM("Problem finding transform:\n" <<ex.what());
             }
-            
+            //TODO: Decide how to handle transform failure
             
             {
                 ros::WallTime temp = ros::WallTime::now();
@@ -210,7 +220,6 @@ namespace egocylindrical
     }
     
     
-    // TODO: add dynamic reconfigure for cylinder height/width, vfov, etc
     bool EgoCylindricalPropagator::init()
     {
         reconfigure_server_->setCallback(boost::bind(&EgoCylindricalPropagator::configCB, this, _1, _2));
@@ -238,7 +247,9 @@ namespace egocylindrical
         
         pnh_.getParam("fixed_frame_id", fixed_frame_id_);
         
-        //reset_sub_ = pnh_.advertise("reset", 1, &EgoCylindricalPropagator::reset, this);      void reset(const std_msgs::Empty::ConstPtr& msg);
+        dii_.init();
+        cfh_.init();
+        
         reset_sub_ = nh_.subscribe<std_msgs::Empty>("reset", 1, [this](const std_msgs::Empty::ConstPtr&) { reset(); });
 
         // Setup publishers
@@ -268,11 +279,12 @@ namespace egocylindrical
         pnh_(pnh),
         buffer_(),
         tf_listener_(buffer_),
+        dii_(buffer_, pnh),
+        cfh_(buffer_, pnh),
         it_(nh),
         should_reset_(false)
     {
         reconfigure_server_ = std::make_shared<ReconfigureServer>(pnh_);
-        
         
     }
     

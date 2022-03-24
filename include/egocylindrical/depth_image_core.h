@@ -195,7 +195,7 @@ namespace egocylindrical
             AlignedVector<long int> inds_;
             AlignedVector<float> x_;
             AlignedVector<float> y_;
-            AlignedVector<float> z_;
+            AlignedVector<float> z_;  //TODO: Remove all references to z_
 
             int num_pixels_;
             

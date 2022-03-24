@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_msgs
   tf2_ros
   tf2_sensor_msgs
+  tf2_geometry_msgs
   message_generation
   dynamic_reconfigure
   benchmarking_tools #Probably just temporary to avoid adding any custom dependencies to this package.
@@ -146,7 +147,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES egocylindrical_propagator
-  CATKIN_DEPENDS cv_bridge geometry_msgs image_geometry image_transport roscpp rospy sensor_msgs std_msgs tf tf2 tf2_ros
+  CATKIN_DEPENDS cv_bridge geometry_msgs image_geometry image_transport roscpp rospy sensor_msgs std_msgs tf tf2 tf2_ros tf2_sensor_msgs tf2_geometry_msgs 
 #  DEPENDS system_lib
 )
 

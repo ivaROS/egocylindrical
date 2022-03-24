@@ -725,10 +725,16 @@ namespace egocylindrical
             }
             
             inline
+            int worldToCylindricalIdx(const cv::Point3f& point) const
+            {
+              return utils::worldToCylindricalIdx(point, width_, height_, hscale_, vscale_, 0, 0);
+            }
+            
+            inline
             int worldToCylindricalIdx(float x, float y, float z) const
             {
               cv::Point3_<float> point(x,y,z);
-              return utils::worldToCylindricalIdx(point, width_, height_, hscale_, vscale_, 0, 0);
+              return worldToCylindricalIdx(point);
             }
             
             inline
@@ -746,10 +752,16 @@ namespace egocylindrical
             }
             
             inline
+            int worldToCanIdx(const cv::Point3f& point) const
+            {
+              return utils::worldToCanIdx(point, can_width_, canscale_) + getCols();
+            }
+            
+            inline
             int worldToCanIdx(float x, float y, float z) const
             {
               cv::Point3_<float> point(x,y,z);
-              return utils::worldToCanIdx(point, can_width_, canscale_) + getCols();
+              return worldToCanIdx(point);
             }
             
             inline

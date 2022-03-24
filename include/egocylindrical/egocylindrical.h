@@ -7,6 +7,8 @@
 
 #include <egocylindrical/utils.h>
 #include <egocylindrical/depth_image_core.h>
+#include <egocylindrical/coordinate_frame_helper.h>
+#include <egocylindrical/depth_image_inserter.h>
 
 #include <ros/ros.h>
 #include <opencv2/core.hpp>
@@ -65,6 +67,8 @@ protected:
   
 private:
     tf2_ros::TransformListener tf_listener_;
+    utils::DepthImageInserter dii_;
+    utils::CoordinateFrameHelper cfh_;
     
     image_transport::ImageTransport it_;
     image_transport::SubscriberFilter depthSub;
