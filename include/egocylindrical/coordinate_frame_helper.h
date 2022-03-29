@@ -52,10 +52,11 @@ namespace egocylindrical
                 bool status = pnh_.getParam("fixed_frame_id", fixed_frame_id_);
                 
                 CoordinateFrameDefinition cfd;
+                //Is origin_fixed_frame_id even necessary? Seems like egocan_stabilized's origin must always be at the origin of the camera optical frame
                 status &= pnh_.getParam("origin_fixed_frame_id", cfd.origin_fixed_frame_id);
                 status &= pnh_.getParam("orientation_fixed_frame_id", cfd.orientation_fixed_frame_id);
                 
-                cfd.pose.header.frame_id = cfd.origin_fixed_frame_id;
+                cfd.pose.header.frame_id = cfd.orientation_fixed_frame_id;
                 cfd.pose.pose.orientation.w=1;
                 
                 if(status)
@@ -207,7 +208,7 @@ namespace egocylindrical
                 q.x=-0.500;
                 q.y=0.500;
                 q.z=-0.500;
-                q.w=-0.500;
+                q.w=0.500;
 
                 ROS_INFO_STREAM("[updateECCTransform] Updated transform! " << stamp);
 
@@ -234,12 +235,24 @@ namespace egocylindrical
                         return false;
                     }
                     
-                    auto& t = offset_transform_.transform.translation;
-                    const auto& pt = des_origin_pose.pose.position;
+                    if(0) //Disable this until have use for it
+                    {
+                        auto& t = offset_transform_.transform.translation;
+                        const auto& pt = des_origin_pose.pose.position;
+                        
+                        t.x = pt.x;
+                        t.y = pt.y;
+                        t.z = pt.z;
+                        
+                        // For now, this likely represents an error
+                        if(t.x != 0 || t.y != 0 || t.z != 0)
+                        {
+                            ROS_WARN_STREAM_NAMED("update_offset_transform", "The specified offset has a non-zero translational component, are you sure you want to do this?");
+                        }
+                    }
                     
-                    t.x = pt.x;
-                    t.y = pt.y;
-                    t.z = pt.z;
+                    //TODO: Ensure that only 'yaw' is captured
+                    
                     offset_transform_.transform.rotation = des_origin_pose.pose.orientation;
                     offset_transform_.header.frame_id =  getECSFrameId();
                     offset_transform_.header.stamp = des_origin_pose.header.stamp;
