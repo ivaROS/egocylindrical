@@ -18,7 +18,7 @@ namespace egocylindrical
 {
     namespace utils
     {
-        //additional precomputation
+        //whole image vectorization w/ inds
         template <typename T>
         void insertPoints4(utils::ECWrapper& cylindrical_points, const cv::Mat image, const CleanCameraModel& cam_model, const geometry_msgs::TransformStamped transform)
         {
@@ -37,7 +37,7 @@ namespace egocylindrical
             const uint scale = DepthScale<T>::scale();
             
             AlignedVector<float> ranges(num_pixels, dNaN), nx(num_pixels, dNaN), ny(num_pixels, dNaN), nz(num_pixels, dNaN);
-            AlignedVector<uint32_t> inds(num_pixels);
+            AlignedVector<int32_t> inds(num_pixels);
             
             const T* const imgptr = (T* const) image.data;
             
@@ -71,8 +71,10 @@ namespace egocylindrical
                     int cyl_idx = cylindrical_points.worldToCylindricalIdx(transformed_pnt);
                     
                     float range_sq = worldToRangeSquared(transformed_pnt);
+                    
+                    //Only insert actual points (works for both float and uint16)
+                    ranges[i] = (depth>0) ? range_sq : dNaN;    
                     inds[i] = cyl_idx;
-                    ranges[i] = range_sq;
                 }                
             }
             
@@ -429,11 +431,11 @@ namespace egocylindrical
 
             if(image.depth() == CV_32FC1)
             {
-                insertPoints3<float>(cylindrical_points, image, cam_model, transform);
+                insertPoints4<float>(cylindrical_points, image, cam_model, transform);
             }
             else if (image.depth() == CV_16UC1)
             {
-                insertPoints3<uint16_t>(cylindrical_points, image, cam_model, transform);
+                insertPoints4<uint16_t>(cylindrical_points, image, cam_model, transform);
             }
         }
 
