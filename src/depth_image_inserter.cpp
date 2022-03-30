@@ -179,7 +179,8 @@ namespace egocylindrical
                     
                     float range_sq = worldToRangeSquared(transformed_pnt);
                     
-                    ranges[i] = range_sq;
+                    //Only insert actual points (works for both float and uint16)
+                    ranges[i] = (depth>0) ? range_sq : dNaN;
                 }                
             }
             
@@ -251,7 +252,6 @@ namespace egocylindrical
             const uint scale = DepthScale<T>::scale();
             
             AlignedVector<float> ranges(num_pixels, dNaN), nx(num_pixels, dNaN), ny(num_pixels, dNaN), nz(num_pixels, dNaN);
-            AlignedVector<uint32_t> inds(num_pixels);
             
             const T* const imgptr = (T* const) image.data;
             
@@ -273,7 +273,6 @@ namespace egocylindrical
                     
                     cv::Point2d pt(col, row);
 
-                    //if(depth>0)  //Only insert actual points (works for both float and uint16)
                     {                        
                         cv::Point3f ray = cam_model.projectPixelTo3dRay(pt);
                         cv::Point3f world_pnt = ray * (((float) depth)/scale);
@@ -287,7 +286,8 @@ namespace egocylindrical
                         
                         float range_sq = worldToRangeSquared(transformed_pnt);
                         
-                        ranges[i] = range_sq;
+                        //Only insert actual points (works for both float and uint16)
+                        ranges[i] = (depth>0) ? range_sq : dNaN;
                     }
                     i++;
                 }
