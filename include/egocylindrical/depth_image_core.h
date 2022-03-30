@@ -3,7 +3,9 @@
 
 #include <egocylindrical/depth_image_common.h>
 #include <egocylindrical/ecwrapper.h>
+
 #include <image_geometry/pinhole_camera_model.h>
+#include <cv_bridge/cv_bridge.h>
 
 #include <pcl_ros/point_cloud.h>
 #include <sensor_msgs/PointCloud2.h>
