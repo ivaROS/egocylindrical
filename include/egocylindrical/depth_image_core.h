@@ -1,34 +1,18 @@
 #ifndef EGOCYLINDRICAL_DEPTH_IMAGE_CORE_H
 #define EGOCYLINDRICAL_DEPTH_IMAGE_CORE_H
 
-
+#include <egocylindrical/depth_image_common.h>
 #include <egocylindrical/ecwrapper.h>
 #include <image_geometry/pinhole_camera_model.h>
 
 #include <pcl_ros/point_cloud.h>
 #include <sensor_msgs/PointCloud2.h>
 
-#include <egocylindrical/utils.h>
-
 namespace egocylindrical
 {
     namespace utils
     {
 
-      template<typename T> struct DepthScale {};
-      
-      template<>
-      struct DepthScale<uint16_t>
-      {
-        static inline uint scale() { return 1000;}
-      };
-      
-      template<>
-      struct DepthScale<float>
-      {
-        static inline uint scale() { return 1;}
-      };
-      
       
         // TODO: use coordinate converter instead, since we don't need the actual data here
         template <typename T, typename U, typename S>
@@ -175,18 +159,7 @@ namespace egocylindrical
             remapDepthImage<fill_cloud>(cylindrical_points, image, inds, n_x, n_y, n_z, num_pixels, pcloud_msg, thresh_min, thresh_max);
         }
         
-        
-        
-        //Inherits from PinholeCamerModel in order to access protected member function initRectificationMaps
-        class CleanCameraModel : public image_geometry::PinholeCameraModel
-        {
-        public:
-            void init()
-            {
-                //Some of the camera model's functions don't work unless this has been called first
-                PinholeCameraModel::initRectificationMaps();
-            }
-        };
+
         
         // TODO: Template based on data types and select smallest appropriate type that can represent necessary range of indicies?
         class DepthImageRemapper

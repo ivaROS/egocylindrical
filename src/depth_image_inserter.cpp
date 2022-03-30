@@ -1,16 +1,17 @@
-#ifndef EGOCYLINDRICAL_DEPTH_IMAGE_INSERTER_H
-#define EGOCYLINDRICAL_DEPTH_IMAGE_INSERTER_H
+#include <egocylindrical/depth_image_inserter.h>
 
 #include <egocylindrical/point_transformer_object.h>
+#include <egocylindrical/depth_image_common.h>
 #include <egocylindrical/ecwrapper.h>
+
+#include <ros/node_handle.h>
+#include <tf2_ros/buffer.h>
 #include <image_geometry/pinhole_camera_model.h>
+#include <cv_bridge/cv_bridge.h>
 
-#include <pcl_ros/point_cloud.h>
-#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/CameraInfo.h>
 
-#include <egocylindrical/utils.h>
-
-#include <egocylindrical/depth_image_core.h>  //TODO: Move general purpose components into separate header
 
 namespace egocylindrical
 {
@@ -111,66 +112,54 @@ namespace egocylindrical
             }
         }
 
-
-
-        class DepthImageInserter
-        {
-            tf2_ros::Buffer& buffer_;
-            std::string fixed_frame_id_;
-            ros::NodeHandle pnh_;
-            CleanCameraModel cam_model_;
-
-          
-        public:
-            DepthImageInserter(tf2_ros::Buffer& buffer, ros::NodeHandle pnh):
-                buffer_(buffer),
-                pnh_(pnh)
-            {}
-            
-            bool init()
-            {
-                //TODO: use pips::param_utils
-                bool status = pnh_.getParam("fixed_frame_id", fixed_frame_id_);
-
-                return status;
-            }
-            
-            bool insert(ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
-            {
-                if( cam_model_.fromCameraInfo(cam_info) )
-                {
-                    ROS_DEBUG("Camera info has changed!");
-                    //If camera info changed, update any precomputed values
-                    //cam_model_.init();
-                }
-                else
-                {
-                    ROS_DEBUG("Camera info has not changed");
-                }
-                
-                //Get transform
-                geometry_msgs::TransformStamped transform;
-                try
-                {
-                    const std_msgs::Header& target_header = cylindrical_points.getHeader();
-                    const std_msgs::Header& source_header = image_msg->header;
-                    
-                    transform = buffer_.lookupTransform(target_header.frame_id, target_header.stamp, source_header.frame_id, source_header.stamp, fixed_frame_id_);
-                }
-                catch (tf2::TransformException &ex) 
-                {
-                    ROS_WARN_STREAM("Problem finding transform:\n" <<ex.what());
-                    return false;
-                }
-                
-                insertPoints(cylindrical_points, image_msg, cam_model_, transform);
-
-                return true;
-            }
-
-
-        };
         
+        
+        DepthImageInserter::DepthImageInserter(tf2_ros::Buffer& buffer, ros::NodeHandle pnh):
+            buffer_(buffer),
+            pnh_(pnh)
+        {}
+        
+        bool DepthImageInserter::init()
+        {
+            //TODO: use pips::param_utils
+            bool status = pnh_.getParam("fixed_frame_id", fixed_frame_id_);
+
+            return status;
+        }
+        
+        bool DepthImageInserter::insert(ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
+        {
+            if( cam_model_.fromCameraInfo(cam_info) )
+            {
+                ROS_DEBUG("Camera info has changed!");
+                //If camera info changed, update any precomputed values
+                //cam_model_.init();
+            }
+            else
+            {
+                ROS_DEBUG("Camera info has not changed");
+            }
+            
+            //Get transform
+            geometry_msgs::TransformStamped transform;
+            try
+            {
+                const std_msgs::Header& target_header = cylindrical_points.getHeader();
+                const std_msgs::Header& source_header = image_msg->header;
+                
+                transform = buffer_.lookupTransform(target_header.frame_id, target_header.stamp, source_header.frame_id, source_header.stamp, fixed_frame_id_);
+            }
+            catch (tf2::TransformException &ex) 
+            {
+                ROS_WARN_STREAM("Problem finding transform:\n" <<ex.what());
+                return false;
+            }
+            
+            insertPoints(cylindrical_points, image_msg, cam_model_, transform);
+
+            return true;
+        }
+
+
     } //end namespace utils
 } //end namespace egocylindrical
-#endif //EGOCYLINDRICAL_DEPTH_IMAGE_INSERTER_H
