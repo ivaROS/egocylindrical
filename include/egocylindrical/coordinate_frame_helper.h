@@ -86,6 +86,13 @@ namespace egocylindrical
                     target_header_ = sensor_header;
                     return true;
                 }
+                else if(cfd_.orientation_fixed_frame_id==cfd_.origin_fixed_frame_id && cfd_.origin_fixed_frame_id==sensor_header.frame_id)
+                {
+                    ROS_WARN_STREAM("[updateTransforms] Desired frames match sensor frame!");//, using camera frame");
+                    //cfd_.origin_fixed_frame_id = cfd_.origin_fixed_frame_id= sensor_header.frame_id;
+                    target_header_ = sensor_header;
+                    return true;
+                }
               
                 bool status = updateECSTransform(sensor_header.stamp);
                 status &= updateOffsetTransform(sensor_header.stamp);

@@ -57,7 +57,7 @@ private:
 
     image_geometry::PinholeCameraModel model_t;
     
-    utils::DepthImageRemapper depth_remapper_;
+    //utils::DepthImageRemapper depth_remapper_;
 
     ros::NodeHandle nh_, pnh_;
     

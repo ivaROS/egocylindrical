@@ -1,6 +1,7 @@
 #ifndef EGOCYLINDRICAL_DEPTH_IMAGE_INSERTER_H
 #define EGOCYLINDRICAL_DEPTH_IMAGE_INSERTER_H
 
+#include <egocylindrical/depth_image_core.h>
 #include <egocylindrical/depth_image_common.h>
 #include <egocylindrical/ecwrapper.h>
 
@@ -23,7 +24,7 @@ namespace egocylindrical
             std::string fixed_frame_id_;
             ros::NodeHandle pnh_;
             CleanCameraModel cam_model_;
-
+            utils::DepthImageRemapper depth_remapper_;
           
         public:
             DepthImageInserter(tf2_ros::Buffer& buffer, ros::NodeHandle pnh);

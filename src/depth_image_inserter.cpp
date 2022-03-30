@@ -456,6 +456,16 @@ namespace egocylindrical
         
         bool DepthImageInserter::insert(ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const sensor_msgs::CameraInfo::ConstPtr& cam_info)
         {
+            const std_msgs::Header& target_header = cylindrical_points.getHeader();
+            const std_msgs::Header& source_header = image_msg->header;
+            
+            if(target_header == source_header)
+            {
+                ROS_INFO("Target and source headers match, using remapping approach");
+                depth_remapper_.update(cylindrical_points, image_msg, cam_info);
+                return true;
+            }
+            
             if( cam_model_.fromCameraInfo(cam_info) )
             {
                 ROS_DEBUG("Camera info has changed!");
@@ -471,9 +481,6 @@ namespace egocylindrical
             geometry_msgs::TransformStamped transform;
             try
             {
-                const std_msgs::Header& target_header = cylindrical_points.getHeader();
-                const std_msgs::Header& source_header = image_msg->header;
-                
                 transform = buffer_.lookupTransform(target_header.frame_id, target_header.stamp, source_header.frame_id, source_header.stamp, fixed_frame_id_);
             }
             catch (tf2::TransformException &ex) 
