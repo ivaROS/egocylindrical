@@ -4,7 +4,6 @@
 
 #include <egocylindrical/egocylindrical.h>
 #include <egocylindrical/point_transformer.h>
-#include <egocylindrical/depth_image_core.h>
 #include <egocylindrical/depth_image_inserter.h>
 
 //#include <tf/LinearMath/Matrix3x3.h>

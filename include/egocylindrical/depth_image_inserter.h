@@ -1,7 +1,7 @@
 #ifndef EGOCYLINDRICAL_DEPTH_IMAGE_INSERTER_H
 #define EGOCYLINDRICAL_DEPTH_IMAGE_INSERTER_H
 
-#include <egocylindrical/depth_image_core.h>
+#include <egocylindrical/depth_image_remapper.h>
 #include <egocylindrical/depth_image_common.h>
 #include <egocylindrical/ecwrapper.h>
 

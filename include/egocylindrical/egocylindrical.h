@@ -6,7 +6,6 @@
 #define EGOCYLINDRICAL_EGOCYLINDRICAL_H
 
 #include <egocylindrical/utils.h>
-#include <egocylindrical/depth_image_core.h>
 #include <egocylindrical/coordinate_frame_helper.h>
 #include <egocylindrical/depth_image_inserter.h>
 

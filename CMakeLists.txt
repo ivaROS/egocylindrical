@@ -228,6 +228,16 @@ target_link_libraries(point_transformer
    ${OpenMP_CXX_FLAGS}
    )
 
+add_library(depth_image_remapper src/depth_image_remapper.cpp)
+add_dependencies(depth_image_remapper ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_compile_options(depth_image_remapper PRIVATE -ftree-vectorize  -fopt-info-vec-all=vec_depth_image_inserter.txt ${SHOW_VECTORIZE_INFO} -funsafe-math-optimizations -fno-math-errno ${OpenMP_CXX_FLAGS}#-finite-math-only and -fno-trapping-math. -ffinite-math-only 
+   )
+target_compile_definitions(depth_image_remapper PRIVATE ${PLATFORM_FLAGS})
+target_link_libraries(depth_image_remapper
+   ${catkin_LIBRARIES}
+   ${OpenCV_LIBRARIES}
+   ${OpenMP_CXX_FLAGS}
+   )
    
 add_library(depth_image_inserter src/depth_image_inserter.cpp)
 add_dependencies(depth_image_inserter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -235,6 +245,7 @@ target_compile_options(depth_image_inserter PRIVATE -ftree-vectorize  -fopt-info
    )
 target_compile_definitions(depth_image_inserter PRIVATE ${PLATFORM_FLAGS})
 target_link_libraries(depth_image_inserter
+   depth_image_remapper
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    ${OpenMP_CXX_FLAGS}
