@@ -7,6 +7,8 @@
 #include <ros/console.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
+#include <mutex>
+
 namespace egocylindrical
 {
     namespace utils 
@@ -33,6 +35,9 @@ namespace egocylindrical
             std_msgs::Header target_header_;
             bool new_cfd_;
             ros::Subscriber pose_sub_;
+            
+            std::mutex cfd_mutex_;
+            using Lock = const std::lock_guard<std::mutex>;
             
         public:
           
@@ -75,6 +80,8 @@ namespace egocylindrical
             
             bool updateTransforms(std_msgs::Header sensor_header)
             {
+                Lock lock(cfd_mutex_);
+
                 //TODO: Lock a recursive mutex
                 //TODO: possibly only specify orientation fixed frame, since should really be using same origin as the camera regardless
                 if(cfd_.orientation_fixed_frame_id=="" || cfd_.origin_fixed_frame_id=="")
@@ -106,22 +113,22 @@ namespace egocylindrical
             
             void updateDefinition(CoordinateFrameDefinition cfd)
             {
-                //TODO: Lock a mutex
-                
-                
-                cfd_ = cfd;
-                new_cfd_ = true;
-                
-                
-                
-                if(!updateECSTransform(ros::Time()))
                 {
-                    return;
+                    Lock lock(cfd_mutex_);
+                    
+                    cfd_ = cfd;
+                    new_cfd_ = true;
                 }
-                if(!updateOffsetTransform(ros::Time()))
-                {
-                    return;
-                }
+                
+                
+//                 if(!updateECSTransform(ros::Time()))
+//                 {
+//                     return;
+//                 }
+//                 if(!updateOffsetTransform(ros::Time()))
+//                 {
+//                     return;
+//                 }
 
                 ROS_INFO_STREAM("Successfully updated offset definition!");
                 return;
