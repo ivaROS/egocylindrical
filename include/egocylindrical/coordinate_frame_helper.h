@@ -67,7 +67,7 @@ namespace egocylindrical
                 }
                 else
                 {
-                    ROS_WARN_STREAM("Did not find all necessary coordinate frame parameters! Values are: origin_fixed_frame_id=" << cfd.origin_fixed_frame_id << ", orientation_fixed_frame_id=" << cfd.orientation_fixed_frame_id << ", fixed_frame_id=" << fixed_frame_id_);
+                    ROS_WARN_STREAM("Did not find all necessary coordinate frame parameters! Values are: origin_fixed_frame_id=" << cfd.origin_fixed_frame_id << ", orientation_fixed_frame_id=" << cfd.orientation_fixed_frame_id << ", fixed_frame_id=" << fixed_frame_id_ << ". Defaulting to locking egocan to camera frame.");
                 }
 
                 return status;
@@ -76,19 +76,17 @@ namespace egocylindrical
             bool updateTransforms(std_msgs::Header sensor_header)
             {
                 //TODO: Lock a recursive mutex
-                              //geometry_msgs::TransformStamped ecs;
-                //TODO: figure out how to properly handle cases of both frames being the same, etc
                 //TODO: possibly only specify orientation fixed frame, since should really be using same origin as the camera regardless
                 if(cfd_.orientation_fixed_frame_id=="" || cfd_.origin_fixed_frame_id=="")
                 {
-                    ROS_WARN_STREAM("[updateTransforms] Frame not specified!");//, using camera frame");
+                    ROS_WARN_ONCE("[updateTransforms] Frame not specified, using camera frame");//, using camera frame");
                     //cfd_.origin_fixed_frame_id = cfd_.origin_fixed_frame_id= sensor_header.frame_id;
                     target_header_ = sensor_header;
                     return true;
                 }
                 else if(cfd_.orientation_fixed_frame_id==cfd_.origin_fixed_frame_id && cfd_.origin_fixed_frame_id==sensor_header.frame_id)
                 {
-                    ROS_WARN_STREAM("[updateTransforms] Desired frames match sensor frame!");//, using camera frame");
+                    ROS_WARN_ONCE("[updateTransforms] Desired frames match camera frame, using camera frame");//, using camera frame");
                     //cfd_.origin_fixed_frame_id = cfd_.origin_fixed_frame_id= sensor_header.frame_id;
                     target_header_ = sensor_header;
                     return true;
@@ -189,7 +187,7 @@ namespace egocylindrical
                     return false;
                 }
                 
-                ROS_INFO_STREAM("[updateECSTransform] Updated transform! " << stamp);
+                ROS_DEBUG_STREAM("[updateECSTransform] Updated transform! " << stamp);
 
                 
                 buffer_.setTransform(ecs_, "coordinate_frame_helper", false);
@@ -217,7 +215,7 @@ namespace egocylindrical
                 q.z=-0.500;
                 q.w=0.500;
 
-                ROS_INFO_STREAM("[updateECCTransform] Updated transform! " << stamp);
+                ROS_DEBUG_STREAM("[updateECCTransform] Updated transform! " << stamp);
 
                 buffer_.setTransform(ecc_, "coordinate_frame_helper", false);
                 tf_br_.sendTransform(ecc_);
@@ -278,7 +276,7 @@ namespace egocylindrical
                     offset_transform_.header.stamp = stamp;
                 }
 
-                ROS_INFO_STREAM("[updateOffsetTransform] Updated transform! " << stamp);
+                ROS_DEBUG_STREAM("[updateOffsetTransform] Updated transform! " << stamp);
 
                 buffer_.setTransform(offset_transform_, "coordinate_frame_helper", false);
                 tf_br_.sendTransform(offset_transform_);
