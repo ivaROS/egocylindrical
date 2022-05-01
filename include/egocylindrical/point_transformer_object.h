@@ -39,7 +39,8 @@ namespace egocylindrical
                 t2 = trans.transform.translation.z;
             }
             
-            void transform(float in_x, float in_y, float in_z, float& out_x, float& out_y, float& out_z)
+            template <typename T>
+            void transform(T in_x, T in_y, T in_z, T& out_x, T& out_y, T& out_z)
             {
                 out_x = r0 * in_x + r1 * in_y + r2 * in_z + t0;
                 out_y = r3 * in_x + r4 * in_y + r5 * in_z + t1;

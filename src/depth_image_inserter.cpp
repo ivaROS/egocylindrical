@@ -461,7 +461,7 @@ namespace egocylindrical
             
             if(target_header == source_header)
             {
-                ROS_INFO("Target and source headers match, using remapping approach");
+                ROS_INFO_ONCE("Target and source headers match, using remapping approach");
                 depth_remapper_.update(cylindrical_points, image_msg, cam_info);
                 return true;
             }
