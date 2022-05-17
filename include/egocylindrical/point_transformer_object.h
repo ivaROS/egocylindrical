@@ -14,6 +14,9 @@ namespace egocylindrical
             float r0,r1,r2,r3,r4,r5,r6,r7,r8,t0,t1,t2;
             
             public:
+            PointTransformerObject()
+            {}
+            
             PointTransformerObject(const geometry_msgs::TransformStamped& trans)
             {
                 tf::Quaternion rotationQuaternion = tf::Quaternion(trans.transform.rotation.x,
