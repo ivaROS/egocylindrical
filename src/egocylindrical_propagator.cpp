@@ -120,7 +120,6 @@ namespace egocylindrical
         }
         ros::WallTime start = ros::WallTime::now();
         
-        //new_pts_ = utils::getECWrapper(cylinder_height_,cylinder_width_,vfov_);
         // NOTE: It may be better to only create the necessary wrappers once and just 'swap' the msg_ pointers
         new_pts_ = next_pts_;
         bool allocate_next = !old_pts_ || old_pts_->isLocked();
@@ -133,7 +132,7 @@ namespace egocylindrical
         
         std_msgs::Header target_header = cfh_.getTargetHeader();
         
-        #pragma omp parallel sections num_threads(2) if(allocate_next && false)
+        #pragma omp parallel sections num_threads(2) if(allocate_next)
         {
           #pragma omp section
           {
@@ -188,14 +187,13 @@ namespace egocylindrical
             
             if(allocate_next)
             {
-                //TODO: get params from config and use those
-                ROS_INFO_STREAM("Create new ECWrapper for next time");
+                ROS_DEBUG_STREAM("Create new ECWrapper for next time");
                 next_pts_ = utils::getECWrapper(config_);
                 
             }
             else
             {
-                ROS_INFO_STREAM("Reuse old ECWrapper for next time");
+                ROS_DEBUG_STREAM("Reuse old ECWrapper for next time");
                 std::swap(next_pts_,old_pts_);
 
                 next_pts_->init(getParams(config_), true);
@@ -272,7 +270,7 @@ namespace egocylindrical
         ros::SubscriberStatusCallback image_cb = boost::bind(&EgoCylindricalPropagator::connectCB, this);        
         ec_pub_ = nh_.advertise<egocylindrical::EgoCylinderPoints>(points_topic, 1, image_cb, image_cb);
         
-        //ros::SubscriberStatusCallback pc_cb = boost::bind(&EgoCylindricalPropagator::connectCB, this);        
+        //ros::SubscriberStatusCallback pc_cb = boost::bind(&EgoCylindricalPropagator::connectCB, this);
         pc_pub_ = nh_.advertise<sensor_msgs::PointCloud2>(filtered_pc_topic, 3);
         info_pub_ = nh_.advertise<egocylindrical::EgoCylinderPoints>(egocylinder_info_topic, 1);
         

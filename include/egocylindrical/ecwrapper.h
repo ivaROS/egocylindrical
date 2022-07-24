@@ -421,14 +421,8 @@ namespace egocylindrical
         }
         
         
-        // TODO: pull the relevant egocylindrical 'camera' info into separate message and use this class as the interpreter of it
-        // ECWrapper would also use this class
         class ECConverter
         {
-//         private:
-//           int height_, width_, can_width_;
-//           float vfov_;
-//           float hscale_, vscale_, canscale_;
 
         protected:
           DerivedECParams params_;
@@ -443,9 +437,6 @@ namespace egocylindrical
           bool update(const ECParams& params)
           {
             return params_.update(params);
-            //hscale_ = width_/(2*M_PI);
-            //vscale_ = height_/vfov_;  //NOTE: In the paper, vscale=hscale. If keeping them separate does not prove useful, they should be merged
-            //canscale_ = can_width_*vfov_/4;
           }
           
           inline
@@ -453,16 +444,7 @@ namespace egocylindrical
           {
             ECParams params;
             params.fromCameraInfo(*msg);
-//             params.vfov = msg->fov_v;
-            
-            //header_ = msg->header;
-            //vfov_ = msg->fov_v;
-            
-//             const std::vector<std_msgs::MultiArrayDimension>& dims = msg->points.layout.dim;
-//             params.height = dims[1].size;
-//             params.width = dims[2].size;
-//             params.can_width = dims[3].size;
-//             
+
             return update(params);
           }
           
@@ -470,11 +452,12 @@ namespace egocylindrical
           bool fromParams(const ECParams& params)
           {
             return update(params);
-//             vfov_ = params.vfov;
-//             height_ = params.height;
-//             width_ = params.width;
-//             can_width_ = params.can_width;
-//             update();
+          }
+          
+          inline
+          ECParams getParams() const
+          {
+              return params_;
           }
           
           void fillMsgInfo(ECMsg& msg) const
@@ -700,9 +683,7 @@ namespace egocylindrical
             
             return ray;
           }
-          
-          
-          
+
         };
         
         
@@ -714,13 +695,8 @@ namespace egocylindrical
             float* points_;
             
             AlignedVector<float> ranges_;
-                        
             AlignedVector<int32_t> inds_;
 
-//             int height_, width_, can_width_;
-//             float vfov_;
-//             float hscale_, vscale_, canscale_;
-            
             bool allocate_arrays_;
             
             std_msgs::Header header_;
@@ -740,13 +716,8 @@ namespace egocylindrical
         public:
             
             ECWrapper(const ECParams& params, bool allocate_arrays = false):
-//                 height_(height),
-//                 width_(width),
-//                 can_width_(can_width),
-//                 vfov_(vfov),
                 allocate_arrays_(allocate_arrays)
             {
-                //fromParams(params);
                 msg_ = boost::make_shared<ECMsg>();
                 
                 msg_locked_ = false;
@@ -758,31 +729,15 @@ namespace egocylindrical
             {
                 fromCameraInfo(ec_points);
                 const_msg_ = ec_points;
-//                 header_ = const_msg_->header;
-//                 vfov_ = const_msg_->fov_v;
-//                 
-//                 const std::vector<std_msgs::MultiArrayDimension>& dims = const_msg_->points.layout.dim;
-//                 height_ = dims[1].size;
-//                 width_ = dims[2].size;
-//                 can_width_ = dims[3].size;
-                
+
                 points_ = (float*) const_msg_->points.data.data() + (const_msg_->points.layout.data_offset) / sizeof(float);
                                 
                 msg_locked_ = true;
-                
             }
             
             ~ECWrapper()
             {
-                /*
-                if(ranges_ != nullptr)
-                   {
-                       //delete inds_;
-                       //delete ranges_;
-                       boost::alignment::aligned_free(ranges_);
-                       
-                   }
-                   */
+
             }
 
             
@@ -813,93 +768,11 @@ namespace egocylindrical
                 msg_->header = header;
             }
             
-//             inline
-//             int getCols() const
-//             {
-//                 return height_*width_;
-//             }
-//             
-//             inline
-//             int getNumPts() const
-//             {
-//                 return height_*width_ + 2*can_width_*can_width_;
-//             }
-//             
-//             inline
-//             int getWidth() const
-//             {
-//                 return width_;
-//             }
-//             
-//             inline
-//             int getHeight() const
-//             {
-//                 return height_;
-//             }
-//             
-//             inline
-//             int getCanWidth() const
-//             {
-//               return can_width_;
-//             }
-            
             inline
             std_msgs::Header getHeader() const
             {
                 return header_; 
             }
-            
-//             inline
-//             cv::Rect getImageRoi() const
-//             {
-//                 return cv::Rect(0, 0, width_, height_);
-//             }
-            
-//             inline
-//             cv::Point worldToCylindricalImage(const cv::Point3f& point) const
-//             {
-//                 return utils::worldToCylindricalImage(point, width_, height_, hscale_, vscale_, 0, 0);
-//             }
-//             
-//             inline
-//             int worldToCylindricalIdx(const cv::Point3f& point) const
-//             {
-//               return utils::worldToCylindricalIdx(point, width_, height_, hscale_, vscale_, 0, 0);
-//             }
-//             
-//             inline
-//             int worldToCylindricalIdx(float x, float y, float z) const
-//             {
-//               cv::Point3_<float> point(x,y,z);
-//               return worldToCylindricalIdx(point);
-//             }
-//             
-//             inline
-//             int worldToCylindricalXIdx(float x, float z) const
-//             {
-//               cv::Point3_<float> point(x,0,z);
-//               return utils::worldToCylindricalXIdxFast(point, width_, height_, hscale_, vscale_, 0, 0);
-//             }
-//             
-//             inline
-//             int worldToCylindricalYIdx(float y, float range_squared) const
-//             {
-//               cv::Point3_<float> point(0,y,0);
-//               return utils::worldToCylindricalYIdxFast(point, range_squared, width_, height_, hscale_, vscale_, 0, 0);
-//             }
-//             
-//             inline
-//             int worldToCanIdx(const cv::Point3f& point) const
-//             {
-//               return utils::worldToCanIdx(point, can_width_, canscale_) + getCols();
-//             }
-//             
-//             inline
-//             int worldToCanIdx(float x, float y, float z) const
-//             {
-//               cv::Point3_<float> point(x,y,z);
-//               return worldToCanIdx(point);
-//             }
             
             inline
             ECMsgConstPtr getEgoCylinderPointsMsg()
@@ -913,29 +786,12 @@ namespace egocylindrical
             {
               ECMsgPtr info = boost::make_shared<ECMsg>();
               fillMsgInfo(*info);
-//               info->header = msg_->header;
-//               info->fov_v = msg_->fov_v;
-//               info->points.layout.dim =  msg_->points.layout.dim;
               return (ECMsgConstPtr) info;
-            }
-            
-            inline
-            ECParams getParams() const
-            {
-//                 ECParams params;
-//                 params.height=height_;
-//                 params.width=width_;
-//                 params.can_width=can_width_;
-//                 params.vfov=vfov_;
-                
-                return params_;
             }
             
             inline
             void init()
             {
-                //fromParams(params);
-                
                 int max_alignment = alignof(std::max_align_t);
                 
                 int biggest_alignment = __BIGGEST_ALIGNMENT__;
@@ -951,7 +807,7 @@ namespace egocylindrical
                 
                 ROS_DEBUG_STREAM("max_alignment: " << max_alignment << ", biggest_alignment: " << biggest_alignment << ", object_size: " << object_size << ", object_alignment: " << object_alignment << ", number buffer objects: " << buffer_objects);
                 
-                ROS_INFO_STREAM("Allocating space for " << getNumPts() << " points.");
+                ROS_DEBUG_STREAM("Allocating space for " << getNumPts() << " points.");
                 msg_->points.data.resize(3*getNumPts() + buffer_objects, dNaN);
                 
                 
@@ -975,36 +831,8 @@ namespace egocylindrical
                     ranges_.resize(getNumPts());
                     inds_.resize(getNumPts()); 
                 }
-                
-//                 msg_->fov_v = vfov_;
-//                 
-//                 hscale_ = width_/(2*M_PI);
-//                 vscale_ = height_/vfov_;
-//                 canscale_ = can_width_*vfov_/4;
+
                 fillMsgInfo(*msg_);
-                
-                /*std::vector<std_msgs::MultiArrayDimension>& dims = msg_->points.layout.dim;
-                dims.resize(4);
-                
-                std_msgs::MultiArrayDimension& dim0 = dims[0];
-                dim0.label = "components";
-                dim0.size = 3;
-                dim0.stride = 3*height_*width_;                
-                
-                std_msgs::MultiArrayDimension& dim1 = dims[1];
-                dim1.label = "rows";
-                dim1.size = height_;
-                dim1.stride = height_*width_;                
-                
-                std_msgs::MultiArrayDimension& dim2 = dims[2];
-                dim2.label = "point";
-                dim2.size = width_;
-                dim2.stride = width_;   
-                
-                std_msgs::MultiArrayDimension& dim3 = dims[3];
-                dim3.label = "can";
-                dim3.size = can_width_;
-                dim3.stride = can_width_;  */ 
             }
             
             bool init(const ECWrapper& other)
@@ -1015,16 +843,16 @@ namespace egocylindrical
             inline
             bool init(const ECParams& params, bool clear=false)
             {
-                ROS_INFO_STREAM("Current parameters: [" << params_ << "]; New parameters: [" << params << "]");
+                ROS_DEBUG_STREAM("Current parameters: [" << params_ << "]; New parameters: [" << params << "]");
                 if(msg_->points.data.size()==0)
                 {
-                  ROS_INFO_STREAM("No space for points!");
+                  ROS_DEBUG_STREAM("No space for points!");
                 }
                 if(!msg_locked_)
                 {
                     if(params != (const ECParams)params_)
                     {
-                        ROS_INFO_STREAM("Params have changed, update!");
+                        ROS_DEBUG_STREAM("Params have changed, update!");
                         fromParams(params);
                         if(clear)
                         {
@@ -1035,7 +863,7 @@ namespace egocylindrical
                     }
                     else
                     {
-                      ROS_INFO_STREAM("Params have not changed!");
+                      ROS_DEBUG_STREAM("Params have not changed!");
                       if(clear)
                       {
                         std::fill(msg_->points.data.begin(), msg_->points.data.end(), dNaN);
@@ -1086,9 +914,7 @@ namespace egocylindrical
         {
           return getECWrapper(wrapper.getParams(), allocate_arrays);
         }
-        
 
-        
     }
     
 }
