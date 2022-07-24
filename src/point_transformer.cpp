@@ -175,7 +175,7 @@ namespace egocylindrical
             
           //  if(points.isLocked())
           //  {
-          //      ROS_INFO("Out of place");
+                ROS_INFO("Init transformed ECWrapper");
                 transformed_points.init(points);    //This ensures that 'transformed_points' is big enough
                 transform_impl(points, transformed_points, new_points, rotationArray, translationArray, num_threads);
         /*

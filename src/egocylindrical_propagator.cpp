@@ -19,8 +19,25 @@
 
 namespace egocylindrical
 {
-
-
+    
+    utils::ECParams getParams(const egocylindrical::PropagatorConfig &config)
+    {
+      utils::ECParams params;
+      params.height = config.height;
+      params.width = config.width;
+      params.vfov = config.vfov;
+      params.can_width = config.can_width;
+      params.v_offset = config.v_offset;
+      return params;
+    }
+    
+    namespace utils
+    {
+      utils::ECWrapperPtr getECWrapper(const egocylindrical::PropagatorConfig &config, bool allocate_arrays=false)
+      {
+        return utils::getECWrapper(getParams(config), allocate_arrays);
+      }
+    }
 
     void EgoCylindricalPropagator::propagateHistory(utils::ECWrapper& old_pnts, utils::ECWrapper& new_pnts, std_msgs::Header new_header)
     {
@@ -116,7 +133,7 @@ namespace egocylindrical
         
         std_msgs::Header target_header = cfh_.getTargetHeader();
         
-        #pragma omp parallel sections num_threads(2) if(allocate_next)
+        #pragma omp parallel sections num_threads(2) if(allocate_next && false)
         {
           #pragma omp section
           {
@@ -172,14 +189,21 @@ namespace egocylindrical
             if(allocate_next)
             {
                 //TODO: get params from config and use those
-                next_pts_ = utils::getECWrapper(config_.height, config_.width,config_.vfov,config_.can_width);
+                ROS_INFO_STREAM("Create new ECWrapper for next time");
+                next_pts_ = utils::getECWrapper(config_);
                 
             }
             else
             {
+                ROS_INFO_STREAM("Reuse old ECWrapper for next time");
                 std::swap(next_pts_,old_pts_);
 
-                next_pts_->init(config_.height, config_.width, config_.vfov, config_.can_width, true);
+                next_pts_->init(getParams(config_), true);
+            }
+            
+            if((!next_pts_) || next_pts_->getNumPts()==0 || (!next_pts_->msg_) || next_pts_->msg_->points.data.size()==0)
+            {
+              int tempa = 0;  //Just a place to put a breakpoint
             }
             
             ROS_DEBUG_STREAM_NAMED("timing", "Creating new datastructure took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
@@ -223,16 +247,9 @@ namespace egocylindrical
     {
         reconfigure_server_->setCallback(boost::bind(&EgoCylindricalPropagator::configCB, this, _1, _2));
         
-        double pi = std::acos(-1);
-        hfov_ = 2*pi;
-        vfov_ = pi/2;        
+        transformed_pts_ = utils::getECWrapper(config_, true);
         
-        cylinder_width_ = 2048;
-        cylinder_height_ = 320;
-        
-        transformed_pts_ = utils::getECWrapper(config_.height, config_.width,config_.vfov, config_.can_width, true);
-        
-        next_pts_ = utils::getECWrapper(config_.height, config_.width,config_.vfov, config_.can_width);
+        next_pts_ = utils::getECWrapper(config_);
                 
         
         // Get topic names

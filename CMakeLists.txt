@@ -498,6 +498,15 @@ target_link_libraries(filter_node
    )
 
 
+add_executable(unit_tests test/unit_tests.cpp)
+add_dependencies(unit_tests ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#target_compile_features(filter_node PUBLIC ${CXX11_FEATURES})
+target_link_libraries(unit_tests
+   ${catkin_LIBRARIES}
+   ${OpenCV_LIBRARIES}
+   )
+
+
    
 #############
 ## Install ##
