@@ -19,10 +19,10 @@ namespace egocylindrical
             
             PointTransformerObject(const geometry_msgs::TransformStamped& trans)
             {
-                tf::Quaternion rotationQuaternion = tf::Quaternion(trans.transform.rotation.x,
-                                                                          trans.transform.rotation.y,
-                                                                          trans.transform.rotation.z,
-                                                                          trans.transform.rotation.w);
+                tf::Quaternion rotationQuaternion(trans.transform.rotation.x,
+                                                  trans.transform.rotation.y,
+                                                  trans.transform.rotation.z,
+                                                  trans.transform.rotation.w);
                         
                         
                 tf::Matrix3x3 tempRotationMatrix = tf::Matrix3x3(rotationQuaternion);
@@ -43,7 +43,7 @@ namespace egocylindrical
             }
             
             template <typename T>
-            void transform(T in_x, T in_y, T in_z, T& out_x, T& out_y, T& out_z)
+            void transform(T in_x, T in_y, T in_z, T& out_x, T& out_y, T& out_z) const
             {
                 out_x = r0 * in_x + r1 * in_y + r2 * in_z + t0;
                 out_y = r3 * in_x + r4 * in_y + r5 * in_z + t1;
@@ -51,11 +51,17 @@ namespace egocylindrical
             }
             
             template <typename P>
-            P transform(const P& p_in)
+            void transform(const P& p_in, P& p_out) const
             {
-              P p_out;
-              transform(p_in.x, p_in.y, p_in.z, p_out.x, p_out.y, p_out.z);
-              return p_out;
+                transform(p_in.x, p_in.y, p_in.z, p_out.x, p_out.y, p_out.z);
+            }
+            
+            template <typename P>
+            P transform(const P& p_in) const
+            {
+                P p_out;
+                transform(p_in, p_out);
+                return p_out;
             }
 
         };
