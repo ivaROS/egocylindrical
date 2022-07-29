@@ -326,7 +326,7 @@ namespace egocylindrical
           }
           sensor_msgs::Image::ConstPtr image_ptr = getInflatedCanImageMsg(ec_msg, range_msg, config.inflation_radius, config.num_threads, preallocated_msg_);
 
-          ROS_DEBUG_STREAM_NAMED("timing","Inflating range image took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
+          ROS_DEBUG_STREAM_NAMED("timing","Inflating egocan lid image by {" << config.inflation_radius << "x" << config.inflation_height/2 << "} took " <<  (ros::WallTime::now() - start).toSec() * 1e3 << "ms");
           
 
           ROS_DEBUG("publish egocylindrical image");
