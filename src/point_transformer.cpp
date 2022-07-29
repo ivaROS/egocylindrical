@@ -69,42 +69,18 @@ namespace egocylindrical
                 
                 //#pragma GCC ivdep  //https://gcc.gnu.org/onlinedocs/gcc/Loop-Specific-Pragmas.html
                 #pragma omp for simd schedule(static) aligned(x:__BIGGEST_ALIGNMENT__) aligned(x_n:__BIGGEST_ALIGNMENT__) aligned(ranges:__BIGGEST_ALIGNMENT__) aligned(inds:__BIGGEST_ALIGNMENT__)
-                for(long int p = 0; p < num_pts; ++p)
+                for(int p = 0; p < num_pts; ++p)
                 {
                     float x_p = x[p];
                     float y_p = y[p];
                     float z_p = z[p];
                     
-                    pto.transform(x_p, y_p, z_p, x_n[p], y_n[p], z_n[p]);
-                    
-//                     x_n[p] = r0 * x_p + r1 * y_p + r2 * z_p + t0;
-//                     y_n[p] = r3 * x_p + r4 * y_p + r5 * z_p + t1;
-//                     z_n[p] = r6 * x_p + r7 * y_p + r8 * z_p + t2;
-                                         
+                    pto.transform(x_p, y_p, z_p, x_n[p], y_n[p], z_n[p]);           
                                     
                     float range_squared= worldToRangeSquared(x_n[p],z_n[p]);
                 
                   
                     int idx = -1;
-                    
-                    if(false)
-                    {
-                      if(x_n[p]==x_n[p])
-                      {
-                        int tidx = new_points.worldToCylindricalIdx(x_n[p],y_n[p],z_n[p]);
-                        
-                        if(tidx < max_ind && tidx>=0)
-                        {
-                            idx = tidx;
-                        }
-                        else
-                        {
-                            idx = new_points.worldToCanIdx(x_n[p],y_n[p],z_n[p]);
-                            range_squared = y_n[p]*y_n[p];
-                        }
-                      }
-                    }
-                    else
                     {
                       int tidx = new_points.worldToCylindricalIdx(x_n[p],y_n[p],z_n[p]);
                       
