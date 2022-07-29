@@ -38,7 +38,7 @@ namespace egocylindrical
                     
                     cv::Point3f world_pnt = cam_model.projectPixelTo3dRay(pt);
                     
-                    int cyl_idx = cylindrical_history.worldToCylindricalIdx(world_pnt.x,world_pnt.y,world_pnt.z);
+                    int cyl_idx = cylindrical_history.worldToIdx(world_pnt);
                     
                     inds[image_idx] = cyl_idx;
                     

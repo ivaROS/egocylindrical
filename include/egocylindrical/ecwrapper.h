@@ -193,131 +193,131 @@ namespace egocylindrical
         */
         
         
-        template <typename T>
-        inline
-        T worldToCylindricalXIdx(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-        {
-          return std::atan2(point.x, point.z) * h_scale + cyl_width / 2;
-        }
-        
-        template <typename T>
-        inline
-        T worldToCylindricalXIdxFast(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-        {
-          return atan2_approximation1(point.x, point.z) * h_scale + cyl_width / 2;
-        }
-
-        template <typename T>
-        inline
-        T worldToCylindricalYIdx(const cv::Point3_<T>& point, T range, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-        {
-          return point.y * v_scale /range + cyl_height / 2;
-        }
-        
-        inline
-        int pixToIdx(int xind, int yind, int width)
-        {
-          int ind = yind*width + xind;
-          
-          return ind;
-        }
-        
-        inline
-        int pixToIdx(cv::Point pix, int width)
-        {
-          return pixToIdx(pix.x, pix.y, width);
-        }
-        
-        template <typename T>
-        inline
-        T worldToCanXIdx(const cv::Point3_<T>& point, int can_width, float scale)
-        {
-          T absy = worldToCanDepth(point);
-          T xind = point.x/absy * scale + can_width/2;
-          return xind;
-        }
-        
-        template <typename T>
-        inline
-        T worldToCanZIdx(const cv::Point3_<T>& point, int can_width, float scale)
-        {
-          T absy = worldToCanDepth(point);
-          T zind = point.z/absy * scale + can_width/2;
-          return zind;
-        }
-        
-        template <typename T>
-        inline
-        int pixToCanIdx(int xind, int zind, int can_width, T y)
-        {
-          int rel_ind = zind*can_width + xind;
-          
-          int ind = (y > 0) ? rel_ind + can_width*can_width : rel_ind;
-          return ind;
-        }
-        
-        template <typename T>
-        inline
-        int worldToCanIdx(const cv::Point3_<T>& point, int can_width, float scale)
-        {
-          int xind = worldToCanXIdx(point, can_width, scale);
-          int zind = worldToCanZIdx(point, can_width, scale);
-          return pixToCanIdx(xind, zind, can_width, point.y);
-/*          
-          int rel_ind = zind*can_width + xind;
-          
-          int ind = (point.y > 0) ? rel_ind + can_width*can_width : rel_ind;
-          return ind;*/
-        }
-        
-        template <typename T>
-        inline
-        T worldToCylindricalYIdx(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-        {
-          return worldToCylindricalYIdx(point, worldToRange(point), cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
-        }
-        
-        template <typename T>
-        inline
-        T worldToCylindricalYIdxFast(const cv::Point3_<T>& point, T range_squared, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-        {
-          return point.y * v_scale * inv_sqrt_approximation(range_squared) + cyl_height / 2;
-        }
-        
-        template <typename T>
-        inline
-        cv::Point_<T> worldToCylindricalImage(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-        {
-          T x = worldToCylindricalXIdx(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
-          T y = worldToCylindricalYIdx(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
-            
-          cv::Point_<T> im_pt(x,y);
-          return im_pt;
-        }
-        
-        template <typename T>
-        inline
-        cv::Point worldToCylindricalImageFast(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-        {
-          
-          T x = worldToCylindricalXIdxFast(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
-          T y = worldToCylindricalYIdx(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
-          
-          cv::Point im_pt(x,y);
-          return im_pt;
-        }
-        
-
-        template <typename T>
-        inline
-        int worldToCylindricalIdx(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-        {
-          cv::Point image_pnt = utils::worldToCylindricalImageFast(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
-          
-          int tidx = pixToIdx(image_pnt, cyl_width); //image_pnt.y * cyl_width +image_pnt.x;
-          
-          return tidx;
-        }
+//         template <typename T>
+//         inline
+//         T worldToCylindricalXIdx(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+//         {
+//           return std::atan2(point.x, point.z) * h_scale + cyl_width / 2;
+//         }
+//         
+//         template <typename T>
+//         inline
+//         T worldToCylindricalXIdxFast(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+//         {
+//           return atan2_approximation1(point.x, point.z) * h_scale + cyl_width / 2;
+//         }
+// 
+//         template <typename T>
+//         inline
+//         T worldToCylindricalYIdx(const cv::Point3_<T>& point, T range, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+//         {
+//           return point.y * v_scale /range + cyl_height / 2 + v_offset;
+//         }
+//         
+//         inline
+//         int pixToIdx(int xind, int yind, int width)
+//         {
+//           int ind = yind*width + xind;
+//           
+//           return ind;
+//         }
+//         
+//         inline
+//         int pixToIdx(cv::Point pix, int width)
+//         {
+//           return pixToIdx(pix.x, pix.y, width);
+//         }
+//         
+//         template <typename T>
+//         inline
+//         T worldToCanXIdx(const cv::Point3_<T>& point, int can_width, float scale)
+//         {
+//           T absy = worldToCanDepth(point);
+//           T xind = point.x/absy * scale + can_width/2;
+//           return xind;
+//         }
+//         
+//         template <typename T>
+//         inline
+//         T worldToCanZIdx(const cv::Point3_<T>& point, int can_width, float scale)
+//         {
+//           T absy = worldToCanDepth(point);
+//           T zind = point.z/absy * scale + can_width/2;
+//           return zind;
+//         }
+//         
+//         template <typename T>
+//         inline
+//         int pixToCanIdx(int xind, int zind, int can_width, T y)
+//         {
+//           int rel_ind = zind*can_width + xind;
+//           
+//           int ind = (y > 0) ? rel_ind + can_width*can_width : rel_ind;
+//           return ind;
+//         }
+//         
+//         template <typename T>
+//         inline
+//         int worldToCanIdx(const cv::Point3_<T>& point, int can_width, float scale)
+//         {
+//           int xind = worldToCanXIdx(point, can_width, scale);
+//           int zind = worldToCanZIdx(point, can_width, scale);
+//           return pixToCanIdx(xind, zind, can_width, point.y);
+// /*          
+//           int rel_ind = zind*can_width + xind;
+//           
+//           int ind = (point.y > 0) ? rel_ind + can_width*can_width : rel_ind;
+//           return ind;*/
+//         }
+//         
+//         template <typename T>
+//         inline
+//         T worldToCylindricalYIdx(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+//         {
+//           return worldToCylindricalYIdx(point, worldToRange(point), cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
+//         }
+//         
+//         template <typename T>
+//         inline
+//         T worldToCylindricalYIdxFast(const cv::Point3_<T>& point, T range_squared, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+//         {
+//           return point.y * v_scale * inv_sqrt_approximation(range_squared) + v_offset;
+//         }
+//         
+//         template <typename T>
+//         inline
+//         cv::Point_<T> worldToCylindricalImage(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+//         {
+//           T x = worldToCylindricalXIdx(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
+//           T y = worldToCylindricalYIdx(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
+//             
+//           cv::Point_<T> im_pt(x,y);
+//           return im_pt;
+//         }
+//         
+//         template <typename T>
+//         inline
+//         cv::Point worldToCylindricalImageFast(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+//         {
+//           
+//           T x = worldToCylindricalXIdxFast(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
+//           T y = worldToCylindricalYIdx(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
+//           
+//           cv::Point im_pt(x,y);
+//           return im_pt;
+//         }
+//         
+// 
+//         template <typename T>
+//         inline
+//         int worldToCylindricalIdx(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+//         {
+//           cv::Point image_pnt = utils::worldToCylindricalImageFast(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
+//           
+//           int tidx = pixToIdx(image_pnt, cyl_width); //image_pnt.y * cyl_width +image_pnt.x;
+//           
+//           return tidx;
+//         }
 
         
         
@@ -407,7 +407,7 @@ namespace egocylindrical
             hscale = width/(2*M_PI);
             vscale = height/vfov;  //NOTE: In the paper, vscale=hscale. If keeping them separate does not prove useful, they should be merged
             canscale = can_width*vfov/4;
-            v_center = height/2 + v_offset;
+            v_center = v_offset * height / vfov;
             
             return true;
           }
@@ -494,12 +494,6 @@ namespace egocylindrical
           }
           
           inline
-          cv::Point worldToCylindricalImage(const cv::Point3f& point) const
-          {
-            return utils::worldToCylindricalImage(point, getWidth(), getHeight(), getHScale(), getVScale(), 0, params_.v_offset);
-          }
-          
-          inline
           int getHeight() const
           {
             return params_.height;
@@ -549,91 +543,190 @@ namespace egocylindrical
           {
             return cv::Rect(0, 0, params_.width, params_.height);
           }
+          
+          
+          template <typename S, typename T>
+          inline
+          void worldToCylindricalXIdx(const cv::Point3_<S>& point, T& x_idx, bool fast=false) const
+          {
+            x_idx = std::atan2(point.x, point.z) * params_.hscale + params_.width / 2;
+          }
+          
+          template <typename S, typename T>
+          inline
+          void worldToCylindricalXIdxFast(const cv::Point3_<S>& point, T& x_idx) const
+          {
+            x_idx = atan2_approximation1(point.x, point.z) * params_.hscale + params_.width / 2;
+          }
+          
 
           template <typename S, typename T>
-          inline 
-          void project3dToPixel(const cv::Point3_<S> point, cv::Point_<T>& pixel) const
+          inline
+          void worldToCylindricalYIdx(const cv::Point3_<S>& point, S range, T& y_idx) const
           {
-            utils::worldToCylindricalImage(point, pixel, getWidth(), getHeight(), getHScale(), getVScale(), 0, params_.v_offset);
+            y_idx = point.y * params_.vscale /range + params_.height / 2 + params_.v_center;
+          }
+          
+          template <typename S, typename T>
+          inline
+          void worldToCylindricalYIdxFast(const cv::Point3_<S>& point, S range_squared, T& y_idx) const
+          {
+            y_idx = point.y * params_.vscale * inv_sqrt_approximation(range_squared) + params_.v_center;
+          }
+          
+          template <typename S, typename T>
+          inline
+          void worldToCylindricalYIdx(const cv::Point3_<S>& point, T& y_idx) const
+          {
+            worldToCylindricalYIdx(point, worldToRange(point), y_idx);
+          }
+          
+          template <typename S, typename T>
+          inline
+          void worldToCylindricalImage(const cv::Point3_<S>& point, cv::Point_<T>& pix) const
+          {
+            worldToCylindricalXIdxFast(point, pix.x);
+            worldToCylindricalYIdx(point, pix.y);
+          }
+
+          //Redundant, perhaps, but convenient
+          template <typename S, typename T>
+          inline 
+          void project3dToPixel(const cv::Point3_<S> point, cv::Point_<T>& pix) const
+          {
+            worldToCylindricalImage(point, pix);
           }
           
           template <typename T>
           inline 
-          cv::Point_<T> project3dToPixel(const cv::Point3_<T> point) const
+          cv::Point project3dToPixel(const cv::Point3_<T> point) const
           {
-            return utils::worldToCylindricalImage(point, getWidth(), getHeight(), getHScale(), getVScale(), 0, params_.v_offset);
+            cv::Point pix;
+            project3dToPixel(point, pix);
+            return pix;
           }
           
           template <typename S, typename T, typename U>
           inline 
-          void project3dToPixelRange(const cv::Point3_<S> point, cv::Point_<T>& pixel, U& range) const
+          void project3dToPixelRange(const cv::Point3_<S> point, cv::Point_<T>& pix, U& range) const
           {
-            pixel = utils::worldToCylindricalImage(point, getWidth(), getHeight(), getHScale(), getVScale(), 0, params_.v_offset);
+            project3dToPixel(point, pix);
             range = utils::worldToRange(point);
           }
           
+//           inline
+//           int pixToIdx(int xind, int yind) const
+//           {
+//             return utils::pixToIdx(xind, yind, getWidth());
+//           }
+//           
           inline
-          int pixToIdx(int xind, int yind) const
+          int pixToIdx(const cv::Point& pix) const
           {
-            return utils::pixToIdx(xind, yind, getWidth());
+            int ind = pix.y*params_.width + pix.x;
+            return ind;
           }
           
+          template<typename T>
           inline
-          int pixToIdx(cv::Point pix) const
+          int worldToCylindricalIdx(const cv::Point3_<T>& point) const
           {
-            return utils::pixToIdx(pix, getWidth());
+            cv::Point pix;
+            worldToCylindricalImage(point, pix);
+            int idx = pixToIdx(pix);
+            return idx;
           }
           
+          template<typename T>
           inline
-          int worldToCylindricalIdx(const cv::Point3f& point) const
+          int worldToCylindricalIdx(T x, T y, T z) const
           {
-            return utils::worldToCylindricalIdx(point, getWidth(), getHeight(), getHScale(), getVScale(), 0, params_.v_offset);
-          }
-          
-          inline
-          int worldToCylindricalIdx(float x, float y, float z) const
-          {
-            cv::Point3_<float> point(x,y,z);
+            cv::Point3_<T> point(x,y,z);
             return worldToCylindricalIdx(point);
           }
           
-          template <typename T>
+          template <typename S, typename T>
           inline
-          T worldToCanXIdx(const cv::Point3_<T>& point) const
+          void worldToCanXIdx(const cv::Point3_<S>& point, T& x_idx) const
           {
-            T absy = worldToCanDepth(point);
-            T xind = point.x/absy * getCanScale() + getCanWidth()/2;
-            return xind;
+            if(point.y >=0 )
+            {
+              S absy = point.y;
+              S h_b = params_.vfov/2-params_.v_offset;
+              x_idx = point.x*h_b/absy * (params_.can_width/2) + params_.can_width/2;
+            }
+            else
+            {
+              S absy = -point.y;
+              S h_t = params_.vfov/2+params_.v_offset;
+              x_idx = point.x*h_t/absy * (params_.can_width/2) + params_.can_width/2;
+            }
+//             T absy = worldToCanDepth(point);
+//             T xind = point.x/absy * getCanScale() + getCanWidth()/2;
+//             return xind;
+          }
+          
+          template <typename S, typename T>
+          inline
+          void worldToCanXIdx(S x, S y, S z, T& x_idx) const
+          {
+            worldToCanXIdx(cv::Point3_<S>(x,y,z), x_idx);
+          }
+          
+          template <typename S, typename T>
+          inline
+          void worldToCanZIdx(const cv::Point3_<S>& point, T& z_idx) const
+          {
+            if(point.y >=0 )
+            {
+              S absy = point.y;
+              S h_b = params_.vfov/2-params_.v_offset;
+              z_idx = point.z*h_b/absy * (params_.can_width/2) + params_.can_width/2;
+            }
+            else
+            {
+              S absy = -point.y;
+              S h_t = params_.vfov/2+params_.v_offset;
+              z_idx = point.z*h_t/absy * (params_.can_width/2) + params_.can_width/2;
+            }
+//             T absy = worldToCanDepth(point);
+//             T zind = point.z/absy * getCanScale() + getCanWidth()/2;
+//             return zind;
+          }
+          
+          template <typename S, typename T>
+          inline
+          void worldToCanZIdx(S x, S y, S z, T& z_idx) const
+          {
+            return worldToCanZIdx(cv::Point3_<S>(x,y,z), z_idx);
           }
           
           template <typename T>
           inline
-          T worldToCanXIdx(T x, T y, T z) const
+          int pixToCanIdx(int xind, int zind, T y) const
           {
-            return worldToCanXIdx(cv::Point3_<T>(x,y,z));
+            int rel_ind = zind*params_.can_width + xind;
+            int ind = (y > 0) ? rel_ind + params_.can_width*params_.can_width : rel_ind;
+            return ind;
           }
           
           template <typename T>
           inline
-          T worldToCanZIdx(const cv::Point3_<T>& point) const
+          int pixToCanIdx(const cv::Point3i& pt, T y) const
           {
-            T absy = worldToCanDepth(point);
-            T zind = point.z/absy * getCanScale() + getCanWidth()/2;
-            return zind;
+            return pixToCanIdx(pt.x, pt.z, y);
           }
+
           
           template <typename T>
           inline
-          T worldToCanZIdx(T x, T y, T z) const
+          int worldToCanIdx(const cv::Point3_<T>& point) const
           {
-            return worldToCanZIdx(cv::Point3_<T>(x,y,z));
-          }
-          
-          template <typename T>
-          inline
-          int worldToCanIdx(cv::Point3_<T> point) const
-          {
-            return utils::worldToCanIdx(point, getCanWidth(), getCanScale()) + getCols();
+            cv::Point3i pix;
+            worldToCanXIdx(point, pix.x);
+            worldToCanZIdx(point, pix.z);
+            int can_idx = pixToCanIdx(pix, point.y);
+            return can_idx;
           }
           
           template <typename T>
@@ -645,41 +738,57 @@ namespace egocylindrical
           
           template <typename T>
           inline
-          int pixToCanIdx(int xind, int zind, T y) const
+          int worldToIdx(const cv::Point3_<T>& point) const
           {
-            return utils::pixToCanIdx(xind, zind, getCanWidth(), y) + getCols();
+            int idx = worldToCylindricalIdx(point);
+            return idx;
+
+            if(idx<0 || idx >= params_.getCols())
+            {
+              idx = worldToCanIdx(point) + params_.getCols();
+            }
+            return idx;
           }
           
+         
+          template <typename S, typename T>
           inline
-          cv::Point3d projectPixelTo3dRay(const cv::Point2d& point) const
+          void projectPixelTo3dRay(const cv::Point_<S>& point, cv::Point3_<T>& ray) const
           {
-            cv::Point3d ray;
-            double theta = (point.x - (getWidth()/2))/getHScale();
+            T theta = (point.x - (params_.width/2))/params_.hscale;
             
             ray.x = sin(theta);
             ray.z = cos(theta);
             
-            ray.y = (point.y - (getHeight()/2))/getVScale();
-            
-            //ray /= (ray.x*ray.x + ray.z*ray.z); //NOTE: This was redundant
+            ray.y = (point.y - (params_.height/2 + params_.v_offset))/params_.vscale;
+          }
+          
+         
+          template <typename T>
+          inline
+          cv::Point3_<float> projectPixelTo3dRay(const cv::Point_<T>& point) const
+          {
+            cv::Point3_<float> ray;
+            projectPixelTo3dRay(point, ray);
             return ray;
           }
           
+          template <typename T>
           inline
-          cv::Point3d projectCanPixelTo3dRay(const cv::Point2d& point) const
+          cv::Point3d projectCanPixelTo3dRay(const cv::Point_<T>& point) const
           {
-            cv::Point3d ray;
+            cv::Point3_<T> ray;
             ray.y = -1;
             
-            double y = point.y;
-            if(point.y >= getCanWidth())
+            T y = point.y;
+            if(point.y >= params_.can_width)
             {
               y -= getCanWidth();
               ray.y = 1;
             }
                         
-            ray.x = (point.x - (getCanWidth()/2))/getCanScale();
-            ray.z = (y - (getCanWidth()/2))/getCanScale();
+            ray.x = (point.x - (params_.can_width/2))/params_.canscale;
+            ray.z = (y - (params_.can_width/2))/params_.canscale;
             
             return ray;
           }
@@ -729,6 +838,7 @@ namespace egocylindrical
             {
                 fromCameraInfo(ec_points);
                 const_msg_ = ec_points;
+                header_ = const_msg_->header;
 
                 points_ = (float*) const_msg_->points.data.data() + (const_msg_->points.layout.data_offset) / sizeof(float);
                                 
@@ -782,7 +892,7 @@ namespace egocylindrical
             }
             
             inline
-            ECMsgConstPtr getEgoCylinderInfoMsg()
+            ECMsgConstPtr getEgoCylinderInfoMsg() const
             {
               ECMsgPtr info = boost::make_shared<ECMsg>();
               fillMsgInfo(*info);

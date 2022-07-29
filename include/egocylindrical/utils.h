@@ -77,7 +77,7 @@ namespace utils
                 {
                     cv::Point3f world_pnt(n_x[i],n_y[i],n_z[i]);
                   
-                    idx = new_points.worldToCanIdx(n_x[i],n_y[i],n_z[i]);
+                    idx = new_points.worldToCanIdx(world_pnt);
                     
                     if(idx >=0 && idx < new_points.getNumPts())
                     {
@@ -103,6 +103,7 @@ namespace utils
                   
                 }
             }
+            
             
             
         }
