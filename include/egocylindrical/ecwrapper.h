@@ -336,16 +336,31 @@ namespace egocylindrical
         
         
         
+        union typeconverter{
+          float    float_val;
+          uint32_t int_val;
+        };
         
+        uint32_t toUint(float val)
+        {
+          typeconverter t = {.float_val=val};
+          return t.int_val;
+        }
+        
+        float toFloat(uint32_t val)
+        {
+          typeconverter t = {.int_val=val};
+          return t.float_val;
+        }
         
         struct ECParams
         {
-          int height=0, width=0, can_width=0, v_offset=0;
-          float vfov=0;
+          int height=0, width=0, can_width=0;
+          float vfov=0, v_offset=0, cyl_radius=1;
           
           bool operator==(const ECParams &other) const 
           {
-            return (height==other.height && width==other.width && vfov==other.vfov && can_width==other.can_width && v_offset==other.v_offset);
+            return (height==other.height && width==other.width && vfov==other.vfov && can_width==other.can_width && v_offset==other.v_offset && cyl_radius==other.cyl_radius);
           }
           
           bool operator!=(const ECParams& other) const
@@ -366,7 +381,16 @@ namespace egocylindrical
             can_width = dims[3].size;
             if(dims.size()>4)
             {
-              v_offset = dims[4].size;
+              v_offset = toFloat(dims[4].size);
+              
+              if(dims.size()>5)
+              {
+                cyl_radius = toFloat(dims[5].size);
+              }
+              else
+              {
+                cyl_radius = 1;
+              }
             }
             else
             {
@@ -465,7 +489,7 @@ namespace egocylindrical
             msg.fov_v = params_.vfov;
             
             std::vector<std_msgs::MultiArrayDimension>& dims = msg.points.layout.dim;
-            dims.resize(5);
+            dims.resize(6);
             
             std_msgs::MultiArrayDimension& dim0 = dims[0];
             dim0.label = "components";
@@ -489,8 +513,13 @@ namespace egocylindrical
             
             std_msgs::MultiArrayDimension& dim4 = dims[4];
             dim4.label = "v_offset";
-            dim4.size = params_.v_offset;
+            dim4.size = toUint(params_.v_offset);
             dim4.stride = 0;  //Not used
+            
+            std_msgs::MultiArrayDimension& dim5 = dims[5];
+            dim5.label = "cyl_radius";
+            dim5.size = toUint(params_.cyl_radius);
+            dim5.stride = 0;  //Not used
           }
           
           inline
@@ -725,7 +754,7 @@ namespace egocylindrical
             cv::Point3i pix;
             worldToCanXIdx(point, pix.x);
             worldToCanZIdx(point, pix.z);
-            int can_idx = pixToCanIdx(pix, point.y);
+            int can_idx = pixToCanIdx(pix, point.y) + params_.getCols();
             return can_idx;
           }
           
@@ -745,7 +774,7 @@ namespace egocylindrical
 
             if(idx<0 || idx >= params_.getCols())
             {
-              idx = worldToCanIdx(point) + params_.getCols();
+              idx = worldToCanIdx(point);// + params_.getCols();
             }
             return idx;
           }
@@ -791,6 +820,51 @@ namespace egocylindrical
             ray.z = (y - (params_.can_width/2))/params_.canscale;
             
             return ray;
+          }
+          
+          template <typename T>
+          inline
+          cv::Point3_<T> projectWorldToCylinder(const cv::Point3_<T>& point) const
+          {
+            if(point.x==point.x)
+            {
+              int tempc=1; //breakpoint location
+            }
+            cv::Point3_<T> Pcyl_t = point / worldToRange(point) * params_.cyl_radius;
+            return Pcyl_t;
+          }
+          
+          template <typename T>
+          inline
+          cv::Point3_<T> projectWorldToCan(const cv::Point3_<T>& point) const
+          {
+            if(point.x==point.x)
+            {
+              int tempc=1; //breakpoint location
+            }
+            cv::Point3_<T> Pcyl_t;
+            if(point.y >=0 )
+            {
+              T absy = point.y;
+              T h_b = (params_.vfov/2-params_.v_offset)*params_.cyl_radius;
+              Pcyl_t = point * h_b / absy;
+            }
+            else
+            {
+              T absy = -point.y;
+              T h_t = (params_.vfov/2+params_.v_offset)*params_.cyl_radius;
+              Pcyl_t = point * h_t / absy;
+            }
+            
+            //cv::Point3_<T> Pcyl_t = point * (params_.vfov/2) / worldToCanDepth(point);
+            return Pcyl_t;
+          }
+          
+          template <typename T>
+          inline
+          T worldToCanDepth(const cv::Point3_<T>& point)
+          {
+            return std::fabs(point.y);
           }
 
         };

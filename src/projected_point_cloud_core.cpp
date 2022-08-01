@@ -22,9 +22,6 @@ namespace egocylindrical
             
             pcl::PointCloud<pcl::PointXYZI> pcloud;
             
-            float vfov = points.getParams().vfov;
-            
-            
             sensor_msgs::PointCloud2::Ptr pcloud_msg = boost::make_shared<sensor_msgs::PointCloud2>();
             
             pcl::toROSMsg(pcloud, *pcloud_msg);
@@ -40,20 +37,44 @@ namespace egocylindrical
             
             float* data = (float*) pcloud_msg->data.data();
 
-            //TODO: Project top/bottom of egocan
             //#pragma omp parallel for num_threads(4)
-            for(int j = 0; j < num_pts; ++j)
+            for(int j = 0; j < num_cols; ++j)
             {   
                 cv::Point3f point(x[j],y[j],z[j]);
                 
-                cv::Point3f Pcyl_t = (j<num_cols) ? egocylindrical::utils::projectWorldToCylinder(point) : egocylindrical::utils::projectWorldToCan(point, vfov);
-                float range = (j<num_cols) ? egocylindrical::utils::worldToRange(point) : egocylindrical::utils::worldToCanDepth(point);
+                if(point.x==point.x)
+                {
+                  int tempc=1; //breakpoint location
+                }
+                
+                cv::Point3f Pcyl_t = points.projectWorldToCylinder(point);
+                float range = egocylindrical::utils::worldToRange(point);
 
                 data[8*j] =   Pcyl_t.x;
                 data[8*j+1] = Pcyl_t.y;
                 data[8*j+2] = Pcyl_t.z;
                 data[8*j+4] = range;
             }
+            
+            for(int j = num_cols; j < num_pts; ++j)
+            {   
+                cv::Point3f point(x[j],y[j],z[j]);
+                
+                if(point.x==point.x)
+                {
+                  int tempc=1; //breakpoint location
+                }
+                
+                cv::Point3f Pcyl_t = points.projectWorldToCan(point);
+                float range = egocylindrical::utils::worldToCanDepth(point);
+
+                data[8*j] =   Pcyl_t.x;
+                data[8*j+1] = Pcyl_t.y;
+                data[8*j+2] = Pcyl_t.z;
+                data[8*j+4] = range;
+            }
+            
+            
 
             pcloud_msg->header = points.getHeader();
             

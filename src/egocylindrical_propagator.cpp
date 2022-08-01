@@ -28,6 +28,7 @@ namespace egocylindrical
       params.vfov = config.vfov;
       params.can_width = config.can_width;
       params.v_offset = config.v_offset;
+      params.cyl_radius = config.cyl_radius;
       return params;
     }
     
@@ -236,7 +237,8 @@ namespace egocylindrical
     {
         WriteLock lock(config_mutex_);
      
-        ROS_INFO_STREAM("Updating propagator config: height=" << config.height << ", width=" << config.width << ", vfov=" << config.vfov << ", can_width=" << config.can_width);
+        ROS_INFO_STREAM("Updating propagator config: height=" << config.height << ", width=" << config.width << ", vfov=" << config.vfov << ", can_width=" << config.can_width
+        << ", v_offset=" << config.v_offset << ", cyl_radius=" << config.cyl_radius);
         config_ = config;
     }
     
