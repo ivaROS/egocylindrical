@@ -341,12 +341,14 @@ namespace egocylindrical
           uint32_t int_val;
         };
         
+        inline
         uint32_t toUint(float val)
         {
           typeconverter t = {.float_val=val};
           return t.int_val;
         }
         
+        inline
         float toFloat(uint32_t val)
         {
           typeconverter t = {.int_val=val};
@@ -411,6 +413,8 @@ namespace egocylindrical
           }
         };
         
+        //NOTE: This should probably be moved out of the header file
+        inline
         std::ostream& operator<< (std::ostream& stream, const ECParams& params)
         {
           stream << "height: " << params.height << ", width: " << params.width << ", can_width: " << params.can_width << ", v_offset: " << params.v_offset << ", vfov: " << params.vfov;
@@ -438,6 +442,8 @@ namespace egocylindrical
           
         };
         
+        //NOTE: This should probably be moved out of the header file
+        inline
         std::ostream& operator<< (std::ostream& stream, const DerivedECParams& params)
         {
           stream << ((ECParams)params) << ", v_center: " << params.v_center << ", hscale: " << params.hscale << ", vscale: " << params.vscale << ", canscale: " << params.canscale;
@@ -617,6 +623,15 @@ namespace egocylindrical
             worldToCylindricalXIdxFast(point, pix.x);
             worldToCylindricalYIdx(point, pix.y);
           }
+          
+          template <typename T>
+          inline
+          cv::Point worldToCylindricalImage(const cv::Point3_<T>& point) const
+          {
+            cv::Point pix;
+            worldToCylindricalImage(point, pix);
+            return pix;
+          }
 
           //Redundant, perhaps, but convenient
           template <typename S, typename T>
@@ -654,6 +669,12 @@ namespace egocylindrical
           {
             int ind = pix.y*params_.width + pix.x;
             return ind;
+          }
+          
+          inline
+          int pixToIdx(int x, int y) const
+          {
+            return pixToIdx(cv::Point(x,y));
           }
           
           template<typename T>
@@ -702,6 +723,15 @@ namespace egocylindrical
             worldToCanXIdx(cv::Point3_<S>(x,y,z), x_idx);
           }
           
+          template <typename T>
+          inline
+          int worldToCanXIdx(const cv::Point3_<T> point) const
+          {
+            int x_idx;
+            worldToCanXIdx(point, x_idx);
+            return x_idx;
+          }
+          
           template <typename S, typename T>
           inline
           void worldToCanZIdx(const cv::Point3_<S>& point, T& z_idx) const
@@ -721,6 +751,15 @@ namespace egocylindrical
 //             T absy = worldToCanDepth(point);
 //             T zind = point.z/absy * getCanScale() + getCanWidth()/2;
 //             return zind;
+          }
+          
+          template <typename T>
+          inline
+          int worldToCanZIdx(const cv::Point3_<T>& point) const
+          {
+            int z_idx;
+            worldToCanZIdx(point, z_idx);
+            return z_idx;
           }
           
           template <typename S, typename T>
@@ -826,10 +865,6 @@ namespace egocylindrical
           inline
           cv::Point3_<T> projectWorldToCylinder(const cv::Point3_<T>& point) const
           {
-            if(point.x==point.x)
-            {
-              int tempc=1; //breakpoint location
-            }
             cv::Point3_<T> Pcyl_t = point / worldToRange(point) * params_.cyl_radius;
             return Pcyl_t;
           }
@@ -838,10 +873,6 @@ namespace egocylindrical
           inline
           cv::Point3_<T> projectWorldToCan(const cv::Point3_<T>& point) const
           {
-            if(point.x==point.x)
-            {
-              int tempc=1; //breakpoint location
-            }
             cv::Point3_<T> Pcyl_t;
             if(point.y >=0 )
             {
@@ -970,6 +1001,7 @@ namespace egocylindrical
             {
               ECMsgPtr info = boost::make_shared<ECMsg>();
               fillMsgInfo(*info);
+              info->header = msg_->header;
               return (ECMsgConstPtr) info;
             }
             
