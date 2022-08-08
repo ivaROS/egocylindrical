@@ -28,9 +28,9 @@ namespace egocylindrical
             const int num_pixels = image_width * image_height;
             
             const int max_ind = cylindrical_points.getCols();
-            float* x = cylindrical_points.getX();
-            float* y = cylindrical_points.getY();
-            float* z = cylindrical_points.getZ();
+            float* __restrict__ x = cylindrical_points.getX();
+            float* __restrict__ y = cylindrical_points.getY();
+            float* __restrict__ z = cylindrical_points.getZ();
             
             PointTransformerObject point_transformer(transform);
             
@@ -39,10 +39,11 @@ namespace egocylindrical
             AlignedVector<float> ranges(num_pixels, dNaN), nx(num_pixels, dNaN), ny(num_pixels, dNaN), nz(num_pixels, dNaN);
             AlignedVector<int32_t> inds(num_pixels);
             
-            const T* const imgptr = (T* const) image.data;
+            const T* const __restrict__ imgptr = (T* const) image.data;
             
             const float row_factor = ((float) 1)/image_width;
             
+            #pragma GCC ivdep
             for(int i = 0; i < num_pixels; ++i)
             {
                 float raw_row = i*row_factor;

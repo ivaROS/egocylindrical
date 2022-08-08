@@ -31,22 +31,17 @@ namespace egocylindrical
             pcloud_msg->width = num_pts;
             pcloud_msg->height = 1;
             
-            const float* x = points.getX();
-            const float* y = points.getY();
-            const float* z = points.getZ();
+            const float* __restrict__ x = points.getX();
+            const float* __restrict__ y = points.getY();
+            const float* __restrict__ z = points.getZ();
             
             float* data = (float*) pcloud_msg->data.data();
 
             //#pragma omp parallel for num_threads(4)
-            for(int j = 0; j < num_cols; ++j)
+            #pragma GCC ivdep
+            for(int j = 0; j < num_cols; ++j) //Vectorization requires -fno-trapping-math -fno-math-errno
             {   
                 cv::Point3f point(x[j],y[j],z[j]);
-                
-                if(point.x==point.x)
-                {
-                  int tempc=1; //breakpoint location
-                }
-                
                 cv::Point3f Pcyl_t = points.projectWorldToCylinder(point);
                 float range = egocylindrical::utils::worldToRange(point);
 
@@ -56,16 +51,11 @@ namespace egocylindrical
                 data[8*j+4] = range;
             }
             
-            for(int j = num_cols; j < num_pts; ++j)
+            #pragma GCC ivdep
+            for(int j = num_cols; j < num_pts; ++j) //Vectorization requires -fno-trapping-math
             {   
                 cv::Point3f point(x[j],y[j],z[j]);
-                
-                if(point.x==point.x)
-                {
-                  int tempc=1; //breakpoint location
-                }
-                
-                cv::Point3f Pcyl_t = points.projectWorldToCan(point);
+                cv::Point3f Pcyl_t = points.projectWorldToCan(point); 
                 float range = egocylindrical::utils::worldToCanDepth(point);
 
                 data[8*j] =   Pcyl_t.x;
