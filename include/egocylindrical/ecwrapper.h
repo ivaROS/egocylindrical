@@ -335,7 +335,7 @@ namespace egocylindrical
         
         
         
-        
+        //Based on https://stackoverflow.com/a/41661212
         union typeconverter{
           float    float_val;
           uint32_t int_val;

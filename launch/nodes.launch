@@ -17,7 +17,7 @@
   <group ns="egocylinder">
 
 
-    <node name="depth_to_egocylindrical_node" pkg="egocylindrical" type="egocylindrical_propagator_node" output="log" launch-prefix="$(arg prefix)">        
+    <node name="depth_to_egocylindrical_node" pkg="egocylindrical" type="egocylindrical_propagator_node" output="log" launch-prefix="$(arg prefix)" clear_params="true">
       <param name="image_in" value="$(arg depth_image)"/>
       <param name="info_in" value="$(arg depth_info)"/>
       <param name="points_out" value="data"/>
@@ -46,7 +46,7 @@
       <param name="image_topic" value="image_raw"/>
     </node>
     
-    <node name="range_image_inflator" pkg="egocylindrical" type="range_image_inflator_node" output="log" launch-prefix="xterm -e gdb -ex run --args">
+    <node name="range_image_inflator" pkg="egocylindrical" type="range_image_inflator_node" output="log" launch-prefix="">
       <remap from="egocylindrical_points" to="data"/>
       <remap from="range_image" to="image"/>
       <param name="image_topic" value="inflated_image"/>
