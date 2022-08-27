@@ -197,7 +197,7 @@ namespace egocylindrical
                 ROS_DEBUG_STREAM("[updateECSTransform] Updated transform! " << stamp);
 
                 
-                buffer_.setTransform(ecs_, "coordinate_frame_helper", false);
+                //buffer_.setTransform(ecs_, "coordinate_frame_helper", false);
                 tf_br_.sendTransform(ecs_);
                 
                 return true;
@@ -224,7 +224,7 @@ namespace egocylindrical
 
                 ROS_DEBUG_STREAM("[updateECCTransform] Updated transform! " << stamp);
 
-                buffer_.setTransform(ecc_, "coordinate_frame_helper", false);
+                //buffer_.setTransform(ecc_, "coordinate_frame_helper", false);
                 tf_br_.sendTransform(ecc_);
                 
                 return true;
@@ -285,7 +285,7 @@ namespace egocylindrical
 
                 ROS_DEBUG_STREAM("[updateOffsetTransform] Updated transform! " << stamp);
 
-                buffer_.setTransform(offset_transform_, "coordinate_frame_helper", false);
+                //buffer_.setTransform(offset_transform_, "coordinate_frame_helper", false);
                 tf_br_.sendTransform(offset_transform_);
                 
                 return true;
