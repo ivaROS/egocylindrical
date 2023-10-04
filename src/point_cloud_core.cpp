@@ -33,8 +33,8 @@ namespace egocylindrical
             
             pcloud_msg->data.resize(sizeof(pcl::PointXYZ) * num_cols);
             
-            pcloud_msg->width = num_cols; //points.getWidth();
-            pcloud_msg->height = 1;//points.getHeight();
+            pcloud_msg->width = num_cols;
+            pcloud_msg->height = 1;
             pcloud_msg->row_step = static_cast<uint32_t> (sizeof (pcl::PointXYZ) * pcloud_msg->width);
             pcloud_msg->is_dense = false;  //should be false, but seems to work with true
             

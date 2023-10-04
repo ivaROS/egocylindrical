@@ -89,10 +89,10 @@ namespace egocylindrical
                         idx = tidx;
                       }
                     }
-                    
+
                     inds[p] = idx;
-                    
-                    
+
+
                     ranges[p] = range_squared;
                     
                 }

@@ -12,20 +12,20 @@ namespace egocylindrical
     {
 
         template<typename T> struct DepthScale {};
-        
+
         template<>
         struct DepthScale<uint16_t>
         {
           static inline uint scale() { return 1000;}
         };
-        
+
         template<>
         struct DepthScale<float>
         {
           static inline uint scale() { return 1;}
         };
-        
-        
+
+
         class InlineCameraModel : public image_geometry::PinholeCameraModel
         {
         public:
@@ -55,7 +55,7 @@ namespace egocylindrical
           }
 
         };
-        
+
         //Inherits from PinholeCamerModel in order to access protected member function initRectificationMaps
         class CleanCameraModel : public InlineCameraModel
         {
@@ -66,7 +66,7 @@ namespace egocylindrical
                 PinholeCameraModel::initRectificationMaps();
             }
         };
-        
+
     } //end namespace utils
 } //end namespace egocylindrical
 

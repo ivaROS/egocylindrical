@@ -14,7 +14,7 @@ namespace egocylindrical
 {
     namespace utils
     {
-        
+
         class DepthImageRemapper
         {
         private:
@@ -24,34 +24,34 @@ namespace egocylindrical
             AlignedVector<float> z_;  //TODO: Remove all references to z_
 
             int num_pixels_;
-            
+
             ECParams ec_params_;
-          
+
             CleanCameraModel cam_model_;
-            
+
         public:
-            
+
             //inline
             void update( ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const sensor_msgs::CameraInfo::ConstPtr& cam_info);
-            
+
             //inline
             void update( ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const sensor_msgs::CameraInfo::ConstPtr& cam_info, sensor_msgs::PointCloud2::Ptr& pcloud_msg, float thresh_min, float thresh_max);
-            
+
         private:
-          
+
             //inline
             void updateMapping(const ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const sensor_msgs::CameraInfo::ConstPtr& cam_info);
-            
+
 //             template <bool fill_cloud>
 //             inline
 //             void remapDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, sensor_msgs::PointCloud2::Ptr& pcloud_msg, float thresh_min, float thresh_max);
-            
+
             //template <bool fill_cloud>
             //inline
             void update( ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image_msg, const sensor_msgs::CameraInfo::ConstPtr& cam_info, sensor_msgs::PointCloud2::Ptr& pcloud_msg, float thresh_min, float thresh_max, bool fill_cloud);
-            
+
         };
-      
+
     } //end namespace utils
 
 } //end namespace egocylindrical

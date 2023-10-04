@@ -18,7 +18,7 @@ namespace egocylindrical
     public:
       RangeImageConverterNodelet(){};
       ~RangeImageConverterNodelet(){}
-      
+
       /**
       * @brief Initialise the nodelet
       *
@@ -28,15 +28,15 @@ namespace egocylindrical
       {
         ros::NodeHandle nh = this->getMTNodeHandle();
         ros::NodeHandle pnh = this->getMTPrivateNodeHandle();
-        
+
         // resolve node(let) name
         std::string name = pnh.getUnresolvedNamespace();
         int pos = name.find_last_of('/');
         name = name.substr(pos + 1);
-        
+
         NODELET_INFO_STREAM("Initialising nodelet... [" << name << "]");
         converter_ = std::make_shared<RangeImageConverter>(nh, pnh);
-        
+
         // Initialises the controller
         if (converter_->init())
         {
@@ -50,7 +50,7 @@ namespace egocylindrical
     private:
       std::shared_ptr<RangeImageConverter> converter_;
     };
-    
+
 
 PLUGINLIB_EXPORT_CLASS(egocylindrical::RangeImageConverterNodelet,
                        nodelet::Nodelet);
@@ -58,4 +58,3 @@ PLUGINLIB_EXPORT_CLASS(egocylindrical::RangeImageConverterNodelet,
 
 
 }
-

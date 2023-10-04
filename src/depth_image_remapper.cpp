@@ -38,7 +38,7 @@ namespace egocylindrical
                     
                     cv::Point3f world_pnt = cam_model.projectPixelTo3dRay(pt);
                     
-                    int cyl_idx = cylindrical_history.worldToIdx(world_pnt);  //Control flow, can't vectorize
+                    int cyl_idx = cylindrical_history.worldToCylindricalIdx(world_pnt.x,world_pnt.y,world_pnt.z);
                     
                     inds[image_idx] = cyl_idx;
                     
@@ -90,7 +90,7 @@ namespace egocylindrical
             
             int j = 0;
             
-            //Contents of 'inds' are not sequential, can't vectorize
+            
             for(int i = 0; i < num_pixels; ++i)
             {
                 

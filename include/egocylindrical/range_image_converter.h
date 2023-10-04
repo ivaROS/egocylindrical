@@ -16,7 +16,6 @@
 #include <ros/ros.h>
 #include <boost/thread/mutex.hpp>
 
-
 namespace egocylindrical
 {
 
@@ -25,22 +24,18 @@ namespace egocylindrical
     {
         using Mutex = boost::mutex;
         using Lock = Mutex::scoped_lock;
-        
+
         ros::NodeHandle nh_, pnh_;
         image_transport::ImageTransport it_;
 
-        image_transport::SubscriberFilter im_sub_, can_im_sub_;
+        image_transport::SubscriberFilter im_sub_;
         message_filters::Subscriber<egocylindrical::EgoCylinderPoints> ec_sub_;
-        
-        bool use_egocan_;
         
         typedef message_filters::TimeSynchronizer<sensor_msgs::Image, egocylindrical::EgoCylinderPoints> synchronizer;
         boost::shared_ptr<synchronizer> timeSynchronizer;
-        typedef message_filters::TimeSynchronizer<sensor_msgs::Image, egocylindrical::EgoCylinderPoints, sensor_msgs::Image> can_synchronizer;
-        boost::shared_ptr<can_synchronizer> timeSynchronizerWithCan;
         
         ros::Publisher ec_pub_;
-        
+
         Mutex connect_mutex_;
 
     public:
@@ -55,7 +50,7 @@ namespace egocylindrical
 
     private:
         
-        void imageCB(const sensor_msgs::Image::ConstPtr& image, const egocylindrical::EgoCylinderPoints::ConstPtr& info, const sensor_msgs::Image::ConstPtr& can_image);
+        void imageCB(const sensor_msgs::Image::ConstPtr& image, const egocylindrical::EgoCylinderPoints::ConstPtr& info);
 
     };
 

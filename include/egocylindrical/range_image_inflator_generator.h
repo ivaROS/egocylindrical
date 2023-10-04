@@ -34,25 +34,25 @@ namespace egocylindrical
     {
         using Mutex = boost::mutex;
         using Lock = Mutex::scoped_lock;
-        
+
         ros::NodeHandle nh_, pnh_;
         image_transport::ImageTransport it_;
         image_transport::Publisher im_pub_;
         //ros::Subscriber range_img_sub_;
         image_transport::SubscriberFilter im_sub_;
         message_filters::Subscriber<EgoCylinderPoints> ec_sub_;
-        
+
         typedef message_filters::TimeSynchronizer<sensor_msgs::Image, egocylindrical::EgoCylinderPoints> synchronizer;
         boost::shared_ptr<synchronizer> timeSynchronizer_;
-        
-        
+
+
         //bool use_raw_;
-        
+
         Mutex config_mutex_, connect_mutex_;
         //int num_threads_;
-        
+
         sensor_msgs::Image::Ptr preallocated_msg_;
-        
+
         typedef egocylindrical::RangeImageInflatorGeneratorConfig ConfigType;
         ConfigType config_;
         typedef dynamic_reconfigure::Server<ConfigType> ReconfigureServer;
@@ -61,19 +61,19 @@ namespace egocylindrical
     public:
 
         RangeImageInflatorGenerator(ros::NodeHandle& nh, ros::NodeHandle& pnh);
-        
+
         bool init();
-        
+
         void configCB(const ConfigType &config, uint32_t level);
-        
+
         void ssCB();
 
 
 
     private:
-        
+
         void imgCB(const sensor_msgs::Image::ConstPtr& range_msg, const egocylindrical::EgoCylinderPoints::ConstPtr& ec_msg);
-      
+
     };
 
 } // ns egocylindrical

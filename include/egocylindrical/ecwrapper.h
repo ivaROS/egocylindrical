@@ -16,7 +16,6 @@
 //#include <sensor_msgs/PointCloud2.h>
 
 #include <egocylindrical/EgoCylinderPoints.h>
-//#include <egocylindrical/EgoCylinderInfo.h>
 
 //#include <eigen_stl_containers/eigen_stl_containers.h>
 
@@ -130,13 +129,6 @@ namespace egocylindrical
           return std::sqrt(worldToRangeSquared(point));
         }
         
-        template <typename T>
-        inline
-        T worldToCanDepth(const cv::Point3_<T>& point)
-        {
-          return std::fabs(point.y);
-        }
-        
         /* Note: functions using 'std::sqrt' must be compiled with '-fno-math-errno' in order to be vectorized.
          * See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=51890 for explanation.
          */
@@ -148,14 +140,6 @@ namespace egocylindrical
           return Pcyl_t;
         }
         
-        template <typename T>
-        inline
-        cv::Point3_<T> projectWorldToCan(const cv::Point3_<T>& point, float vfov)
-        {
-          cv::Point3_<T> Pcyl_t = point * (vfov/2) / worldToCanDepth(point);
-          return Pcyl_t;
-        }
-        
         /*
         inline
         cv::Point3f projectWorldToCylinder(const cv::Point3f& point)
@@ -164,162 +148,92 @@ namespace egocylindrical
             return Pcyl_t;
         }
         */
-        
-        /*
-        inline
-        int worldToCylindricalIdx(float x, float y, float z) const
-        {
-          cv::Point3f point(x,y,z);
-          cv::Point image_pnt = utils::worldToCylindricalImageFast(point, width_, height_, hscale_, vscale_, 0, 0);
-          
-          int tidx = image_pnt.y * getWidth() +image_pnt.x;
-          
-          return tidx;
-        }
-        
-        inline
-        int worldToCylindricalXIdx(float x, float z) const
-        {
-          int xind = atan2_approximation1(x,z)*hscale_ + width_/2;
-          return xind;
-        }
-        
-        inline
-        int worldToCylindricalYIdx(float y, float range_squared) const
-        {
-          int yind = y * inv_sqrt_approximation(range_squared)*vscale_ + height_/2;
-          return yind;
-        }
-        */
-        
-        
-//         template <typename T>
-//         inline
-//         T worldToCylindricalXIdx(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-//         {
-//           return std::atan2(point.x, point.z) * h_scale + cyl_width / 2;
-//         }
-//         
-//         template <typename T>
-//         inline
-//         T worldToCylindricalXIdxFast(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-//         {
-//           return atan2_approximation1(point.x, point.z) * h_scale + cyl_width / 2;
-//         }
-// 
-//         template <typename T>
-//         inline
-//         T worldToCylindricalYIdx(const cv::Point3_<T>& point, T range, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-//         {
-//           return point.y * v_scale /range + cyl_height / 2 + v_offset;
-//         }
-//         
-//         inline
-//         int pixToIdx(int xind, int yind, int width)
-//         {
-//           int ind = yind*width + xind;
-//           
-//           return ind;
-//         }
-//         
-//         inline
-//         int pixToIdx(cv::Point pix, int width)
-//         {
-//           return pixToIdx(pix.x, pix.y, width);
-//         }
-//         
-//         template <typename T>
-//         inline
-//         T worldToCanXIdx(const cv::Point3_<T>& point, int can_width, float scale)
-//         {
-//           T absy = worldToCanDepth(point);
-//           T xind = point.x/absy * scale + can_width/2;
-//           return xind;
-//         }
-//         
-//         template <typename T>
-//         inline
-//         T worldToCanZIdx(const cv::Point3_<T>& point, int can_width, float scale)
-//         {
-//           T absy = worldToCanDepth(point);
-//           T zind = point.z/absy * scale + can_width/2;
-//           return zind;
-//         }
-//         
-//         template <typename T>
-//         inline
-//         int pixToCanIdx(int xind, int zind, int can_width, T y)
-//         {
-//           int rel_ind = zind*can_width + xind;
-//           
-//           int ind = (y > 0) ? rel_ind + can_width*can_width : rel_ind;
-//           return ind;
-//         }
-//         
-//         template <typename T>
-//         inline
-//         int worldToCanIdx(const cv::Point3_<T>& point, int can_width, float scale)
-//         {
-//           int xind = worldToCanXIdx(point, can_width, scale);
-//           int zind = worldToCanZIdx(point, can_width, scale);
-//           return pixToCanIdx(xind, zind, can_width, point.y);
-// /*          
-//           int rel_ind = zind*can_width + xind;
-//           
-//           int ind = (point.y > 0) ? rel_ind + can_width*can_width : rel_ind;
-//           return ind;*/
-//         }
-//         
-//         template <typename T>
-//         inline
-//         T worldToCylindricalYIdx(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-//         {
-//           return worldToCylindricalYIdx(point, worldToRange(point), cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
-//         }
-//         
-//         template <typename T>
-//         inline
-//         T worldToCylindricalYIdxFast(const cv::Point3_<T>& point, T range_squared, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-//         {
-//           return point.y * v_scale * inv_sqrt_approximation(range_squared) + v_offset;
-//         }
-//         
-//         template <typename T>
-//         inline
-//         cv::Point_<T> worldToCylindricalImage(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-//         {
-//           T x = worldToCylindricalXIdx(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
-//           T y = worldToCylindricalYIdx(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
-//             
-//           cv::Point_<T> im_pt(x,y);
-//           return im_pt;
-//         }
-//         
-//         template <typename T>
-//         inline
-//         cv::Point worldToCylindricalImageFast(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-//         {
-//           
-//           T x = worldToCylindricalXIdxFast(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
-//           T y = worldToCylindricalYIdx(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
-//           
-//           cv::Point im_pt(x,y);
-//           return im_pt;
-//         }
-//         
-// 
-//         template <typename T>
-//         inline
-//         int worldToCylindricalIdx(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
-//         {
-//           cv::Point image_pnt = utils::worldToCylindricalImageFast(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
-//           
-//           int tidx = pixToIdx(image_pnt, cyl_width); //image_pnt.y * cyl_width +image_pnt.x;
-//           
-//           return tidx;
-//         }
 
+        // template <typename T>
+        // inline
+        // T worldToCylindricalXIdx(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+        // {
+        //   return std::atan2(point.x, point.z) * h_scale + cyl_width / 2;
+        // }
         
+        // template <typename T>
+        // inline
+        // T worldToCylindricalXIdxFast(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+        // {
+        //   return atan2_approximation1(point.x, point.z) * h_scale + cyl_width / 2;
+        // }
+
+        // template <typename T>
+        // inline
+        // T worldToCylindricalYIdx(const cv::Point3_<T>& point, T range, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+        // {
+        //   return point.y * v_scale /range + cyl_height / 2;
+        // }
+        
+        // inline
+        // int pixToIdx(int xind, int yind, int width)
+        // {
+        //   int ind = yind*width + xind;
+          
+        //   return ind;
+        // }
+        
+        // inline
+        // int pixToIdx(cv::Point pix, int width)
+        // {
+        //   return pixToIdx(pix.x, pix.y, width);
+        // }
+        
+        // template <typename T>
+        // inline
+        // T worldToCylindricalYIdx(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+        // {
+        //   return worldToCylindricalYIdx(point, worldToRange(point), cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
+        // }
+        
+        // template <typename T>
+        // inline
+        // T worldToCylindricalYIdxFast(const cv::Point3_<T>& point, T range_squared, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+        // {
+        //   return point.y * v_scale * inv_sqrt_approximation(range_squared) + cyl_height / 2;
+        // }
+        
+
+        // template <typename T>
+        // inline
+        // cv::Point_<T> worldToCylindricalImage(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+        // {
+            
+        //     T x = worldToCylindricalXIdx(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
+        //     T y = worldToCylindricalYIdx(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
+            
+        //     cv::Point_<T> im_pt(x,y);
+        //     return im_pt;
+        // }
+        
+        // template <typename T>
+        // inline
+        // cv::Point worldToCylindricalImageFast(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+        // {
+          
+        //   T x = worldToCylindricalXIdxFast(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
+        //   T y = worldToCylindricalYIdx(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
+          
+        //   cv::Point im_pt(x,y);
+        //   return im_pt;
+        // }
+
+        // template <typename T>
+        // inline
+        // int worldToCylindricalIdx(const cv::Point3_<T>& point, int cyl_width, int cyl_height, float h_scale, float v_scale, float h_offset, float v_offset)
+        // {
+        //   cv::Point image_pnt = utils::worldToCylindricalImageFast(point, cyl_width, cyl_height, h_scale, v_scale, h_offset, v_offset);
+          
+        //   int tidx = pixToIdx(image_pnt, cyl_width); //image_pnt.y * cyl_width +image_pnt.x;
+          
+        //   return tidx;
+        // }
+
         
         //typedef ::egocylindrical::EgoCylinderPoints_<Eigen::aligned_allocator<void, 32> > AlignedEgoCylinderPoints;
         typedef ::egocylindrical::EgoCylinderPoints_<boost::alignment::aligned_allocator<void, 32> > AlignedEgoCylinderPoints;
@@ -335,7 +249,7 @@ namespace egocylindrical
         
         
         
-        //Based on https://stackoverflow.com/a/41661212
+        
         union typeconverter{
           float    float_val;
           uint32_t int_val;
@@ -357,12 +271,12 @@ namespace egocylindrical
         
         struct ECParams
         {
-          int height=0, width=0, can_width=0;
-          float vfov=0, v_offset=0, cyl_radius=1;
+          int height=0, width=0;
+          float vfov=0;
           
           bool operator==(const ECParams &other) const 
           {
-            return (height==other.height && width==other.width && vfov==other.vfov && can_width==other.can_width && v_offset==other.v_offset && cyl_radius==other.cyl_radius);
+            return (height==other.height && width==other.width && vfov==other.vfov);
           }
           
           bool operator!=(const ECParams& other) const
@@ -380,30 +294,12 @@ namespace egocylindrical
             const std::vector<std_msgs::MultiArrayDimension>& dims = msg.points.layout.dim;
             height = dims[1].size;
             width = dims[2].size;
-            can_width = dims[3].size;
-            if(dims.size()>4)
-            {
-              v_offset = toFloat(dims[4].size);
-              
-              if(dims.size()>5)
-              {
-                cyl_radius = toFloat(dims[5].size);
-              }
-              else
-              {
-                cyl_radius = 1;
-              }
-            }
-            else
-            {
-              v_offset = 0;
-            }
           }
           
           inline
           int getNumPts() const
           {
-            return getCols() + 2*can_width*can_width;
+            return getCols();
           }
           
           inline
@@ -417,14 +313,14 @@ namespace egocylindrical
         inline
         std::ostream& operator<< (std::ostream& stream, const ECParams& params)
         {
-          stream << "height: " << params.height << ", width: " << params.width << ", can_width: " << params.can_width << ", v_offset: " << params.v_offset << ", vfov: " << params.vfov;
+          stream << "height: " << params.height << ", width: " << params.width << ", vfov: " << params.vfov;
           return stream;
         }
         
         struct DerivedECParams : public ECParams
         {
           int v_center;
-          float hscale, vscale, canscale;
+          float hscale, vscale;
           
           inline
           bool update(const ECParams& params)
@@ -434,8 +330,7 @@ namespace egocylindrical
             *((ECParams*)this)=params;
             hscale = width/(2*M_PI);
             vscale = height/vfov;  //NOTE: In the paper, vscale=hscale. If keeping them separate does not prove useful, they should be merged
-            canscale = can_width*vfov/4;
-            v_center = v_offset * height / vfov;
+            v_center = 0;
             
             return true;
           }
@@ -446,14 +341,15 @@ namespace egocylindrical
         inline
         std::ostream& operator<< (std::ostream& stream, const DerivedECParams& params)
         {
-          stream << ((ECParams)params) << ", v_center: " << params.v_center << ", hscale: " << params.hscale << ", vscale: " << params.vscale << ", canscale: " << params.canscale;
+          stream << ((ECParams)params) << ", hscale: " << params.hscale << ", vscale: " << params.vscale;
           return stream;
         }
         
         
+        // TODO: pull the relevant egocylindrical 'camera' info into separate message and use this class as the interpreter of it
+        // ECWrapper would also use this class
         class ECConverter
         {
-
         protected:
           DerivedECParams params_;
           
@@ -495,7 +391,7 @@ namespace egocylindrical
             msg.fov_v = params_.vfov;
             
             std::vector<std_msgs::MultiArrayDimension>& dims = msg.points.layout.dim;
-            dims.resize(6);
+            dims.resize(3);
             
             std_msgs::MultiArrayDimension& dim0 = dims[0];
             dim0.label = "components";
@@ -511,21 +407,6 @@ namespace egocylindrical
             dim2.label = "point";
             dim2.size = params_.width;
             dim2.stride = params_.width;   
-            
-            std_msgs::MultiArrayDimension& dim3 = dims[3];
-            dim3.label = "can";
-            dim3.size = params_.can_width;
-            dim3.stride = params_.can_width; 
-            
-            std_msgs::MultiArrayDimension& dim4 = dims[4];
-            dim4.label = "v_offset";
-            dim4.size = toUint(params_.v_offset);
-            dim4.stride = 0;  //Not used
-            
-            std_msgs::MultiArrayDimension& dim5 = dims[5];
-            dim5.label = "cyl_radius";
-            dim5.size = toUint(params_.cyl_radius);
-            dim5.stride = 0;  //Not used
           }
           
           inline
@@ -539,13 +420,7 @@ namespace egocylindrical
           {
             return params_.width;
           }
-          
-          inline
-          int getCanWidth() const
-          {
-            return params_.can_width;
-          }
-          
+
           float getHScale() const
           {
             return params_.hscale;
@@ -556,17 +431,12 @@ namespace egocylindrical
             return params_.vscale;
           }
           
-          float getCanScale() const
-          {
-            return params_.canscale;
-          }
-          
           inline
           int getNumPts() const
           {
             return params_.getNumPts();
           }
-          
+
           inline
           int getCols() const
           {
@@ -578,8 +448,7 @@ namespace egocylindrical
           {
             return cv::Rect(0, 0, params_.width, params_.height);
           }
-          
-          
+
           template <typename S, typename T>
           inline
           void worldToCylindricalXIdx(const cv::Point3_<S>& point, T& x_idx, bool fast=false) const
@@ -695,130 +564,14 @@ namespace egocylindrical
             return worldToCylindricalIdx(point);
           }
           
-          template <typename S, typename T>
-          inline
-          void worldToCanXIdx(const cv::Point3_<S>& point, T& x_idx) const
-          {
-            if(point.y >=0 )
-            {
-              S absy = point.y;
-              S h_b = params_.vfov/2-params_.v_offset;
-              x_idx = point.x*h_b/absy * (params_.can_width/2) + params_.can_width/2;
-            }
-            else
-            {
-              S absy = -point.y;
-              S h_t = params_.vfov/2+params_.v_offset;
-              x_idx = point.x*h_t/absy * (params_.can_width/2) + params_.can_width/2;
-            }
-//             T absy = worldToCanDepth(point);
-//             T xind = point.x/absy * getCanScale() + getCanWidth()/2;
-//             return xind;
-          }
-          
-          template <typename S, typename T>
-          inline
-          void worldToCanXIdx(S x, S y, S z, T& x_idx) const
-          {
-            worldToCanXIdx(cv::Point3_<S>(x,y,z), x_idx);
-          }
-          
-          template <typename T>
-          inline
-          int worldToCanXIdx(const cv::Point3_<T> point) const
-          {
-            int x_idx;
-            worldToCanXIdx(point, x_idx);
-            return x_idx;
-          }
-          
-          template <typename S, typename T>
-          inline
-          void worldToCanZIdx(const cv::Point3_<S>& point, T& z_idx) const
-          {
-            if(point.y >=0 )
-            {
-              S absy = point.y;
-              S h_b = params_.vfov/2-params_.v_offset;
-              z_idx = point.z*h_b/absy * (params_.can_width/2) + params_.can_width/2;
-            }
-            else
-            {
-              S absy = -point.y;
-              S h_t = params_.vfov/2+params_.v_offset;
-              z_idx = point.z*h_t/absy * (params_.can_width/2) + params_.can_width/2;
-            }
-//             T absy = worldToCanDepth(point);
-//             T zind = point.z/absy * getCanScale() + getCanWidth()/2;
-//             return zind;
-          }
-          
-          template <typename T>
-          inline
-          int worldToCanZIdx(const cv::Point3_<T>& point) const
-          {
-            int z_idx;
-            worldToCanZIdx(point, z_idx);
-            return z_idx;
-          }
-          
-          template <typename S, typename T>
-          inline
-          void worldToCanZIdx(S x, S y, S z, T& z_idx) const
-          {
-            return worldToCanZIdx(cv::Point3_<S>(x,y,z), z_idx);
-          }
-          
-          template <typename T>
-          inline
-          int pixToCanIdx(int xind, int zind, T y) const
-          {
-            int rel_ind = zind*params_.can_width + xind;
-            int ind = (y > 0) ? rel_ind + params_.can_width*params_.can_width : rel_ind;
-            return ind;
-          }
-          
-          template <typename T>
-          inline
-          int pixToCanIdx(const cv::Point3i& pt, T y) const
-          {
-            return pixToCanIdx(pt.x, pt.z, y);
-          }
-
-          
-          template <typename T>
-          inline
-          int worldToCanIdx(const cv::Point3_<T>& point) const
-          {
-            cv::Point3i pix;
-            worldToCanXIdx(point, pix.x);
-            worldToCanZIdx(point, pix.z);
-            int can_idx = pixToCanIdx(pix, point.y) + params_.getCols();
-            return can_idx;
-          }
-          
-          template <typename T>
-          inline
-          int worldToCanIdx(T x, T y, T z) const
-          {
-            return worldToCanIdx(cv::Point3_<T>(x,y,z));
-          }
-          
           template <typename T>
           inline
           int worldToIdx(const cv::Point3_<T>& point) const
           {
             int idx = worldToCylindricalIdx(point);
             return idx;
-
-            if(idx<0 || idx >= params_.getCols())
-            {
-              idx = worldToCanIdx(point);// + params_.getCols();
-            }
-            return idx;
           }
           
-         
           template <typename S, typename T>
           inline
           void projectPixelTo3dRay(const cv::Point_<S>& point, cv::Point3_<T>& ray) const
@@ -828,7 +581,7 @@ namespace egocylindrical
             ray.x = sin(theta);
             ray.z = cos(theta);
             
-            ray.y = (point.y - (params_.height/2 + params_.v_offset))/params_.vscale;
+            ray.y = (point.y - (params_.height/2))/params_.vscale;
           }
           
          
@@ -843,74 +596,26 @@ namespace egocylindrical
           
           template <typename T>
           inline
-          cv::Point3d projectCanPixelTo3dRay(const cv::Point_<T>& point) const
-          {
-            cv::Point3_<T> ray;
-            ray.y = -1;
-            
-            T y = point.y;
-            if(point.y >= params_.can_width)
-            {
-              y -= getCanWidth();
-              ray.y = 1;
-            }
-                        
-            ray.x = (point.x - (params_.can_width/2))/params_.canscale;
-            ray.z = (y - (params_.can_width/2))/params_.canscale;
-            
-            return ray;
-          }
-          
-          template <typename T>
-          inline
           cv::Point3_<T> projectWorldToCylinder(const cv::Point3_<T>& point) const
           {
-            cv::Point3_<T> Pcyl_t = point / worldToRange(point) * params_.cyl_radius;
+            cv::Point3_<T> Pcyl_t = point / worldToRange(point);
             return Pcyl_t;
           }
           
-          template <typename T>
-          inline
-          cv::Point3_<T> projectWorldToCan(const cv::Point3_<T>& point) const
-          {
-            cv::Point3_<T> Pcyl_t;
-            if(point.y >=0 )
-            {
-              T absy = point.y;
-              T h_b = (params_.vfov/2-params_.v_offset)*params_.cyl_radius;
-              Pcyl_t = point * h_b / absy;
-            }
-            else
-            {
-              T absy = -point.y;
-              T h_t = (params_.vfov/2+params_.v_offset)*params_.cyl_radius;
-              Pcyl_t = point * h_t / absy;
-            }
-            
-            //cv::Point3_<T> Pcyl_t = point * (params_.vfov/2) / worldToCanDepth(point);
-            return Pcyl_t;
-          }
-          
-          template <typename T>
-          inline
-          T worldToCanDepth(const cv::Point3_<T>& point)
-          {
-            return std::fabs(point.y);
-          }
-
         };
         
         
         // TODO: create an abstract class to serve as interface so that different storage mechanisms can be used on the backend
         class ECWrapper : public ECConverter
         {
-        private:
-        public:         
+        public:
+                        
             float* points_;
             
             AlignedVector<float> ranges_;
+                        
             AlignedVector<int32_t> inds_;
-
+            
             bool allocate_arrays_;
             
             std_msgs::Header header_;
@@ -952,7 +657,15 @@ namespace egocylindrical
             
             ~ECWrapper()
             {
-
+                /*
+                if(ranges_ != nullptr)
+                   {
+                       //delete inds_;
+                       //delete ranges_;
+                       boost::alignment::aligned_free(ranges_);
+                       
+                   }
+                   */
             }
 
             
@@ -962,11 +675,11 @@ namespace egocylindrical
             inline float* getX()                        { return getPoints(); }
             inline const float* getX()          const   { return (const float*) getPoints(); }
             
-            inline float* getY()                        { return getPoints() + getNumPts(); }
-            inline const float* getY()          const   { return (const float*) getPoints() + getNumPts(); }
+            inline float* getY()                        { return getPoints() + (getNumPts()); }
+            inline const float* getY()          const   { return (const float*) getPoints() + (getNumPts()); }
             
-            inline float* getZ()                        { return getPoints() + 2*getNumPts(); }
-            inline const float* getZ()          const   { return (const float*) getPoints() + 2*getNumPts(); }
+            inline float* getZ()                        { return getPoints() + 2*(getNumPts()); }
+            inline const float* getZ()          const   { return (const float*) getPoints() + 2*(getNumPts()); }
             
             inline float* getRanges()                   { return (float*) __builtin_assume_aligned(ranges_.data(), __BIGGEST_ALIGNMENT__); }
             inline const float* getRanges()     const   { return (const float*) __builtin_assume_aligned(ranges_.data(), __BIGGEST_ALIGNMENT__); }
@@ -988,14 +701,14 @@ namespace egocylindrical
             {
                 return header_; 
             }
-            
+
             inline
             ECMsgConstPtr getEgoCylinderPointsMsg()
             {
                 msg_locked_ = true;
                 return (ECMsgConstPtr) msg_;
             }
-            
+
             inline
             ECMsgConstPtr getEgoCylinderInfoMsg() const
             {
@@ -1023,7 +736,6 @@ namespace egocylindrical
                 
                 ROS_DEBUG_STREAM("max_alignment: " << max_alignment << ", biggest_alignment: " << biggest_alignment << ", object_size: " << object_size << ", object_alignment: " << object_alignment << ", number buffer objects: " << buffer_objects);
                 
-                ROS_DEBUG_STREAM("Allocating space for " << getNumPts() << " points.");
                 msg_->points.data.resize(3*getNumPts() + buffer_objects, dNaN);
                 
                 
@@ -1047,20 +759,20 @@ namespace egocylindrical
                     ranges_.resize(getNumPts());
                     inds_.resize(getNumPts()); 
                 }
-
+                
                 fillMsgInfo(*msg_);
             }
             
-            bool init(const ECWrapper& other)
+            bool init(const ECWrapper& other, bool clear=false)
             {
-                return init(other.getParams());
+                return init(other.getParams(), clear);
             }
             
             inline
             bool init(const ECParams& params, bool clear=false)
             {
-                ROS_DEBUG_STREAM("Current parameters: [" << params_ << "]; New parameters: [" << params << "]");
-                if(msg_->points.data.size()==0)
+            	ROS_DEBUG_STREAM("Current parameters: [" << params_ << "]; New parameters: [" << params << "]");
+            	if(msg_->points.data.size()==0)
                 {
                   ROS_DEBUG_STREAM("No space for points!");
                 }
@@ -1068,7 +780,7 @@ namespace egocylindrical
                 {
                     if(params != (const ECParams)params_)
                     {
-                        ROS_DEBUG_STREAM("Params have changed, update!");
+			 ROS_DEBUG_STREAM("Params have changed, update!");
                         fromParams(params);
                         if(clear)
                         {
@@ -1111,7 +823,7 @@ namespace egocylindrical
         inline
         ECWrapperPtr getECWrapper(const ECParams& params, bool allocate_arrays=false)
         {
-          return std::make_shared<ECWrapper>(params, allocate_arrays);
+          return std::make_shared<ECWrapper>(params,allocate_arrays);
         }
         
         inline
@@ -1121,7 +833,6 @@ namespace egocylindrical
           params.height=height;
           params.width=width;
           params.vfov = vfov;
-          params.can_width=can_width;
           return getECWrapper(params, allocate_arrays);
         }
         
@@ -1130,7 +841,9 @@ namespace egocylindrical
         {
           return getECWrapper(wrapper.getParams(), allocate_arrays);
         }
+        
 
+        
     }
     
 }

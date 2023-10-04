@@ -3,7 +3,7 @@
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "egocylindrical_range_image_inflator_publisher");
-        
+
     ros::NodeHandle nh;
     ros::NodeHandle pnh("~");
     egocylindrical::RangeImageInflatorGenerator s(nh, pnh);

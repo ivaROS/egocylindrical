@@ -17,11 +17,13 @@ namespace egocylindrical
         sensor_msgs::PointCloud2::ConstPtr generate_projected_point_cloud(const utils::ECWrapper& points)
         {
             const int num_pts = points.getNumPts();
-          
+
             const int num_cols = points.getCols();
             
             pcl::PointCloud<pcl::PointXYZI> pcloud;
             
+            float vfov = points.getParams().vfov;
+
             sensor_msgs::PointCloud2::Ptr pcloud_msg = boost::make_shared<sensor_msgs::PointCloud2>();
             
             pcl::toROSMsg(pcloud, *pcloud_msg);
@@ -37,9 +39,10 @@ namespace egocylindrical
             
             float* data = (float*) pcloud_msg->data.data();
 
+            //TODO: Project top/bottom of egocan
             //#pragma omp parallel for num_threads(4)
             #pragma GCC ivdep
-            for(int j = 0; j < num_cols; ++j) //Vectorization requires -fno-trapping-math -fno-math-errno
+            for(int j = 0; j < num_pts; ++j)
             {   
                 cv::Point3f point(x[j],y[j],z[j]);
                 cv::Point3f Pcyl_t = points.projectWorldToCylinder(point);
@@ -50,21 +53,6 @@ namespace egocylindrical
                 data[8*j+2] = Pcyl_t.z;
                 data[8*j+4] = range;
             }
-            
-            #pragma GCC ivdep
-            for(int j = num_cols; j < num_pts; ++j) //Vectorization requires -fno-trapping-math
-            {   
-                cv::Point3f point(x[j],y[j],z[j]);
-                cv::Point3f Pcyl_t = points.projectWorldToCan(point); 
-                float range = egocylindrical::utils::worldToCanDepth(point);
-
-                data[8*j] =   Pcyl_t.x;
-                data[8*j+1] = Pcyl_t.y;
-                data[8*j+2] = Pcyl_t.z;
-                data[8*j+4] = range;
-            }
-            
-            
 
             pcloud_msg->header = points.getHeader();
             

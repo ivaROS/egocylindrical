@@ -43,17 +43,31 @@ namespace egocylindrical
             {
                 T temp = unknown_val;
                 
+//                 if(cyl_ptr[j]==cyl_ptr[j] && isNan(cyl_ptr[j]))
+//                 {
+//                   ROS_WARN_STREAM("Bad answer!: " << cyl_ptr[j]);
+//                 }
                 if(x[j]==x[j])
                 {
+                   //k++;
                     /* NOTE: It appears that the conversion from float to uint16 is what is preventing this from vectorizing for the uint16 case,
                      * which actually makes sense: the datatypes have different widths, so how could the conversions be vectorized?
                      * It should be possible to vectorize the calculation and have the conversion separate, though unclear whether that would be faster.
                      */
-                    temp = std::sqrt(x[j]*x[j] + z[j]*z[j]) * scale;                    
+                    temp = std::sqrt(x[j]*x[j] + z[j]*z[j]) * scale;
+                    
+//                     if(j==0)
+//                     {
+//                       ROS_INFO_STREAM("first value: " << cyl_ptr[j] << "; unknown=" << unknown_val);
+//                     }
                 }
 
                 r[j] = temp;
+                
             }
+            
+            // ROS_INFO_STREAM("Num unknown: " << k);
+                    
         }
         
         

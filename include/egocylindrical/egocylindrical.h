@@ -42,22 +42,25 @@ namespace egocylindrical
 {
 
 class EgoCylindricalPropagator{
-
-
-  
 private:
+
+    
     Mutex config_mutex_, reset_mutex_;
+    
+    int cylinder_height_;
+    int cylinder_width_;
+    double hfov_, vfov_;
+            
 
     utils::ECWrapperPtr new_pts_, old_pts_, transformed_pts_, next_pts_;
+
+    image_geometry::PinholeCameraModel model_t;
     
+    // utils::DepthImageRemapper depth_remapper_;
+
     ros::NodeHandle nh_, pnh_;
-    
-protected:
-  tf2_ros::Buffer buffer_;
-  std::string fixed_frame_id_;
-  
-private:
     tf2_ros::TransformListener tf_listener_;
+
     utils::DepthImageInserter dii_;
     utils::CoordinateFrameHelper cfh_;
     
@@ -80,7 +83,6 @@ private:
     
     bool should_reset_;
 
-
     void propagateHistory(utils::ECWrapper& old_pnts, utils::ECWrapper& new_pnts, std_msgs::Header new_header);
     void addDepthImage(utils::ECWrapper& cylindrical_points, const sensor_msgs::Image::ConstPtr& image, const sensor_msgs::CameraInfo::ConstPtr& cam_info);
     
@@ -91,7 +93,13 @@ private:
     virtual bool shouldPublish(const utils::ECWrapperPtr& points) { return true;}
     virtual void published(utils::ECWrapperPtr& points) { }
 
+protected:
+    tf2_ros::Buffer buffer_;
+    std::string fixed_frame_id_;
 
+    // Debug header equality
+    // cv::Mat prev_image_;
+    
     
 public:
     EgoCylindricalPropagator(ros::NodeHandle& nh, ros::NodeHandle& pnh);
@@ -102,8 +110,11 @@ public:
     sensor_msgs::Image::ConstPtr getRawRangeImage();
 
     virtual bool init();
-    void reset();
 
+    //pcl::PointCloud<pcl::PointXYZI> getCylindricalPointCloud();
+    //pcl::PointCloud<pcl::PointXYZ> getWorldPointCloud();
+
+    void reset();
 };
 
 

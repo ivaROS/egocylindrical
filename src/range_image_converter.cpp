@@ -29,21 +29,11 @@ namespace egocylindrical
     
     bool RangeImageConverter::init()
     {
-        use_egocan_ = false;
-        pnh_.getParam("egocan_enabled", use_egocan_);
+
         
-        if(use_egocan_)
-        {
-          timeSynchronizerWithCan = boost::make_shared<can_synchronizer>(im_sub_, ec_sub_, can_im_sub_, 20);
-          timeSynchronizerWithCan->registerCallback(boost::bind(&RangeImageConverter::imageCB, this, _1, _2, _3));
-          
-        }
-        else
-        {
-          // Synchronize Image and CameraInfo callbacks
-          timeSynchronizer = boost::make_shared<synchronizer>(im_sub_, ec_sub_, 20);
-          timeSynchronizer->registerCallback(boost::bind(&RangeImageConverter::imageCB, this, _1, _2, nullptr));
-        }
+        // Synchronize Image and CameraInfo callbacks
+        timeSynchronizer = boost::make_shared<synchronizer>(im_sub_, ec_sub_, 20);
+        timeSynchronizer->registerCallback(boost::bind(&RangeImageConverter::imageCB, this, _1, _2));
         
         ros::SubscriberStatusCallback info_cb = boost::bind(&RangeImageConverter::ssCB, this);
         {
@@ -69,8 +59,6 @@ namespace egocylindrical
             else
             {
                 im_sub_.subscribe(it_, "image_in", 2);
-                if(use_egocan_)
-                  can_im_sub_.subscribe(it_, "can_image_in", 2);
                 ec_sub_.subscribe(nh_, "info_in", 2);
                 
                 ROS_INFO("RangeImage Converter Subscribing");
@@ -81,15 +69,14 @@ namespace egocylindrical
         else
         {
             im_sub_.unsubscribe();
-            if(use_egocan_)
-              can_im_sub_.unsubscribe();
             ec_sub_.unsubscribe();
             ROS_INFO("RangeImage Converter Unsubscribing");
 
         }
     }
 
-    void RangeImageConverter::imageCB(const sensor_msgs::Image::ConstPtr& image, const egocylindrical::EgoCylinderPoints::ConstPtr& info, const sensor_msgs::Image::ConstPtr& can_image)
+    //NOTE: Once the parameters have been moved to their own message, this should subscribe to the parameters instead
+    void RangeImageConverter::imageCB(const sensor_msgs::Image::ConstPtr& image, const egocylindrical::EgoCylinderPoints::ConstPtr& info)
     {
         ROS_DEBUG("Received range msg");
         
@@ -99,7 +86,7 @@ namespace egocylindrical
 
           ros::WallTime start = ros::WallTime::now();
           
-          utils::ECWrapperPtr ec_pts = utils::range_image_to_wrapper(info, image, can_image);
+          utils::ECWrapperPtr ec_pts = utils::range_image_to_wrapper(info, image);
           
           utils::ECMsgConstPtr ec_msg = ec_pts->getEgoCylinderPointsMsg();
           

@@ -22,7 +22,7 @@ class EgoCylinderPointCloudGenerator
 {
     using Mutex = boost::mutex;
     using Lock = Mutex::scoped_lock;
-    
+
     ros::NodeHandle nh_, pnh_;
     ros::Publisher pc_pub_;
     ros::Subscriber ec_sub_;
